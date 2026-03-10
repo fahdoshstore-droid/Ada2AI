@@ -32,6 +32,10 @@ export default function ContactSection() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.name || !form.email) {
+      toast.error("يرجى ملء الحقول المطلوبة");
+      return;
+    }
     setSending(true);
     setTimeout(() => {
       setSending(false);
@@ -42,6 +46,11 @@ export default function ContactSection() {
           color: "white",
         },
       });
+      // Auto-open WhatsApp with pre-filled message
+      const msg = encodeURIComponent(
+        `مرحباً Scout AI 👋\n\nالاسم: ${form.name}\nالبريد: ${form.email}\nالهاتف: ${form.phone || 'غير محدد'}\nنوع التعاون: ${form.type || 'غير محدد'}\n\n${form.message}`
+      );
+      setTimeout(() => window.open(`https://wa.me/966500000000?text=${msg}`, "_blank"), 600);
       setForm({ name: "", email: "", phone: "", type: "", message: "" });
     }, 1500);
   };

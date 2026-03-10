@@ -1,4 +1,5 @@
 import { MessageCircle, Mail, ExternalLink } from "lucide-react";
+import { useLocation } from "wouter";
 
 const footerLinks = [
   { label: "المشكلة", href: "#problem" },
@@ -12,6 +13,7 @@ const footerLinks = [
 ];
 
 export default function Footer() {
+  const [, navigate] = useLocation();
   const scrollTo = (href: string) => {
     document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
   };
@@ -60,7 +62,7 @@ export default function Footer() {
             >
               روابط سريعة
             </h4>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 mb-4">
               {footerLinks.map((link) => (
                 <button
                   key={link.href}
@@ -71,6 +73,24 @@ export default function Footer() {
                   {link.label}
                 </button>
               ))}
+            </div>
+            <div className="flex flex-col gap-2 pt-3 border-t border-white/5">
+              <button
+                onClick={() => navigate("/academies")}
+                className="text-white/55 hover:text-[oklch(0.65_0.2_145)] text-sm text-right transition-colors flex items-center gap-1.5"
+                style={{ fontFamily: "'Tajawal', sans-serif" }}
+              >
+                <span className="neon-text text-xs">●</span>
+                دليل الأكاديميات
+              </button>
+              <button
+                onClick={() => navigate("/demo")}
+                className="text-white/55 hover:text-[oklch(0.65_0.2_145)] text-sm text-right transition-colors flex items-center gap-1.5"
+                style={{ fontFamily: "'Tajawal', sans-serif" }}
+              >
+                <span className="neon-text text-xs">●</span>
+                عرض تجريبي
+              </button>
             </div>
           </div>
 
