@@ -7,6 +7,9 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Academies from "./pages/Academies";
 import Demo from "./pages/Demo";
+import Scouts from "./pages/Scouts";
+import Upload from "./pages/Upload";
+import Compare from "./pages/Compare";
 
 function Router() {
   return (
@@ -14,6 +17,9 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/academies"} component={Academies} />
       <Route path={"/demo"} component={Demo} />
+      <Route path={"/scouts"} component={Scouts} />
+      <Route path={"/upload"} component={Upload} />
+      <Route path={"/compare"} component={Compare} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
