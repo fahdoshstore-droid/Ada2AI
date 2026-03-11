@@ -10,6 +10,7 @@ import Demo from "./pages/Demo";
 import Scouts from "./pages/Scouts";
 import Upload from "./pages/Upload";
 import Compare from "./pages/Compare";
+import SportID from "./pages/SportID";
 
 function Router() {
   return (
@@ -20,6 +21,7 @@ function Router() {
       <Route path={"/scouts"} component={Scouts} />
       <Route path={"/upload"} component={Upload} />
       <Route path={"/compare"} component={Compare} />
+      <Route path={"/sportid"} component={SportID} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

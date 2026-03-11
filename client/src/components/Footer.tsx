@@ -1,4 +1,4 @@
-import { MessageCircle, Mail, ExternalLink } from "lucide-react";
+import { MessageCircle, Mail, ExternalLink, Shield } from "lucide-react";
 import { useLocation } from "wouter";
 
 const footerLinks = [
@@ -36,12 +36,15 @@ export default function Footer() {
                   className="w-7 h-7 object-contain"
                 />
               </div>
-              <span
-                className="font-bold text-xl text-white"
-                style={{ fontFamily: "'Space Grotesk', sans-serif", direction: "ltr" }}
-              >
-                SCOUT <span className="neon-text">AI</span>
-              </span>
+              <div>
+                <span
+                  className="font-bold text-xl text-white block"
+                  style={{ fontFamily: "'Space Grotesk', sans-serif", direction: "ltr" }}
+                >
+                  Sport<span style={{ color: "#00C2A8" }}>Scout</span>
+                </span>
+                <span className="text-white/30 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>Scout AI · SportID</span>
+              </div>
             </div>
             <p
               className="text-white/45 text-sm leading-relaxed mb-4"
@@ -90,6 +93,22 @@ export default function Footer() {
               >
                 <span className="neon-text text-xs">●</span>
                 عرض تجريبي
+              </button>
+              <button
+                onClick={() => navigate("/scouts")}
+                className="text-white/55 hover:text-[oklch(0.65_0.2_145)] text-sm text-right transition-colors flex items-center gap-1.5"
+                style={{ fontFamily: "'Tajawal', sans-serif" }}
+              >
+                <span className="neon-text text-xs">●</span>
+                لوحة الكشافين
+              </button>
+              <button
+                onClick={() => navigate("/sportid")}
+                className="text-sm text-right transition-colors flex items-center gap-1.5 hover:opacity-80"
+                style={{ fontFamily: "'Tajawal', sans-serif", color: "#00C2A8" }}
+              >
+                <Shield size={12} style={{ color: "#00C2A8" }} />
+                جواز السفر الرياضي (SportID)
               </button>
             </div>
           </div>
