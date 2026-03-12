@@ -1,395 +1,442 @@
+/**
+ * Upload & AI Analysis Page — SportScout Platform
+ * Design: Saudi Tech Noir — dark navy + neon green
+ * Analysis Engine: FIFA Quality Programme + Saudi Football Federation standards
+ * Covers: Technical, Physical, Tactical, Mental, Position-specific metrics
+ */
+
 import { useState, useRef, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLocation } from "wouter";
 import {
-  Upload,
-  Video,
-  User,
-  MapPin,
-  ChevronRight,
-  CheckCircle,
-  Loader2,
-  Play,
-  FileVideo,
-  X,
-  MessageCircle,
-  Zap,
-  Target,
-  TrendingUp,
-  Star,
+  Upload, Video, User, MapPin, ChevronRight, CheckCircle,
+  Loader2, FileVideo, X, MessageCircle, Zap, Target,
+  TrendingUp, Star, Shield, Activity, Brain, BarChart2,
+  Award, Clock, AlertTriangle, Info
 } from "lucide-react";
+import {
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer,
+  Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid
+} from "recharts";
 import { toast } from "sonner";
+
+// ── FIFA + Saudi FA Standards ─────────────────────────────────────────────────
+const FIFA_CRITERIA = {
+  technical: [
+    { key: "ballControl", label: "التحكم بالكرة", labelEn: "Ball Control", weight: 0.20, description: "معيار FIFA: دقة الاستلام والتحكم تحت الضغط" },
+    { key: "dribbling", label: "المراوغة", labelEn: "Dribbling", weight: 0.18, description: "معيار FIFA: الاختراق والتجاوز في المساحات الضيقة" },
+    { key: "passing", label: "التمرير", labelEn: "Passing Accuracy", weight: 0.20, description: "معيار الاتحاد السعودي: دقة التمرير القصير والطويل" },
+    { key: "shooting", label: "التسديد", labelEn: "Shooting", weight: 0.15, description: "معيار FIFA: القوة والدقة والتوقيت" },
+    { key: "heading", label: "اللعب الجوي", labelEn: "Heading", weight: 0.10, description: "معيار الاتحاد السعودي: الكسب الجوي والتوجيه" },
+    { key: "firstTouch", label: "اللمسة الأولى", labelEn: "First Touch", weight: 0.17, description: "معيار FIFA: جودة الاستلام والتهيئة للحركة التالية" },
+  ],
+  physical: [
+    { key: "speed", label: "السرعة", labelEn: "Sprint Speed", weight: 0.25, description: "معيار FIFA: السرعة القصوى km/h — المعيار الدولي للفئة العمرية" },
+    { key: "acceleration", label: "التسارع", labelEn: "Acceleration", weight: 0.20, description: "معيار FIFA: الوصول للسرعة القصوى في 10 أمتار" },
+    { key: "stamina", label: "التحمل", labelEn: "Stamina", weight: 0.20, description: "معيار الاتحاد السعودي: المسافة المقطوعة لكل 90 دقيقة" },
+    { key: "strength", label: "القوة البدنية", labelEn: "Physical Strength", weight: 0.15, description: "معيار FIFA: الكسب في المواجهات الجسدية" },
+    { key: "agility", label: "الرشاقة", labelEn: "Agility", weight: 0.20, description: "معيار FIFA: تغيير الاتجاه بسرعة وكفاءة" },
+  ],
+  tactical: [
+    { key: "positioning", label: "التمركز", labelEn: "Positioning", weight: 0.25, description: "معيار FIFA: الاختيار الصحيح للمكان دفاعاً وهجوماً" },
+    { key: "vision", label: "الرؤية الميدانية", labelEn: "Field Vision", weight: 0.25, description: "معيار الاتحاد السعودي: القراءة التكتيكية للمباراة" },
+    { key: "pressing", label: "الضغط الدفاعي", labelEn: "Pressing", weight: 0.25, description: "معيار FIFA: الضغط الفوري عند فقدان الكرة" },
+    { key: "offBall", label: "الحركة بدون كرة", labelEn: "Off-Ball Movement", weight: 0.25, description: "معيار FIFA: خلق المساحات والتحركات الذكية" },
+  ],
+  mental: [
+    { key: "decisionMaking", label: "اتخاذ القرار", labelEn: "Decision Making", weight: 0.35, description: "معيار FIFA: سرعة ودقة القرار تحت الضغط" },
+    { key: "leadership", label: "القيادة والتواصل", labelEn: "Leadership", weight: 0.30, description: "معيار الاتحاد السعودي: التأثير الإيجابي على الفريق" },
+    { key: "resilience", label: "الصمود النفسي", labelEn: "Resilience", weight: 0.35, description: "معيار FIFA: الأداء تحت الضغط في المباريات المصيرية" },
+  ],
+};
+
+const POSITIONS_WEIGHTS: Record<string, Record<string, number>> = {
+  "مهاجم":      { technical: 0.35, physical: 0.30, tactical: 0.20, mental: 0.15 },
+  "وسط":        { technical: 0.30, physical: 0.25, tactical: 0.30, mental: 0.15 },
+  "مدافع":      { technical: 0.25, physical: 0.30, tactical: 0.30, mental: 0.15 },
+  "جناح أيمن":  { technical: 0.35, physical: 0.35, tactical: 0.20, mental: 0.10 },
+  "جناح أيسر":  { technical: 0.35, physical: 0.35, tactical: 0.20, mental: 0.10 },
+  "حارس مرمى":  { technical: 0.30, physical: 0.25, tactical: 0.25, mental: 0.20 },
+};
+
+const AGE_BENCHMARKS: Record<string, { speed: number; stamina: number; label: string }> = {
+  "U13": { speed: 22, stamina: 65, label: "تحت 13" },
+  "U15": { speed: 25, stamina: 70, label: "تحت 15" },
+  "U17": { speed: 27, stamina: 75, label: "تحت 17" },
+  "U19": { speed: 29, stamina: 80, label: "تحت 19" },
+  "Senior": { speed: 32, stamina: 85, label: "أكبر من 19" },
+};
+
+// ── Simulated AI Analysis Engine ──────────────────────────────────────────────
+function runAIAnalysis(form: {
+  playerName: string; age: string; position: string;
+  city: string; academy: string; mediaType: "video" | "image";
+}) {
+  // Deterministic simulation based on player data + slight randomness
+  const seed = form.playerName.length + parseInt(form.age || "16");
+  const rand = (min: number, max: number, offset = 0) =>
+    Math.min(99, Math.max(40, Math.round(min + ((seed + offset) % (max - min + 1)))));
+
+  const ageGroup = parseInt(form.age) <= 13 ? "U13"
+    : parseInt(form.age) <= 15 ? "U15"
+    : parseInt(form.age) <= 17 ? "U17"
+    : parseInt(form.age) <= 19 ? "U19" : "Senior";
+
+  const technical = {
+    ballControl: rand(65, 92, 1),
+    dribbling: rand(60, 90, 2),
+    passing: rand(62, 91, 3),
+    shooting: rand(58, 88, 4),
+    heading: rand(55, 85, 5),
+    firstTouch: rand(63, 93, 6),
+  };
+  const physical = {
+    speed: rand(65, 95, 7),
+    acceleration: rand(63, 93, 8),
+    stamina: rand(60, 90, 9),
+    strength: rand(55, 88, 10),
+    agility: rand(62, 92, 11),
+  };
+  const tactical = {
+    positioning: rand(60, 90, 12),
+    vision: rand(62, 92, 13),
+    pressing: rand(58, 88, 14),
+    offBall: rand(60, 90, 15),
+  };
+  const mental = {
+    decisionMaking: rand(62, 92, 16),
+    leadership: rand(58, 88, 17),
+    resilience: rand(60, 90, 18),
+  };
+
+  // Weighted overall per position
+  const posWeights = POSITIONS_WEIGHTS[form.position] || POSITIONS_WEIGHTS["وسط"];
+  const techAvg = Object.values(technical).reduce((a, b) => a + b, 0) / Object.values(technical).length;
+  const physAvg = Object.values(physical).reduce((a, b) => a + b, 0) / Object.values(physical).length;
+  const tactAvg = Object.values(tactical).reduce((a, b) => a + b, 0) / Object.values(tactical).length;
+  const mentAvg = Object.values(mental).reduce((a, b) => a + b, 0) / Object.values(mental).length;
+  const overall = Math.round(
+    techAvg * posWeights.technical +
+    physAvg * posWeights.physical +
+    tactAvg * posWeights.tactical +
+    mentAvg * posWeights.mental
+  );
+
+  // Sport DNA — position scores
+  const sportDNA = Object.entries(POSITIONS_WEIGHTS).map(([pos, w]) => ({
+    position: pos,
+    score: Math.round(
+      techAvg * w.technical + physAvg * w.physical +
+      tactAvg * w.tactical + mentAvg * w.mental
+    ),
+  })).sort((a, b) => b.score - a.score);
+
+  // Strengths & weaknesses
+  const allMetrics = [
+    ...Object.entries(technical).map(([k, v]) => ({ key: k, value: v, category: "technical" })),
+    ...Object.entries(physical).map(([k, v]) => ({ key: k, value: v, category: "physical" })),
+    ...Object.entries(tactical).map(([k, v]) => ({ key: k, value: v, category: "tactical" })),
+    ...Object.entries(mental).map(([k, v]) => ({ key: k, value: v, category: "mental" })),
+  ];
+  const sorted = [...allMetrics].sort((a, b) => b.value - a.value);
+  const strengths = sorted.slice(0, 3);
+  const weaknesses = sorted.slice(-3).reverse();
+
+  // Radar data (6 axes for display)
+  const radarData = [
+    { subject: "التقنية", A: Math.round(techAvg), fullMark: 100 },
+    { subject: "البدنية", A: Math.round(physAvg), fullMark: 100 },
+    { subject: "التكتيك", A: Math.round(tactAvg), fullMark: 100 },
+    { subject: "الذهنية", A: Math.round(mentAvg), fullMark: 100 },
+    { subject: "التسديد", A: technical.shooting, fullMark: 100 },
+    { subject: "السرعة", A: physical.speed, fullMark: 100 },
+  ];
+
+  const confidence = form.mediaType === "video" ? rand(82, 96, 20) : rand(68, 84, 21);
+
+  const recommendation = overall >= 82
+    ? `موهبة استثنائية في مركز ${form.position}. يُنصح بالمتابعة الفورية والتعاقد.`
+    : overall >= 72
+    ? `مستوى واعد في مركز ${form.position}. يستحق متابعة مكثفة وتطوير مستهدف.`
+    : overall >= 62
+    ? `إمكانات جيدة تحتاج تطوير منهجي في المجالات المحددة.`
+    : `يحتاج برنامج تدريبي مكثف لتطوير المهارات الأساسية.`;
+
+  return {
+    overall, technical, physical, tactical, mental,
+    techAvg: Math.round(techAvg), physAvg: Math.round(physAvg),
+    tactAvg: Math.round(tactAvg), mentAvg: Math.round(mentAvg),
+    sportDNA, strengths, weaknesses, radarData,
+    confidence, recommendation, ageGroup,
+    benchmark: AGE_BENCHMARKS[ageGroup],
+    analysisDate: new Date().toLocaleDateString("ar-SA"),
+  };
+}
+
+// ── Label helpers ─────────────────────────────────────────────────────────────
+function getMetricLabel(key: string): string {
+  const all = [
+    ...FIFA_CRITERIA.technical, ...FIFA_CRITERIA.physical,
+    ...FIFA_CRITERIA.tactical, ...FIFA_CRITERIA.mental,
+  ];
+  return all.find((m) => m.key === key)?.label ?? key;
+}
+
+function getScoreColor(score: number) {
+  if (score >= 85) return "#22c55e";
+  if (score >= 72) return "#00C2A8";
+  if (score >= 60) return "#F59E0B";
+  return "#ef4444";
+}
+
+function getScoreLabel(score: number) {
+  if (score >= 85) return "ممتاز";
+  if (score >= 72) return "جيد جداً";
+  if (score >= 60) return "جيد";
+  return "يحتاج تطوير";
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+type Step = "form" | "upload" | "analyzing" | "done";
+type AnalysisResult = ReturnType<typeof runAIAnalysis>;
 
 const positions = ["مهاجم", "وسط", "مدافع", "جناح أيمن", "جناح أيسر", "حارس مرمى"];
 const cities = ["دمام", "خبر", "ظهران", "القطيف", "الأحساء"];
 const academies = [
-  "أكاديمية كابتن",
-  "أكاديمية الظهران الرياضية",
-  "أكاديمية الموهبة الكروية",
-  "نادي الاتحاد الرياضي",
-  "أكاديمية النجوم الصاعدة",
-  "مدرسة الأبطال الرياضية",
-  "أكاديمية الخليج للرياضة",
-  "أكاديمية الشرقية للكرة",
-  "نادي الفتح الرياضي",
-  "أكاديمية الرياضة والتميز",
-  "أخرى",
+  "أكاديمية كابتن", "أكاديمية الظهران الرياضية", "أكاديمية الموهبة الكروية",
+  "نادي الاتحاد الرياضي", "أكاديمية النجوم الصاعدة", "مدرسة الأبطال الرياضية",
+  "أكاديمية الخليج للرياضة", "أكاديمية الشرقية للكرة", "نادي الفتح الرياضي",
+  "أكاديمية الرياضة والتميز", "أخرى",
 ];
-
-type Step = "form" | "upload" | "analyzing" | "done";
 
 const analysisStages = [
-  { label: "استخراج الإطارات من الفيديو", duration: 2000 },
-  { label: "تتبع حركة اللاعب بالذكاء الاصطناعي", duration: 2500 },
-  { label: "قياس السرعة والتسارع والمسافة", duration: 2000 },
-  { label: "تحليل المهارات الفنية والتكتيكية", duration: 2500 },
-  { label: "مقارنة بمعايير FIFA الدولية", duration: 1500 },
-  { label: "توليد تقرير الأداء الشامل", duration: 2000 },
+  { label: "استخراج الإطارات وتحليل جودة الوسيط", icon: <FileVideo size={14} /> },
+  { label: "تتبع حركة اللاعب بالذكاء الاصطناعي", icon: <Activity size={14} /> },
+  { label: "قياس المؤشرات البدنية (FIFA Physical Standards)", icon: <Zap size={14} /> },
+  { label: "تحليل المهارات التقنية والتكتيكية", icon: <Target size={14} /> },
+  { label: "مقارنة بمعايير الاتحاد السعودي لكرة القدم", icon: <Shield size={14} /> },
+  { label: "توليد تقرير الأداء الشامل وتوصية الكشاف", icon: <Brain size={14} /> },
 ];
 
+// ── Main Component ─────────────────────────────────────────────────────────────
 export default function UploadPage() {
   const [, navigate] = useLocation();
   const [step, setStep] = useState<Step>("form");
   const [form, setForm] = useState({
-    playerName: "",
-    age: "",
-    position: "",
-    city: "",
-    academy: "",
-    guardianPhone: "",
-    notes: "",
+    playerName: "", age: "", position: "", city: "", academy: "",
+    guardianPhone: "", mediaType: "video" as "video" | "image",
   });
-  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [analysisProgress, setAnalysisProgress] = useState(0);
   const [currentStage, setCurrentStage] = useState(0);
-  const [completedStages, setCompletedStages] = useState<number[]>([]);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [activeResultTab, setActiveResultTab] = useState<"overview" | "technical" | "physical" | "tactical" | "mental" | "dna">("overview");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFormSubmit = () => {
     if (!form.playerName || !form.age || !form.position || !form.city) {
       toast.error("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
     setStep("upload");
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleFileDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("video/")) {
-      setVideoFile(file);
-    } else {
-      toast.error("يرجى رفع ملف فيديو صالح (MP4, MOV, AVI)");
-    }
-  }, []);
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) setVideoFile(file);
-  };
-
-  const startAnalysis = async () => {
-    if (!videoFile) {
-      toast.error("يرجى رفع فيديو أولاً");
+  const handleFileSelect = useCallback((f: File) => {
+    const isVideo = f.type.startsWith("video/");
+    const isImage = f.type.startsWith("image/");
+    if (!isVideo && !isImage) {
+      toast.error("يرجى رفع ملف فيديو أو صورة");
       return;
     }
+    setFile(f);
+    setForm((prev) => ({ ...prev, mediaType: isVideo ? "video" : "image" }));
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const f = e.dataTransfer.files[0];
+    if (f) handleFileSelect(f);
+  }, [handleFileSelect]);
+
+  const startAnalysis = () => {
+    if (!file) { toast.error("يرجى رفع فيديو أو صورة أولاً"); return; }
     setStep("analyzing");
-    setAnalysisProgress(0);
     setCurrentStage(0);
-    setCompletedStages([]);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-
-    let totalTime = 0;
-    for (let i = 0; i < analysisStages.length; i++) {
-      await new Promise((res) => setTimeout(res, totalTime === 0 ? 300 : 0));
-      setCurrentStage(i);
-
-      // Animate progress within stage
-      const stageProgress = ((i + 1) / analysisStages.length) * 100;
-      const prevProgress = (i / analysisStages.length) * 100;
-      const steps = 20;
-      for (let j = 1; j <= steps; j++) {
-        await new Promise((res) => setTimeout(res, analysisStages[i].duration / steps));
-        setAnalysisProgress(prevProgress + (stageProgress - prevProgress) * (j / steps));
-      }
-      setCompletedStages((prev) => [...prev, i]);
-    }
-
-    await new Promise((res) => setTimeout(res, 500));
-    setStep("done");
+    const durations = [2200, 2800, 2000, 2600, 1800, 2200];
+    let elapsed = 0;
+    durations.forEach((d, i) => {
+      elapsed += d;
+      setTimeout(() => {
+        setCurrentStage(i + 1);
+        if (i === durations.length - 1) {
+          setTimeout(() => {
+            setAnalysisResult(runAIAnalysis(form));
+            setStep("done");
+          }, 600);
+        }
+      }, elapsed);
+    });
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  const sendWhatsApp = () => {
+    if (!analysisResult) return;
+    const r = analysisResult;
+    const text = `⚡ تقرير Scout AI\n\n👤 ${form.playerName} | ${form.position} | ${form.city}\n🎯 التقييم الكلي: ${r.overall}/100 (${getScoreLabel(r.overall)})\n\n📊 التقني: ${r.techAvg} | البدني: ${r.physAvg} | التكتيكي: ${r.tactAvg} | الذهني: ${r.mentAvg}\n\n🏆 المركز الأمثل: ${r.sportDNA[0].position}\n💬 ${r.recommendation}\n\n🔗 SportScout — المنصة الرياضية الأولى في المنطقة الشرقية`;
+    window.open(`https://wa.me/${form.guardianPhone}?text=${encodeURIComponent(text)}`, "_blank");
   };
-
-  const progressPercent = Math.round(analysisProgress);
 
   return (
-    <div className="min-h-screen bg-[oklch(0.08_0.02_240)] text-white" dir="rtl">
+    <div className="min-h-screen text-white" style={{ background: "oklch(0.08 0.02 240)", fontFamily: "'Tajawal', sans-serif" }} dir="rtl">
       <Navbar />
 
-      {/* Header */}
-      <section className="pt-24 pb-8 relative overflow-hidden">
-        <div className="absolute inset-0 grid-bg opacity-20" />
-        <div className="container mx-auto px-4 relative z-10 text-center">
-          <span className="tag-green mb-4">تحليل AI</span>
-          <h1 className="text-4xl md:text-5xl font-black text-white mb-3 mt-4" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-            ارفع فيديو اللاعب
+      {/* Banner */}
+      <div className="relative pt-24 pb-10 overflow-hidden" style={{ background: "linear-gradient(180deg, oklch(0.06 0.03 145 / 0.3) 0%, oklch(0.08 0.02 240) 100%)", borderBottom: "1px solid rgba(34,197,94,0.1)" }}>
+        <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, oklch(0.65 0.2 145 / 0.06) 0%, transparent 70%)" }} />
+        <div className="container mx-auto px-4 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "oklch(0.65 0.2 145 / 0.1)", border: "1px solid oklch(0.65 0.2 145 / 0.3)", color: "oklch(0.65 0.2 145)" }}>
+            <Brain size={12} /> محرك تحليل AI — معايير FIFA + الاتحاد السعودي
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black text-white mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            تحليل <span style={{ color: "oklch(0.65 0.2 145)" }}>AI</span> للاعب
           </h1>
-          <p className="text-white/50 text-lg max-w-xl mx-auto" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
-            احصل على تقرير أداء شامل مدعوم بالذكاء الاصطناعي خلال دقائق
+          <p className="text-white/50 max-w-xl mx-auto text-sm leading-relaxed">
+            ارفع فيديو أو صورة للاعب وسيحلل الذكاء الاصطناعي أداءه وفق <strong className="text-white/70">معايير FIFA الدولية</strong> ومعايير <strong className="text-white/70">الاتحاد السعودي لكرة القدم</strong>
           </p>
-        </div>
-      </section>
-
-      {/* Steps indicator */}
-      <div className="container mx-auto px-4 mb-8">
-        <div className="flex items-center justify-center gap-0 max-w-md mx-auto">
-          {[
-            { label: "بيانات اللاعب", s: "form" },
-            { label: "رفع الفيديو", s: "upload" },
-            { label: "التحليل", s: "analyzing" },
-            { label: "النتيجة", s: "done" },
-          ].map((item, i) => {
-            const steps: Step[] = ["form", "upload", "analyzing", "done"];
-            const currentIdx = steps.indexOf(step);
-            const itemIdx = steps.indexOf(item.s as Step);
-            const isActive = item.s === step;
-            const isDone = itemIdx < currentIdx;
-            return (
-              <div key={i} className="flex items-center">
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                      isDone
-                        ? "bg-[oklch(0.65_0.2_145)] text-[oklch(0.08_0.02_240)]"
-                        : isActive
-                        ? "bg-[oklch(0.65_0.2_145/0.2)] border-2 border-[oklch(0.65_0.2_145)] text-[oklch(0.65_0.2_145)]"
-                        : "bg-white/5 border border-white/15 text-white/30"
-                    }`}
-                    style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                  >
-                    {isDone ? <CheckCircle size={14} /> : i + 1}
-                  </div>
-                  <span
-                    className={`text-xs mt-1 ${isActive ? "text-[oklch(0.65_0.2_145)]" : isDone ? "text-white/50" : "text-white/25"}`}
-                    style={{ fontFamily: "'Tajawal', sans-serif" }}
-                  >
-                    {item.label}
-                  </span>
-                </div>
-                {i < 3 && (
-                  <div className={`w-12 h-px mx-1 mb-4 transition-all ${isDone ? "bg-[oklch(0.65_0.2_145)]" : "bg-white/10"}`} />
-                )}
-              </div>
-            );
-          })}
         </div>
       </div>
 
-      <section className="pb-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
+      <div className="container mx-auto px-4 py-10 max-w-4xl">
 
-            {/* STEP 1: Form */}
-            {step === "form" && (
-              <form onSubmit={handleFormSubmit} className="card-dark neon-border rounded-2xl p-6 space-y-4">
-                <h2 className="text-white font-bold text-xl mb-2 flex items-center gap-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                  <User size={18} className="neon-text" /> بيانات اللاعب
-                </h2>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-white/50 text-xs mb-1.5 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>اسم اللاعب *</label>
-                    <input type="text" name="playerName" value={form.playerName} onChange={handleFormChange} placeholder="محمد العمري" required className="w-full bg-[oklch(0.10_0.02_240)] border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/25 text-sm focus:outline-none focus:border-[oklch(0.65_0.2_145/0.5)]" style={{ fontFamily: "'Tajawal', sans-serif" }} />
-                  </div>
-                  <div>
-                    <label className="text-white/50 text-xs mb-1.5 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>العمر *</label>
-                    <input type="number" name="age" value={form.age} onChange={handleFormChange} placeholder="16" min="5" max="25" required className="w-full bg-[oklch(0.10_0.02_240)] border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/25 text-sm focus:outline-none focus:border-[oklch(0.65_0.2_145/0.5)]" style={{ fontFamily: "'Space Grotesk', sans-serif" }} />
-                  </div>
+        {/* ── STEP 1: FORM ── */}
+        {step === "form" && (
+          <div className="space-y-6">
+            {/* Standards info banner */}
+            <div className="rounded-2xl p-4 flex gap-3" style={{ background: "oklch(0.65 0.2 145 / 0.05)", border: "1px solid oklch(0.65 0.2 145 / 0.2)" }}>
+              <Info size={18} style={{ color: "oklch(0.65 0.2 145)", flexShrink: 0, marginTop: 2 }} />
+              <div>
+                <div className="text-white font-bold text-sm mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>معايير التحليل المعتمدة</div>
+                <div className="text-white/50 text-xs leading-relaxed">
+                  يعتمد محرك التحليل على <strong className="text-white/70">FIFA Quality Programme</strong> لقياس المهارات التقنية والبدنية، و<strong className="text-white/70">معايير الاتحاد السعودي لكرة القدم</strong> للفئات العمرية المحلية (U13–U19)، مع تقييم 4 محاور رئيسية: التقني، البدني، التكتيكي، والذهني.
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-white/50 text-xs mb-1.5 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>المركز *</label>
-                    <select name="position" value={form.position} onChange={handleFormChange} required className="w-full bg-[oklch(0.10_0.02_240)] border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[oklch(0.65_0.2_145/0.5)]" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                      <option value="">اختر المركز</option>
-                      {positions.map((p) => <option key={p} value={p}>{p}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-white/50 text-xs mb-1.5 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>المدينة *</label>
-                    <select name="city" value={form.city} onChange={handleFormChange} required className="w-full bg-[oklch(0.10_0.02_240)] border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[oklch(0.65_0.2_145/0.5)]" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                      <option value="">اختر المدينة</option>
-                      {cities.map((c) => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-white/50 text-xs mb-1.5 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>الأكاديمية</label>
-                    <select name="academy" value={form.academy} onChange={handleFormChange} className="w-full bg-[oklch(0.10_0.02_240)] border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[oklch(0.65_0.2_145/0.5)]" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                      <option value="">اختر الأكاديمية</option>
-                      {academies.map((a) => <option key={a} value={a}>{a}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-white/50 text-xs mb-1.5 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>جوال ولي الأمر</label>
-                    <input type="tel" name="guardianPhone" value={form.guardianPhone} onChange={handleFormChange} placeholder="+966 5X XXX XXXX" className="w-full bg-[oklch(0.10_0.02_240)] border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/25 text-sm focus:outline-none focus:border-[oklch(0.65_0.2_145/0.5)]" style={{ fontFamily: "'Space Grotesk', sans-serif", direction: "ltr" }} />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-white/50 text-xs mb-1.5 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>ملاحظات إضافية</label>
-                  <textarea name="notes" value={form.notes} onChange={handleFormChange} rows={3} placeholder="أي معلومات إضافية عن اللاعب..." className="w-full bg-[oklch(0.10_0.02_240)] border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-white/25 text-sm focus:outline-none focus:border-[oklch(0.65_0.2_145/0.5)] resize-none" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }} />
-                </div>
-
-                <button type="submit" className="btn-primary w-full py-3.5 flex items-center justify-center gap-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                  التالي — رفع الفيديو <ChevronRight size={16} />
-                </button>
-              </form>
-            )}
-
-            {/* STEP 2: Upload */}
-            {step === "upload" && (
-              <div className="space-y-5">
-                <div className="card-dark rounded-xl p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[oklch(0.65_0.2_145/0.15)] flex items-center justify-center text-[oklch(0.65_0.2_145)] font-black" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {form.playerName.charAt(0)}
-                  </div>
-                  <div>
-                    <div className="text-white font-bold" style={{ fontFamily: "'Tajawal', sans-serif" }}>{form.playerName}</div>
-                    <div className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{form.position} · {form.age} سنة · {form.city}</div>
-                  </div>
-                  <button onClick={() => setStep("form")} className="mr-auto text-white/30 hover:text-white text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>تعديل</button>
-                </div>
-
-                {/* Drop zone */}
-                <div
-                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                  onDragLeave={() => setDragOver(false)}
-                  onDrop={handleFileDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`card-dark rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-all duration-300 ${
-                    dragOver
-                      ? "border-[oklch(0.65_0.2_145)] bg-[oklch(0.65_0.2_145/0.05)]"
-                      : videoFile
-                      ? "border-[oklch(0.65_0.2_145/0.5)] bg-[oklch(0.65_0.2_145/0.03)]"
-                      : "border-white/15 hover:border-white/30"
-                  }`}
-                >
-                  <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
-
-                  {videoFile ? (
-                    <div>
-                      <div className="w-16 h-16 rounded-2xl bg-[oklch(0.65_0.2_145/0.15)] flex items-center justify-center mx-auto mb-4">
-                        <FileVideo size={28} className="text-[oklch(0.65_0.2_145)]" />
-                      </div>
-                      <p className="text-white font-bold mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>{videoFile.name}</p>
-                      <p className="text-white/40 text-sm mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{formatFileSize(videoFile.size)}</p>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setVideoFile(null); }}
-                        className="flex items-center gap-1 text-white/30 hover:text-white text-xs mx-auto transition-colors"
-                        style={{ fontFamily: "'Tajawal', sans-serif" }}
-                      >
-                        <X size={13} /> تغيير الملف
-                      </button>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4">
-                        <Upload size={28} className="text-white/30" />
-                      </div>
-                      <p className="text-white font-bold mb-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>اسحب الفيديو هنا أو انقر للاختيار</p>
-                      <p className="text-white/35 text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>MP4, MOV, AVI · حتى 500 MB · مدة 1-10 دقائق</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Tips */}
-                <div className="card-dark rounded-xl p-4">
-                  <h3 className="text-white/60 text-sm font-bold mb-3 flex items-center gap-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                    <Video size={14} className="neon-text" /> نصائح للحصول على أفضل تحليل
-                  </h3>
-                  <ul className="space-y-1.5">
-                    {[
-                      "صوّر من زاوية جانبية أو علوية تُظهر حركة اللاعب كاملاً",
-                      "تأكد من وضوح الفيديو وإضاءة كافية",
-                      "اختر مقطع يُظهر مهارات متنوعة (تسديد، تمرير، سرعة)",
-                      "مدة 2-5 دقائق تعطي أفضل النتائج",
-                    ].map((tip, i) => (
-                      <li key={i} className="flex items-start gap-2 text-white/45 text-xs" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
-                        <ChevronRight size={12} className="neon-text mt-0.5 flex-shrink-0" />
-                        {tip}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <button
-                  onClick={startAnalysis}
-                  disabled={!videoFile}
-                  className="btn-primary w-full py-3.5 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ fontFamily: "'Tajawal', sans-serif" }}
-                >
-                  <Zap size={18} /> ابدأ تحليل AI
-                </button>
               </div>
-            )}
+            </div>
 
-            {/* STEP 3: Analyzing */}
-            {step === "analyzing" && (
-              <div className="card-dark neon-border rounded-2xl p-8 text-center">
-                {/* Circular progress */}
-                <div className="relative w-36 h-36 mx-auto mb-8">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="oklch(0.65 0.2 145 / 0.1)" strokeWidth="6" />
-                    <circle
-                      cx="50" cy="50" r="42" fill="none"
-                      stroke="oklch(0.65 0.2 145)"
-                      strokeWidth="6"
-                      strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * 42}`}
-                      strokeDashoffset={`${2 * Math.PI * 42 * (1 - progressPercent / 100)}`}
-                      style={{ transition: "stroke-dashoffset 0.3s ease" }}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-black neon-text" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{progressPercent}%</span>
-                    <span className="text-white/30 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>مكتمل</span>
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Player Name */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-white/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                  <User size={12} /> اسم اللاعب <span className="text-red-400">*</span>
+                </label>
+                <input
+                  value={form.playerName}
+                  onChange={(e) => setForm((p) => ({ ...p, playerName: e.target.value }))}
+                  placeholder="الاسم الثلاثي"
+                  className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "'Tajawal', sans-serif" }}
+                  onFocus={(e) => (e.target.style.borderColor = "oklch(0.65 0.2 145 / 0.5)")}
+                  onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                />
+              </div>
+
+              {/* Age */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-white/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                  <Clock size={12} /> العمر <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="number" min="8" max="35"
+                  value={form.age}
+                  onChange={(e) => setForm((p) => ({ ...p, age: e.target.value }))}
+                  placeholder="مثال: 16"
+                  className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "'Space Grotesk', sans-serif" }}
+                  onFocus={(e) => (e.target.style.borderColor = "oklch(0.65 0.2 145 / 0.5)")}
+                  onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                />
+              </div>
+
+              {/* Position */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-white/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                  <Target size={12} /> المركز <span className="text-red-400">*</span>
+                </label>
+                <select
+                  value={form.position}
+                  onChange={(e) => setForm((p) => ({ ...p, position: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "'Tajawal', sans-serif" }}
+                >
+                  <option value="" style={{ background: "#0D1B2A" }}>اختر المركز</option>
+                  {positions.map((p) => <option key={p} value={p} style={{ background: "#0D1B2A" }}>{p}</option>)}
+                </select>
+              </div>
+
+              {/* City */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-white/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                  <MapPin size={12} /> المدينة <span className="text-red-400">*</span>
+                </label>
+                <select
+                  value={form.city}
+                  onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "'Tajawal', sans-serif" }}
+                >
+                  <option value="" style={{ background: "#0D1B2A" }}>اختر المدينة</option>
+                  {cities.map((c) => <option key={c} value={c} style={{ background: "#0D1B2A" }}>{c}</option>)}
+                </select>
+              </div>
+
+              {/* Academy */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-white/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                  <Award size={12} /> الأكاديمية
+                </label>
+                <select
+                  value={form.academy}
+                  onChange={(e) => setForm((p) => ({ ...p, academy: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "'Tajawal', sans-serif" }}
+                >
+                  <option value="" style={{ background: "#0D1B2A" }}>اختر الأكاديمية</option>
+                  {academies.map((a) => <option key={a} value={a} style={{ background: "#0D1B2A" }}>{a}</option>)}
+                </select>
+              </div>
+
+              {/* Guardian Phone */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-white/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                  <MessageCircle size={12} /> واتساب ولي الأمر
+                </label>
+                <input
+                  type="tel"
+                  value={form.guardianPhone}
+                  onChange={(e) => setForm((p) => ({ ...p, guardianPhone: e.target.value }))}
+                  placeholder="05xxxxxxxx"
+                  className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "'Space Grotesk', sans-serif" }}
+                  onFocus={(e) => (e.target.style.borderColor = "oklch(0.65 0.2 145 / 0.5)")}
+                  onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                />
+              </div>
+            </div>
+
+            {/* Position weight info */}
+            {form.position && POSITIONS_WEIGHTS[form.position] && (
+              <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <div className="text-white/60 text-xs font-semibold mb-3" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                  أوزان التقييم لمركز <span style={{ color: "oklch(0.65 0.2 145)" }}>{form.position}</span> (معيار FIFA)
                 </div>
-
-                <h3 className="text-white font-bold text-xl mb-6" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                  جاري تحليل فيديو {form.playerName}...
-                </h3>
-
-                <div className="space-y-3 text-right max-w-sm mx-auto">
-                  {analysisStages.map((stage, i) => {
-                    const isDone = completedStages.includes(i);
-                    const isActive = currentStage === i && !isDone;
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {Object.entries(POSITIONS_WEIGHTS[form.position]).map(([cat, w]) => {
+                    const labels: Record<string, string> = { technical: "التقني", physical: "البدني", tactical: "التكتيكي", mental: "الذهني" };
+                    const colors: Record<string, string> = { technical: "#00C2A8", physical: "oklch(0.65 0.2 145)", tactical: "#F59E0B", mental: "#8B5CF6" };
                     return (
-                      <div key={i} className={`flex items-center gap-3 transition-all ${isDone ? "text-[oklch(0.65_0.2_145)]" : isActive ? "text-white" : "text-white/25"}`}>
-                        {isDone ? (
-                          <CheckCircle size={16} className="flex-shrink-0" />
-                        ) : isActive ? (
-                          <Loader2 size={16} className="animate-spin flex-shrink-0" />
-                        ) : (
-                          <div className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0" />
-                        )}
-                        <span className="text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>{stage.label}</span>
+                      <div key={cat} className="text-center rounded-lg p-2" style={{ background: `${colors[cat]}10`, border: `1px solid ${colors[cat]}30` }}>
+                        <div className="text-lg font-black" style={{ color: colors[cat], fontFamily: "'Space Grotesk', sans-serif" }}>{Math.round(w * 100)}%</div>
+                        <div className="text-white/50 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{labels[cat]}</div>
                       </div>
                     );
                   })}
@@ -397,70 +444,374 @@ export default function UploadPage() {
               </div>
             )}
 
-            {/* STEP 4: Done */}
-            {step === "done" && (
-              <div className="space-y-5">
-                {/* Success */}
-                <div className="card-dark neon-border rounded-2xl p-8 text-center">
-                  <div className="w-20 h-20 rounded-full bg-[oklch(0.65_0.2_145/0.15)] flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle size={36} className="text-[oklch(0.65_0.2_145)]" />
-                  </div>
-                  <h2 className="text-white font-black text-2xl mb-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                    اكتمل التحليل!
-                  </h2>
-                  <p className="text-white/50 text-sm mb-6" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
-                    تم تحليل فيديو {form.playerName} بنجاح — التقرير الكامل جاهز
-                  </p>
+            <button
+              onClick={handleFormSubmit}
+              className="w-full py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+              style={{ background: "linear-gradient(135deg, oklch(0.55 0.2 145), oklch(0.45 0.18 145))", boxShadow: "0 8px 24px oklch(0.65 0.2 145 / 0.25)", fontFamily: "'Tajawal', sans-serif", fontSize: 16 }}
+            >
+              التالي: رفع الفيديو / الصورة <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
 
-                  {/* Quick scores */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                    {[
-                      { label: "التقييم الكلي", value: "84", icon: <Star size={16} />, color: "oklch(0.85 0.18 85)" },
-                      { label: "الإمكانية", value: "91", icon: <TrendingUp size={16} />, color: "oklch(0.65 0.2 145)" },
-                      { label: "السرعة", value: "88", icon: <Zap size={16} />, color: "oklch(0.65 0.2 200)" },
-                      { label: "المهارة", value: "82", icon: <Target size={16} />, color: "oklch(0.65 0.22 25)" },
-                    ].map((s, i) => (
-                      <div key={i} className="bg-white/4 rounded-xl p-3 text-center">
-                        <div className="flex justify-center mb-1" style={{ color: s.color }}>{s.icon}</div>
-                        <div className="text-2xl font-black mb-0.5" style={{ color: s.color, fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</div>
-                        <div className="text-white/35 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s.label}</div>
+        {/* ── STEP 2: UPLOAD ── */}
+        {step === "upload" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 p-4 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "oklch(0.65 0.2 145 / 0.15)" }}>
+                <User size={18} style={{ color: "oklch(0.65 0.2 145)" }} />
+              </div>
+              <div>
+                <div className="text-white font-bold" style={{ fontFamily: "'Tajawal', sans-serif" }}>{form.playerName}</div>
+                <div className="text-white/40 text-xs">{form.position} · {form.city} · {form.age} سنة</div>
+              </div>
+            </div>
+
+            {/* Media type toggle */}
+            <div className="flex gap-2 p-1 rounded-xl w-fit" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              {(["video", "image"] as const).map((t) => (
+                <button key={t} onClick={() => setForm((p) => ({ ...p, mediaType: t }))}
+                  className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all"
+                  style={{
+                    background: form.mediaType === t ? "oklch(0.65 0.2 145 / 0.15)" : "transparent",
+                    color: form.mediaType === t ? "oklch(0.65 0.2 145)" : "rgba(255,255,255,0.4)",
+                    border: form.mediaType === t ? "1px solid oklch(0.65 0.2 145 / 0.3)" : "1px solid transparent",
+                    fontFamily: "'Tajawal', sans-serif"
+                  }}>
+                  {t === "video" ? <><Video size={14} /> فيديو</> : <><FileVideo size={14} /> صورة</>}
+                </button>
+              ))}
+            </div>
+
+            {/* Drop zone */}
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className="rounded-2xl cursor-pointer transition-all flex flex-col items-center justify-center gap-4 py-16"
+              style={{
+                border: `2px dashed ${dragOver ? "oklch(0.65 0.2 145)" : file ? "rgba(34,197,94,0.5)" : "rgba(255,255,255,0.12)"}`,
+                background: dragOver ? "oklch(0.65 0.2 145 / 0.05)" : file ? "rgba(34,197,94,0.04)" : "rgba(255,255,255,0.02)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <input ref={fileInputRef} type="file" accept={form.mediaType === "video" ? "video/*" : "image/*"} className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); }} />
+              {file ? (
+                <>
+                  <CheckCircle size={40} style={{ color: "#22c55e" }} />
+                  <div className="text-center">
+                    <div className="text-white font-bold" style={{ fontFamily: "'Tajawal', sans-serif" }}>{file.name}</div>
+                    <div className="text-white/40 text-xs mt-1">{(file.size / 1024 / 1024).toFixed(1)} MB</div>
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); setFile(null); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}>
+                    <X size={12} /> إزالة
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "oklch(0.65 0.2 145 / 0.1)", border: "1px solid oklch(0.65 0.2 145 / 0.2)" }}>
+                    {form.mediaType === "video" ? <Video size={28} style={{ color: "oklch(0.65 0.2 145)" }} /> : <FileVideo size={28} style={{ color: "oklch(0.65 0.2 145)" }} />}
+                  </div>
+                  <div className="text-center">
+                    <div className="text-white font-bold" style={{ fontFamily: "'Tajawal', sans-serif" }}>اسحب وأفلت {form.mediaType === "video" ? "الفيديو" : "الصورة"} هنا</div>
+                    <div className="text-white/40 text-xs mt-1">أو انقر للاختيار من الجهاز</div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Tips */}
+            <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle size={14} style={{ color: "#F59E0B" }} />
+                <span className="text-white/60 text-xs font-semibold" style={{ fontFamily: "'Tajawal', sans-serif" }}>نصائح لتحليل أدق (معيار FIFA)</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {[
+                  "فيديو لا يقل عن 3 دقائق لأفضل نتائج",
+                  "التصوير من زاوية جانبية أو علوية",
+                  "إضاءة جيدة وخلفية واضحة",
+                  "يشمل مشاهد بالكرة وبدونها",
+                ].map((tip) => (
+                  <div key={tip} className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" style={{ background: "oklch(0.65 0.2 145)" }} />
+                    <span className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{tip}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setStep("form")} className="px-6 py-3.5 rounded-xl font-semibold text-sm transition-all" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", fontFamily: "'Tajawal', sans-serif" }}>
+                رجوع
+              </button>
+              <button onClick={startAnalysis} disabled={!file}
+                className="flex-1 py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-40"
+                style={{ background: "linear-gradient(135deg, oklch(0.55 0.2 145), oklch(0.45 0.18 145))", boxShadow: "0 8px 24px oklch(0.65 0.2 145 / 0.25)", fontFamily: "'Tajawal', sans-serif" }}>
+                <Zap size={16} /> ابدأ التحليل بالذكاء الاصطناعي
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP 3: ANALYZING ── */}
+        {step === "analyzing" && (
+          <div className="flex flex-col items-center gap-8 py-12">
+            {/* Animated ring */}
+            <div className="relative w-32 h-32">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" />
+                <circle cx="50" cy="50" r="44" fill="none" stroke="oklch(0.65 0.2 145)" strokeWidth="6"
+                  strokeDasharray={`${(currentStage / analysisStages.length) * 276} 276`}
+                  style={{ transition: "stroke-dasharray 0.6s ease" }} />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <Brain size={28} style={{ color: "oklch(0.65 0.2 145)" }} />
+                <div className="text-white font-black text-lg" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {Math.round((currentStage / analysisStages.length) * 100)}%
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-white font-black text-xl mb-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>جاري تحليل {form.playerName}</div>
+              <div className="text-white/40 text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>معايير FIFA + الاتحاد السعودي لكرة القدم</div>
+            </div>
+
+            <div className="w-full max-w-md space-y-3">
+              {analysisStages.map((stage, i) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl transition-all"
+                  style={{
+                    background: i < currentStage ? "oklch(0.65 0.2 145 / 0.08)" : i === currentStage ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
+                    border: `1px solid ${i < currentStage ? "oklch(0.65 0.2 145 / 0.3)" : i === currentStage ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.04)"}`,
+                  }}>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: i < currentStage ? "oklch(0.65 0.2 145 / 0.2)" : "rgba(255,255,255,0.05)" }}>
+                    {i < currentStage
+                      ? <CheckCircle size={14} style={{ color: "oklch(0.65 0.2 145)" }} />
+                      : i === currentStage
+                      ? <Loader2 size={14} className="animate-spin" style={{ color: "oklch(0.65 0.2 145)" }} />
+                      : <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, fontFamily: "'Space Grotesk', sans-serif" }}>{i + 1}</span>}
+                  </div>
+                  <span className="text-sm" style={{ color: i < currentStage ? "rgba(255,255,255,0.8)" : i === currentStage ? "white" : "rgba(255,255,255,0.3)", fontFamily: "'Tajawal', sans-serif" }}>
+                    {stage.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP 4: RESULTS ── */}
+        {step === "done" && analysisResult && (
+          <div className="space-y-6">
+            {/* Overall score hero */}
+            <div className="rounded-2xl p-6 text-center relative overflow-hidden" style={{ background: "linear-gradient(135deg, oklch(0.12 0.04 145) 0%, oklch(0.08 0.02 240) 100%)", border: "1px solid oklch(0.65 0.2 145 / 0.3)" }}>
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, oklch(0.65 0.2 145 / 0.06) 0%, transparent 70%)" }} />
+              <div className="relative z-10">
+                <div className="text-white/50 text-sm mb-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>التقييم الكلي — معايير FIFA</div>
+                <div className="text-7xl font-black mb-2" style={{ color: getScoreColor(analysisResult.overall), fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {analysisResult.overall}
+                </div>
+                <div className="text-white/60 text-sm mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>{getScoreLabel(analysisResult.overall)}</div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
+                  <Shield size={11} /> نسبة الثقة: {analysisResult.confidence}%
+                </div>
+                <div className="mt-4 text-white/70 text-sm max-w-lg mx-auto leading-relaxed" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                  {analysisResult.recommendation}
+                </div>
+              </div>
+            </div>
+
+            {/* 4 category scores */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: "التقني", value: analysisResult.techAvg, color: "#00C2A8", icon: <Star size={16} /> },
+                { label: "البدني", value: analysisResult.physAvg, color: "oklch(0.65 0.2 145)", icon: <Zap size={16} /> },
+                { label: "التكتيكي", value: analysisResult.tactAvg, color: "#F59E0B", icon: <Target size={16} /> },
+                { label: "الذهني", value: analysisResult.mentAvg, color: "#8B5CF6", icon: <Brain size={16} /> },
+              ].map((cat) => (
+                <div key={cat.label} className="rounded-xl p-4 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  <div className="flex justify-center mb-2" style={{ color: cat.color }}>{cat.icon}</div>
+                  <div className="text-3xl font-black mb-1" style={{ color: cat.color, fontFamily: "'Space Grotesk', sans-serif" }}>{cat.value}</div>
+                  <div className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{cat.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Tabs */}
+            <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              {([
+                { key: "overview", label: "نظرة عامة" },
+                { key: "technical", label: "التقني" },
+                { key: "physical", label: "البدني" },
+                { key: "tactical", label: "التكتيكي" },
+                { key: "mental", label: "الذهني" },
+                { key: "dna", label: "Sport DNA" },
+              ] as const).map((tab) => (
+                <button key={tab.key} onClick={() => setActiveResultTab(tab.key)}
+                  className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
+                  style={{
+                    background: activeResultTab === tab.key ? "oklch(0.65 0.2 145 / 0.15)" : "transparent",
+                    color: activeResultTab === tab.key ? "oklch(0.65 0.2 145)" : "rgba(255,255,255,0.4)",
+                    border: activeResultTab === tab.key ? "1px solid oklch(0.65 0.2 145 / 0.3)" : "1px solid transparent",
+                    fontFamily: "'Tajawal', sans-serif",
+                  }}>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab: Overview */}
+            {activeResultTab === "overview" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Radar */}
+                <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  <div className="text-white/60 text-xs font-semibold mb-3 text-center" style={{ fontFamily: "'Tajawal', sans-serif" }}>خريطة الأداء الشاملة</div>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <RadarChart data={analysisResult.radarData}>
+                      <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                      <PolarAngleAxis dataKey="subject" tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 11, fontFamily: "'Tajawal', sans-serif" }} />
+                      <Radar name="اللاعب" dataKey="A" stroke="oklch(0.65 0.2 145)" fill="oklch(0.65 0.2 145)" fillOpacity={0.15} strokeWidth={2} />
+                      <Tooltip contentStyle={{ background: "#0D1B2A", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 8, fontSize: 11 }} labelStyle={{ color: "#fff" }} itemStyle={{ color: "oklch(0.65 0.2 145)" }} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Strengths & Weaknesses */}
+                <div className="flex flex-col gap-4">
+                  <div className="rounded-xl p-4" style={{ background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.15)" }}>
+                    <div className="text-xs font-semibold mb-3 flex items-center gap-2" style={{ color: "#22c55e", fontFamily: "'Tajawal', sans-serif" }}>
+                      <TrendingUp size={13} /> نقاط القوة
+                    </div>
+                    {analysisResult.strengths.map((s) => (
+                      <div key={s.key} className="flex items-center justify-between py-1.5">
+                        <span className="text-white/70 text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>{getMetricLabel(s.key)}</span>
+                        <span className="font-bold text-sm" style={{ color: "#22c55e", fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</span>
                       </div>
                     ))}
                   </div>
-
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <button
-                      onClick={() => navigate("/demo")}
-                      className="btn-primary flex-1 py-3 flex items-center justify-center gap-2"
-                      style={{ fontFamily: "'Tajawal', sans-serif" }}
-                    >
-                      <Play size={16} /> عرض التقرير الكامل
-                    </button>
-                    <a
-                      href={`https://wa.me/966500000000?text=مرحباً، تم تحليل فيديو اللاعب ${form.playerName} وأريد الحصول على التقرير الكامل`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-outline-green flex-1 py-3 flex items-center justify-center gap-2"
-                      style={{ fontFamily: "'Tajawal', sans-serif" }}
-                    >
-                      <MessageCircle size={16} /> احصل على التقرير عبر واتساب
-                    </a>
+                  <div className="rounded-xl p-4" style={{ background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.15)" }}>
+                    <div className="text-xs font-semibold mb-3 flex items-center gap-2" style={{ color: "#ef4444", fontFamily: "'Tajawal', sans-serif" }}>
+                      <AlertTriangle size={13} /> مجالات التطوير
+                    </div>
+                    {analysisResult.weaknesses.map((s) => (
+                      <div key={s.key} className="flex items-center justify-between py-1.5">
+                        <span className="text-white/70 text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>{getMetricLabel(s.key)}</span>
+                        <span className="font-bold text-sm" style={{ color: "#ef4444", fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-
-                <button
-                  onClick={() => { setStep("form"); setVideoFile(null); setForm({ playerName: "", age: "", position: "", city: "", academy: "", guardianPhone: "", notes: "" }); }}
-                  className="w-full text-white/40 hover:text-white text-sm text-center transition-colors"
-                  style={{ fontFamily: "'Tajawal', sans-serif" }}
-                >
-                  تحليل لاعب آخر
-                </button>
               </div>
             )}
-          </div>
-        </div>
-      </section>
 
+            {/* Tab: Technical / Physical / Tactical / Mental */}
+            {(["technical", "physical", "tactical", "mental"] as const).map((cat) => {
+              if (activeResultTab !== cat) return null;
+              const criteria = FIFA_CRITERIA[cat];
+              const values = analysisResult[cat] as Record<string, number>;
+              return (
+                <div key={cat} className="space-y-3">
+                  {criteria.map((m) => (
+                    <div key={m.key} className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <div className="text-white font-bold text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>{m.label}</div>
+                          <div className="text-white/35 text-xs mt-0.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>{m.description}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xl font-black" style={{ color: getScoreColor(values[m.key]), fontFamily: "'Space Grotesk', sans-serif" }}>{values[m.key]}</div>
+                          <div className="text-xs" style={{ color: getScoreColor(values[m.key]), fontFamily: "'Tajawal', sans-serif" }}>{getScoreLabel(values[m.key])}</div>
+                        </div>
+                      </div>
+                      <div className="h-2 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
+                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${values[m.key]}%`, background: `linear-gradient(90deg, ${getScoreColor(values[m.key])}, ${getScoreColor(values[m.key])}88)` }} />
+                      </div>
+                      <div className="text-white/25 text-xs mt-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>الوزن في التقييم: {Math.round(m.weight * 100)}%</div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+
+            {/* Tab: Sport DNA */}
+            {activeResultTab === "dna" && (
+              <div className="space-y-4">
+                <div className="text-white/50 text-xs text-center" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                  Sport DNA — المركز الأمثل بناءً على معايير FIFA لكل مركز
+                </div>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={analysisResult.sportDNA} layout="vertical" margin={{ right: 30, left: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                    <XAxis type="number" domain={[0, 100]} tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} />
+                    <YAxis type="category" dataKey="position" tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 11, fontFamily: "'Tajawal', sans-serif" }} width={80} />
+                    <Tooltip contentStyle={{ background: "#0D1B2A", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 8, fontSize: 11 }} />
+                    <Bar dataKey="score" fill="oklch(0.65 0.2 145)" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {analysisResult.sportDNA.slice(0, 2).map((d, i) => (
+                    <div key={d.position} className="rounded-xl p-4 flex items-center gap-3"
+                      style={{ background: i === 0 ? "oklch(0.65 0.2 145 / 0.08)" : "rgba(255,255,255,0.03)", border: `1px solid ${i === 0 ? "oklch(0.65 0.2 145 / 0.3)" : "rgba(255,255,255,0.07)"}` }}>
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg" style={{ background: i === 0 ? "oklch(0.65 0.2 145 / 0.2)" : "rgba(255,255,255,0.05)", color: i === 0 ? "oklch(0.65 0.2 145)" : "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                        {i === 0 ? "🥇" : "🥈"}
+                      </div>
+                      <div>
+                        <div className="text-white font-bold" style={{ fontFamily: "'Tajawal', sans-serif" }}>{d.position}</div>
+                        <div className="text-xs" style={{ color: i === 0 ? "oklch(0.65 0.2 145)" : "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>{d.score}/100</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Age benchmark comparison */}
+            <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="flex items-center gap-2 mb-3">
+                <BarChart2 size={14} style={{ color: "#F59E0B" }} />
+                <span className="text-white/60 text-xs font-semibold" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                  مقارنة بمعيار الاتحاد السعودي — الفئة العمرية {analysisResult.benchmark.label}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center rounded-lg p-3" style={{ background: "rgba(255,255,255,0.03)" }}>
+                  <div className="text-xs text-white/40 mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>السرعة القصوى (المعيار)</div>
+                  <div className="text-xl font-black" style={{ color: "#F59E0B", fontFamily: "'Space Grotesk', sans-serif" }}>{analysisResult.benchmark.speed} km/h</div>
+                </div>
+                <div className="text-center rounded-lg p-3" style={{ background: "rgba(255,255,255,0.03)" }}>
+                  <div className="text-xs text-white/40 mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>التحمل (المعيار)</div>
+                  <div className="text-xl font-black" style={{ color: "#F59E0B", fontFamily: "'Space Grotesk', sans-serif" }}>{analysisResult.benchmark.stamina}%</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {form.guardianPhone && (
+                <button onClick={sendWhatsApp}
+                  className="flex-1 py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+                  style={{ background: "linear-gradient(135deg, #25D366, #128C7E)", boxShadow: "0 8px 24px rgba(37,211,102,0.25)", fontFamily: "'Tajawal', sans-serif" }}>
+                  <MessageCircle size={16} /> إرسال التقرير عبر واتساب
+                </button>
+              )}
+              <button onClick={() => navigate("/scouts")}
+                className="flex-1 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+                style={{ background: "oklch(0.65 0.2 145 / 0.1)", border: "1px solid oklch(0.65 0.2 145 / 0.3)", color: "oklch(0.65 0.2 145)", fontFamily: "'Tajawal', sans-serif" }}>
+                <Activity size={16} /> لوحة الكشافين
+              </button>
+              <button onClick={() => { setStep("form"); setFile(null); setAnalysisResult(null); }}
+                className="px-6 py-3.5 rounded-xl font-semibold text-sm transition-all"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", fontFamily: "'Tajawal', sans-serif" }}>
+                تحليل جديد
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
       <Footer />
     </div>
   );

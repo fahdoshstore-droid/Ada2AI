@@ -22,28 +22,41 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 
-const PLAYER = {
-  name: "فيصل المطيري",
-  nameEn: "Faisal Al-Mutairi",
-  nationality: "Saudi Arabia",
-  id: "SA-2024-00142",
-  city: "الدمام",
-  sport: "كرة القدم",
-  position: "وسط مهاجم",
-  academy: "أكاديمية كابتن",
-  level: "Gold" as const,
-  points: 2840,
-  avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
-};
-
-const SKILLS = [
-  { skill: "السرعة", A: 88 },
-  { skill: "المراوغة", A: 82 },
-  { skill: "التسديد", A: 79 },
-  { skill: "الرؤية", A: 85 },
-  { skill: "التحمل", A: 76 },
-  { skill: "التمرير", A: 91 },
+// ── Demo players database ────────────────────────────────────────────────────
+const DEMO_PLAYERS = [
+  {
+    name: "فيصل المطيري", nameEn: "Faisal Al-Mutairi", nationality: "Saudi Arabia",
+    id: "SA-2024-00142", city: "الدمام", sport: "كرة القدم", position: "وسط مهاجم",
+    academy: "أكاديمية كابتن", level: "Gold" as const, points: 2840,
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
+    skills: [{ skill: "السرعة", A: 88 }, { skill: "المراوغة", A: 82 }, { skill: "التسديد", A: 79 }, { skill: "الرؤية", A: 85 }, { skill: "التحمل", A: 76 }, { skill: "التمرير", A: 91 }],
+  },
+  {
+    name: "خالد العتيبي", nameEn: "Khalid Al-Otaibi", nationality: "Saudi Arabia",
+    id: "SA-2024-00089", city: "الخبر", sport: "كرة القدم", position: "مهاجم",
+    academy: "أكاديمية الظهران", level: "Silver" as const, points: 1650,
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face",
+    skills: [{ skill: "السرعة", A: 92 }, { skill: "المراوغة", A: 75 }, { skill: "التسديد", A: 88 }, { skill: "الرؤية", A: 71 }, { skill: "التحمل", A: 80 }, { skill: "التمرير", A: 68 }],
+  },
+  {
+    name: "عمر الشهري", nameEn: "Omar Al-Shahri", nationality: "Saudi Arabia",
+    id: "SA-2024-00211", city: "ظهران", sport: "كرة القدم", position: "ظهير أيمن",
+    academy: "أكاديمية الموهبة الكروية", level: "Bronze" as const, points: 720,
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face",
+    skills: [{ skill: "السرعة", A: 85 }, { skill: "المراوغة", A: 78 }, { skill: "التسديد", A: 65 }, { skill: "الرؤية", A: 80 }, { skill: "التحمل", A: 88 }, { skill: "التمرير", A: 82 }],
+  },
+  {
+    name: "يوسف القحطاني", nameEn: "Yousef Al-Qahtani", nationality: "Saudi Arabia",
+    id: "SA-2024-00334", city: "الدمام", sport: "كرة القدم", position: "حارس مرمى",
+    academy: "أكاديمية كابتن", level: "Platinum" as const, points: 3900,
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&h=200&fit=crop&crop=face",
+    skills: [{ skill: "السرعة", A: 72 }, { skill: "المراوغة", A: 60 }, { skill: "التسديد", A: 55 }, { skill: "الرؤية", A: 94 }, { skill: "التحمل", A: 85 }, { skill: "التمرير", A: 78 }],
+  },
 ];
+
+const PLAYER = DEMO_PLAYERS[0];
+
+// Skills are now per-player (see DEMO_PLAYERS[i].skills)
 
 const STATS = [
   { label: "المباريات", value: "47", icon: "⚽", color: "#00C2A8" },
@@ -215,123 +228,68 @@ function PassportCard({ flipped, onFlip }: { flipped: boolean; onFlip: () => voi
   );
 }
 
-// ── Onboarding Modal ──────────────────────────────────────────────────────────
-function OnboardingModal({ onComplete }: { onComplete: () => void }) {
-  const [step, setStep] = useState<"auth" | "verify" | "done">("auth");
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+// ── Demo Onboarding Modal (no OTP) ───────────────────────────────────────────
+function OnboardingModal({ onComplete, onSelectPlayer }: { onComplete: () => void; onSelectPlayer: (idx: number) => void }) {
+  const [selected, setSelected] = useState(0);
   const [loading, setLoading] = useState(false);
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleAuth = () => {
-    if (phone.length < 9) return;
+  const handleEnter = () => {
+    onSelectPlayer(selected);
     setLoading(true);
-    setTimeout(() => { setLoading(false); setStep("verify"); }, 1500);
-  };
-
-  const handleOtpChange = (i: number, val: string) => {
-    if (!/^\d*$/.test(val)) return;
-    const next = [...otp]; next[i] = val.slice(-1); setOtp(next);
-    if (val && i < 5) otpRefs.current[i + 1]?.focus();
-  };
-
-  const handleVerify = () => {
-    setLoading(true);
-    setTimeout(() => { setLoading(false); setStep("done"); setTimeout(onComplete, 1200); }, 1800);
+    setTimeout(() => { setLoading(false); onComplete(); }, 900);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}>
-      <div className="w-full max-w-sm rounded-3xl overflow-hidden" style={{ background: "linear-gradient(180deg, #0D3B2A 0%, #071A14 100%)", border: "1px solid rgba(0,194,168,0.3)", boxShadow: "0 40px 80px rgba(0,0,0,0.6)" }}>
-        {/* Ministry header */}
-        <div className="flex flex-col items-center pt-8 pb-6 px-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.88)", backdropFilter: "blur(10px)" }}>
+      <div className="w-full max-w-sm rounded-3xl overflow-hidden" style={{ background: "linear-gradient(180deg, #0D3B2A 0%, #071A14 100%)", border: "1px solid rgba(0,194,168,0.3)", boxShadow: "0 40px 80px rgba(0,0,0,0.7)" }}>
+        {/* Header */}
+        <div className="flex flex-col items-center pt-8 pb-5 px-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style={{ background: "rgba(0,194,168,0.15)", border: "1px solid rgba(0,194,168,0.3)" }}>
             <span style={{ fontSize: 28 }}>🏃</span>
           </div>
           <div className="text-white/40 text-xs mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>وزارة الرياضة السعودية</div>
           <div className="text-white font-black text-xl" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>SportID</div>
-          <div className="text-white/50 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Secure Onboarding</div>
+          <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs" style={{ background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.3)", color: "#F59E0B", fontFamily: "'Space Grotesk', sans-serif" }}>
+            ⚡ Demo Mode — اختر لاعباً للمعاينة
+          </div>
         </div>
-        <div className="px-6 py-6">
-          {step === "auth" && (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-center gap-2 py-3 rounded-2xl" style={{ background: "rgba(0,194,168,0.08)", border: "1px solid rgba(0,194,168,0.2)" }}>
-                <Fingerprint size={20} style={{ color: "#00C2A8" }} />
-                <span className="text-[#00C2A8] font-bold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>نفاذ · Authentication</span>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: "rgba(0,194,168,0.1)", border: "2px solid rgba(0,194,168,0.3)" }}>
-                  <Fingerprint size={32} style={{ color: "#00C2A8" }} />
-                </div>
-                <p className="text-white/50 text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>أدخل رقم الهوية الوطنية السعودية</p>
-              </div>
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                <span className="text-white/40 text-sm">🇸🇦</span>
-                <input
-                  type="tel"
-                  placeholder="+966 xx-xxx-xxxx"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="flex-1 bg-transparent text-white text-sm outline-none placeholder-white/25"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif", direction: "ltr" }}
-                />
-              </div>
+        <div className="px-5 py-5 flex flex-col gap-3">
+          {DEMO_PLAYERS.map((p, i) => {
+            const levelColors: Record<string, string> = { Bronze: "#CD7F32", Silver: "#C0C0C0", Gold: "#FFD700", Platinum: "#00C2A8" };
+            return (
               <button
-                onClick={handleAuth}
-                disabled={loading || phone.length < 9}
-                className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all disabled:opacity-40"
-                style={{ background: loading ? "rgba(0,194,168,0.4)" : "linear-gradient(135deg, #00A896, #007A6E)", fontFamily: "'Space Grotesk', sans-serif" }}
+                key={p.id}
+                onClick={() => setSelected(i)}
+                className="w-full flex items-center gap-3 p-3 rounded-2xl transition-all text-right"
+                style={{
+                  background: selected === i ? "rgba(0,194,168,0.12)" : "rgba(255,255,255,0.03)",
+                  border: selected === i ? "1.5px solid rgba(0,194,168,0.5)" : "1px solid rgba(255,255,255,0.07)",
+                }}
               >
-                {loading ? "جاري التحقق..." : "Continue"}
-              </button>
-            </div>
-          )}
-          {step === "verify" && (
-            <div className="flex flex-col gap-4">
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: "rgba(0,194,168,0.15)" }}>
-                  <Shield size={24} style={{ color: "#00C2A8" }} />
+                <img src={p.avatar} alt={p.name} className="w-11 h-11 rounded-xl object-cover flex-shrink-0" style={{ border: selected === i ? "2px solid #00C2A8" : "2px solid rgba(255,255,255,0.1)" }} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-white font-bold text-sm truncate" style={{ fontFamily: "'Tajawal', sans-serif" }}>{p.name}</div>
+                  <div className="text-white/40 text-xs truncate" style={{ fontFamily: "'Tajawal', sans-serif" }}>{p.position} · {p.city}</div>
                 </div>
-                <p className="text-white font-bold mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>أدخل رمز التحقق</p>
-                <p className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>تم إرسال رمز SMS إلى {phone}</p>
-              </div>
-              <div className="flex gap-2 justify-center" dir="ltr">
-                {otp.map((digit, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => { otpRefs.current[i] = el; }}
-                    type="text"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    className="w-10 h-12 text-center text-white text-lg font-bold rounded-xl outline-none transition-all"
-                    style={{
-                      background: digit ? "rgba(0,194,168,0.2)" : "rgba(255,255,255,0.05)",
-                      border: digit ? "1.5px solid rgba(0,194,168,0.6)" : "1px solid rgba(255,255,255,0.1)",
-                      fontFamily: "'Space Grotesk', sans-serif"
-                    }}
-                  />
-                ))}
-              </div>
-              <button
-                onClick={handleVerify}
-                disabled={loading || otp.some((d) => !d)}
-                className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all disabled:opacity-40"
-                style={{ background: "linear-gradient(135deg, #00A896, #007A6E)", fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                {loading ? "جاري التحقق..." : "تحقق من الهوية"}
+                <div className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: `${levelColors[p.level]}20`, color: levelColors[p.level], border: `1px solid ${levelColors[p.level]}40`, fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {p.level}
+                </div>
               </button>
-            </div>
-          )}
-          {step === "done" && (
-            <div className="flex flex-col items-center gap-4 py-4">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "rgba(0,194,168,0.2)", border: "2px solid #00C2A8" }}>
-                <CheckCircle size={32} style={{ color: "#00C2A8" }} />
-              </div>
-              <div className="text-white font-black text-lg" style={{ fontFamily: "'Tajawal', sans-serif" }}>تم التحقق بنجاح!</div>
-              <div className="text-white/50 text-sm text-center" style={{ fontFamily: "'Tajawal', sans-serif" }}>مرحباً {PLAYER.name}، جواز سفرك الرياضي جاهز</div>
-            </div>
-          )}
+            );
+          })}
+          <button
+            onClick={handleEnter}
+            disabled={loading}
+            className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all mt-1 flex items-center justify-center gap-2"
+            style={{ background: loading ? "rgba(0,194,168,0.4)" : "linear-gradient(135deg, #00A896, #007A6E)", fontFamily: "'Tajawal', sans-serif", boxShadow: "0 8px 24px rgba(0,168,150,0.3)" }}
+          >
+            {loading ? (
+              <><span className="animate-spin inline-block">⏳</span> جاري الدخول...</>
+            ) : (
+              <><CheckCircle size={16} /> دخول فوري — بدون OTP</>
+            )}
+          </button>
+          <p className="text-white/25 text-center text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>وضع تجريبي — في الإنتاج يُستخدم نفاذ + أبشر</p>
         </div>
       </div>
     </div>
@@ -342,19 +300,22 @@ function OnboardingModal({ onComplete }: { onComplete: () => void }) {
 export default function SportIDPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [selectedPlayerIdx, setSelectedPlayerIdx] = useState(0);
   const [cardFlipped, setCardFlipped] = useState(false);
   const [activeTab, setActiveTab] = useState<"stats" | "certs" | "trials" | "sessions">("stats");
 
-  const currentLevel = LEVELS.find((l) => PLAYER.points >= l.min && PLAYER.points < l.max) || LEVELS[2];
-  const progressPct = Math.round(((PLAYER.points - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100);
+  const activePlayer = DEMO_PLAYERS[selectedPlayerIdx];
+
+  const currentLevel = LEVELS.find((l) => activePlayer.points >= l.min && activePlayer.points < l.max) || LEVELS[2];
+  const progressPct = Math.round(((activePlayer.points - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100);
 
   function handleShare() {
-    const text = `مرحباً، أنا ${PLAYER.name} — لاعب ${PLAYER.sport} من ${PLAYER.city}.\nملفي الرياضي على SportScout: https://sportscout.sa/athlete/${PLAYER.id}`;
+    const text = `مرحباً، أنا ${activePlayer.name} — لاعب ${activePlayer.sport} من ${activePlayer.city}.\nملفي الرياضي على SportScout: https://sportscout.sa/athlete/${activePlayer.id}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }
 
   function handleCopy() {
-    navigator.clipboard?.writeText(`https://sportscout.sa/athlete/${PLAYER.id}`).then(() => {
+    navigator.clipboard?.writeText(`https://sportscout.sa/athlete/${activePlayer.id}`).then(() => {
       toast.success("تم نسخ الرابط!");
     });
   }
@@ -363,7 +324,10 @@ export default function SportIDPage() {
     <div className="min-h-screen text-white" style={{ background: "oklch(0.08 0.02 240)", fontFamily: "'Tajawal', sans-serif" }} dir="rtl">
       <Navbar />
       {showOnboarding && (
-        <OnboardingModal onComplete={() => { setShowOnboarding(false); setIsAuthenticated(true); }} />
+        <OnboardingModal
+          onComplete={() => { setShowOnboarding(false); setIsAuthenticated(true); }}
+          onSelectPlayer={(idx) => setSelectedPlayerIdx(idx)}
+        />
       )}
 
       {/* Page Banner */}
@@ -511,7 +475,7 @@ export default function SportIDPage() {
                 <div className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <div className="text-white/60 text-xs font-semibold mb-2 text-center" style={{ fontFamily: "'Tajawal', sans-serif" }}>خريطة المهارات</div>
                   <ResponsiveContainer width="100%" height={180}>
-                    <RadarChart data={SKILLS}>
+                    <RadarChart data={activePlayer.skills}>
                       <PolarGrid stroke="rgba(255,255,255,0.08)" />
                       <PolarAngleAxis dataKey="skill" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10, fontFamily: "'Tajawal', sans-serif" }} />
                       <Radar name="المهارات" dataKey="A" stroke="#00C2A8" fill="#00C2A8" fillOpacity={0.15} strokeWidth={1.5} />
@@ -564,7 +528,7 @@ export default function SportIDPage() {
 
               {activeTab === "stats" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {SKILLS.map((s) => (
+                  {activePlayer.skills.map((s) => (
                     <div key={s.skill} className="flex items-center gap-3">
                       <div className="text-white/60 text-sm w-24 text-right flex-shrink-0" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s.skill}</div>
                       <div className="flex-1 h-2 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
