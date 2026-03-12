@@ -1,492 +1,666 @@
-import { useState, useEffect } from "react";
+/**
+ * SportID Page — SportScout Platform
+ * Design: Saudi Tech Noir + Saudi Ministry of Sports branding
+ * Features:
+ *   - Onboarding with Naftath authentication flow
+ *   - Passport Card (flip 3D, QR, Naftath/Absher badges)
+ *   - Performance Stats, Certifications, Upcoming Trials, Sessions tabs
+ *   - Points & Levels (Bronze → Silver → Gold → Platinum)
+ *   - Radar Chart for skills
+ */
+
+import { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useLocation } from "wouter";
 import {
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip,
-} from "recharts";
-import {
-  Shield, QrCode, Star, TrendingUp, Award, Calendar, Clock,
-  CheckCircle, Copy, Share2, X, Zap, Target, Users, ChevronRight,
+  Shield, QrCode, Award, Calendar, ChevronRight,
+  Fingerprint, CheckCircle, BarChart2, Activity,
+  Trophy, Clock, MapPin, Share2, Copy
 } from "lucide-react";
+import {
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip
+} from "recharts";
 import { toast } from "sonner";
-import QRCode from "qrcode";
 
-// ── Mock athlete data ──────────────────────────────────────────────────────
-const athlete = {
-  id: "SA-2024-0042",
-  nafathId: "1098765432",
-  name: "Mohammed Al-Omari",
-  nameAr: "محمد العمري",
-  age: 16,
-  city: "دمام",
-  sports: ["Football", "Athletics"],
-  sportPoints: 1340,
-  careerScore: 84,
+const PLAYER = {
+  name: "فيصل المطيري",
+  nameEn: "Faisal Al-Mutairi",
+  nationality: "Saudi Arabia",
+  id: "SA-2024-00142",
+  city: "الدمام",
+  sport: "كرة القدم",
+  position: "وسط مهاجم",
+  academy: "أكاديمية كابتن",
   level: "Gold" as const,
-  sessions: [
-    { id: 1, sport: "Football", facilityName: "أكاديمية كابتن", facilityId: "f1", duration: 90, points: 45, date: "2024-03-10" },
-    { id: 2, sport: "Football", facilityName: "أكاديمية كابتن", facilityId: "f1", duration: 90, points: 45, date: "2024-03-07" },
-    { id: 3, sport: "Athletics", facilityName: "ملعب الدمام الرياضي", facilityId: "f2", duration: 60, points: 30, date: "2024-03-05" },
-    { id: 4, sport: "Football", facilityName: "أكاديمية الموهبة الكروية", facilityId: "f3", duration: 90, points: 45, date: "2024-03-02" },
-    { id: 5, sport: "Football", facilityName: "أكاديمية كابتن", facilityId: "f1", duration: 90, points: 45, date: "2024-02-28" },
-  ],
-  achievements: [
-    { id: 1, icon: "🏆", title: "أسرع لاعب", description: "سجّل أعلى سرعة في أكاديمية كابتن هذا الموسم", points: 200, date: "2024-03-01" },
-    { id: 2, icon: "⚽", title: "هداف الشهر", description: "أكثر لاعب تسجيلاً للأهداف في فبراير 2024", points: 150, date: "2024-02-29" },
-    { id: 3, icon: "🌟", title: "موهبة واعدة", description: "اختيار AI كأفضل موهبة في المنطقة الشرقية", points: 300, date: "2024-02-15" },
-  ],
-  certifications: [
-    { id: 1, name: "شهادة التميز الرياضي", issuedBy: "الاتحاد السعودي لكرة القدم", issuedAt: "2024-01-15", points: 100, verified: true },
-    { id: 2, name: "برنامج تطوير المهارات", issuedBy: "أكاديمية كابتن", issuedAt: "2023-12-01", points: 75, verified: true },
-  ],
-  radarData: [
-    { subject: "الثبات", A: 85, avg: 70 },
-    { subject: "الجلسات", A: 72, avg: 65 },
-    { subject: "المهارة", A: 88, avg: 72 },
-    { subject: "المنافسات", A: 65, avg: 60 },
-    { subject: "الشهادات", A: 90, avg: 68 },
-  ],
+  points: 2840,
+  avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
 };
 
-const levelConfig = {
-  Bronze:   { gradient: "from-amber-700 to-amber-500", glow: "rgba(251,146,60,0.2)", border: "rgba(251,146,60,0.4)", accent: "#F97316", next: "Silver", needed: 160, start: 0 },
-  Silver:   { gradient: "from-gray-400 to-gray-200", glow: "rgba(156,163,175,0.15)", border: "rgba(209,213,219,0.4)", accent: "#9CA3AF", next: "Gold", needed: 500, start: 500 },
-  Gold:     { gradient: "from-yellow-500 to-yellow-300", glow: "rgba(234,179,8,0.25)", border: "rgba(234,179,8,0.45)", accent: "#EAB308", next: "Platinum", needed: 660, start: 1000 },
-  Platinum: { gradient: "from-cyan-400 to-blue-300", glow: "rgba(34,211,238,0.2)", border: "rgba(34,211,238,0.4)", accent: "#22D3EE", next: null, needed: 0, start: 2000 },
-};
+const SKILLS = [
+  { skill: "السرعة", A: 88 },
+  { skill: "المراوغة", A: 82 },
+  { skill: "التسديد", A: 79 },
+  { skill: "الرؤية", A: 85 },
+  { skill: "التحمل", A: 76 },
+  { skill: "التمرير", A: 91 },
+];
 
-const sportIcons: Record<string, string> = {
-  Football: "⚽", Swimming: "🏊", Basketball: "🏀", Athletics: "🏃", Tennis: "🎾",
-};
+const STATS = [
+  { label: "المباريات", value: "47", icon: "⚽", color: "#00C2A8" },
+  { label: "الأهداف", value: "23", icon: "🎯", color: "#22c55e" },
+  { label: "التمريرات الحاسمة", value: "18", icon: "📈", color: "#F59E0B" },
+  { label: "ساعات التدريب", value: "312", icon: "⏱️", color: "#8B5CF6" },
+];
 
-export default function SportID() {
-  const [, navigate] = useLocation();
-  const [flipped, setFlipped] = useState(false);
-  const [qrDataUrl, setQrDataUrl] = useState("");
-  const [scanning, setScanning] = useState(false);
-  const [scanned, setScanned] = useState(false);
-  const [showShare, setShowShare] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "sessions" | "achievements" | "certs">("overview");
+const CERTIFICATIONS = [
+  { title: "شهادة التميز الرياضي", issuer: "وزارة الرياضة السعودية", date: "2024-11-15", verified: true, color: "#F59E0B" },
+  { title: "دورة تطوير المهارات", issuer: "أكاديمية كابتن", date: "2024-08-20", verified: true, color: "#00C2A8" },
+  { title: "بطولة المنطقة الشرقية", issuer: "الاتحاد السعودي لكرة القدم", date: "2024-05-10", verified: true, color: "#22c55e" },
+];
 
-  const cfg = levelConfig[athlete.level];
-  const progressPct = Math.round(
-    ((athlete.sportPoints - cfg.start) / (cfg.needed + (athlete.sportPoints - cfg.start))) * 100
-  );
+const TRIALS = [
+  { title: "تجربة الهلال الأكاديمية", date: "2025-04-05", location: "الرياض", status: "مؤكد", color: "#00C2A8" },
+  { title: "كشف موهبة الاتحاد", date: "2025-04-18", location: "جدة", status: "قيد المراجعة", color: "#F59E0B" },
+  { title: "معسكر المنتخب تحت 19", date: "2025-05-02", location: "الدمام", status: "مؤكد", color: "#22c55e" },
+];
 
+const SESSIONS = [
+  { date: "12 مارس 2025", academy: "أكاديمية كابتن", duration: "90 دقيقة", points: "+50", type: "تدريب" },
+  { date: "10 مارس 2025", academy: "ملعب الدمام الرياضي", duration: "60 دقيقة", points: "+30", type: "مباراة" },
+  { date: "8 مارس 2025", academy: "أكاديمية كابتن", duration: "90 دقيقة", points: "+50", type: "تدريب" },
+  { date: "5 مارس 2025", academy: "أكاديمية الموهبة", duration: "120 دقيقة", points: "+80", type: "بطولة" },
+];
+
+const LEVELS = [
+  { name: "Bronze", min: 0, max: 1000, color: "#CD7F32" },
+  { name: "Silver", min: 1000, max: 2000, color: "#C0C0C0" },
+  { name: "Gold", min: 2000, max: 3000, color: "#FFD700" },
+  { name: "Platinum", min: 3000, max: 5000, color: "#00C2A8" },
+];
+
+// ── Simple QR canvas renderer ─────────────────────────────────────────────────
+function QRCanvas({ value, size = 120, dark = "#0D2B1A", light = "#fff" }: { value: string; size?: number; dark?: string; light?: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
-    QRCode.toDataURL(
-      JSON.stringify({ id: athlete.id, nafathId: athlete.nafathId, name: athlete.name, level: athlete.level, points: athlete.sportPoints, ts: new Date().toISOString() }),
-      { width: 260, margin: 2, color: { dark: "#00C2A8", light: "#071020" } }
-    ).then(setQrDataUrl);
-  }, []);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const cell = Math.floor(size / 21);
+    const seed = value.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+    const rand = (i: number) => ((seed * 9301 + i * 49297) % 233280) / 233280;
+    ctx.fillStyle = light;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = dark;
+    for (let r = 0; r < 21; r++) {
+      for (let c = 0; c < 21; c++) {
+        const isCornerZone = (r < 7 && c < 7) || (r < 7 && c > 13) || (r > 13 && c < 7);
+        const isInnerFill =
+          (r >= 2 && r <= 4 && c >= 2 && c <= 4) ||
+          (r >= 2 && r <= 4 && c >= 16 && c <= 18) ||
+          (r >= 16 && r <= 18 && c >= 2 && c <= 4);
+        const isBorder =
+          (r === 0 || r === 6) && c >= 0 && c <= 6 ||
+          (c === 0 || c === 6) && r >= 0 && r <= 6 ||
+          (r === 0 || r === 6) && c >= 14 && c <= 20 ||
+          (c === 14 || c === 20) && r >= 0 && r <= 6 ||
+          (r === 14 || r === 20) && c >= 0 && c <= 6 ||
+          (c === 0 || c === 6) && r >= 14 && r <= 20;
+        if (isCornerZone) {
+          if (isBorder || isInnerFill) ctx.fillRect(c * cell, r * cell, cell, cell);
+        } else if (rand(r * 21 + c) > 0.5) {
+          ctx.fillRect(c * cell, r * cell, cell, cell);
+        }
+      }
+    }
+  }, [value, size, dark, light]);
+  return <canvas ref={canvasRef} width={size} height={size} style={{ imageRendering: "pixelated", display: "block" }} />;
+}
 
-  async function handleCheckIn() {
-    setScanning(true);
-    await new Promise((r) => setTimeout(r, 2500));
-    setScanning(false);
-    setScanned(true);
-    toast.success("تم تسجيل الحضور بنجاح! +45 نقطة");
-    setTimeout(() => setScanned(false), 4000);
+// ── Passport Card ─────────────────────────────────────────────────────────────
+function PassportCard({ flipped, onFlip }: { flipped: boolean; onFlip: () => void }) {
+  return (
+    <div
+      className="relative cursor-pointer select-none mx-auto"
+      style={{ width: "100%", maxWidth: 380, height: 240, perspective: "1000px" }}
+      onClick={onFlip}
+    >
+      <div style={{
+        width: "100%", height: "100%", position: "relative",
+        transformStyle: "preserve-3d",
+        transition: "transform 0.7s cubic-bezier(0.4,0,0.2,1)",
+        transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)"
+      }}>
+        {/* FRONT */}
+        <div style={{
+          position: "absolute", inset: 0, backfaceVisibility: "hidden",
+          borderRadius: 20, overflow: "hidden",
+          background: "linear-gradient(135deg, #0D3B2A 0%, #0A2A1E 50%, #071A14 100%)",
+          border: "1px solid rgba(0,194,168,0.4)",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(0,194,168,0.08)"
+        }}>
+          {/* Top accent */}
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, transparent, #00C2A8, transparent)" }} />
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(0,194,168,0.2)" }}>
+                <Shield size={14} style={{ color: "#00C2A8" }} />
+              </div>
+              <span className="text-white font-bold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>SportID Passport</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-white/40" style={{ fontFamily: "'Tajawal', sans-serif" }}>وزارة الرياضة</span>
+              <span style={{ fontSize: 14 }}>🇸🇦</span>
+            </div>
+          </div>
+          {/* Body */}
+          <div className="flex gap-3 px-5 py-3">
+            <div className="relative flex-shrink-0">
+              <img src={PLAYER.avatar} alt={PLAYER.nameEn} className="w-16 h-20 object-cover rounded-xl" style={{ border: "2px solid rgba(0,194,168,0.4)" }} />
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "#00C2A8" }}>
+                <CheckCircle size={11} className="text-white" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-white font-black text-base leading-tight mb-0.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>{PLAYER.name}</div>
+              <div className="text-white/50 text-xs mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{PLAYER.nameEn} · {PLAYER.nationality}</div>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                {[["الرياضة", PLAYER.sport], ["المركز", PLAYER.position], ["المدينة", PLAYER.city], ["الأكاديمية", PLAYER.academy]].map(([k, v]) => (
+                  <div key={k}>
+                    <div className="text-white/30 text-[9px]" style={{ fontFamily: "'Tajawal', sans-serif" }}>{k}</div>
+                    <div className="text-white/80 text-[11px] font-semibold truncate" style={{ fontFamily: "'Tajawal', sans-serif" }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex-shrink-0 flex flex-col items-center gap-1">
+              <div className="rounded-lg overflow-hidden p-1.5" style={{ background: "#fff" }}>
+                <QRCanvas value={PLAYER.id} size={58} />
+              </div>
+              <span className="text-[9px] text-white/30 font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>SPORTID</span>
+            </div>
+          </div>
+          {/* Naftath + Absher */}
+          <div className="flex gap-2 px-5 pb-4">
+            <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <Fingerprint size={13} style={{ color: "#00C2A8" }} />
+              <span className="text-white/70 text-[11px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Naftath</span>
+            </div>
+            <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <BarChart2 size={13} style={{ color: "#22c55e" }} />
+              <span className="text-white/70 text-[11px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Absher</span>
+            </div>
+          </div>
+          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 text-white/20 text-[9px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>اضغط لعرض QR الكامل</div>
+        </div>
+        {/* BACK */}
+        <div style={{
+          position: "absolute", inset: 0, backfaceVisibility: "hidden",
+          transform: "rotateY(180deg)", borderRadius: 20, overflow: "hidden",
+          background: "linear-gradient(135deg, #0D3B2A 0%, #071A14 100%)",
+          border: "1px solid rgba(0,194,168,0.4)",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10
+        }}>
+          <div className="text-white/50 text-xs font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>SPORTID · {PLAYER.id}</div>
+          <div className="rounded-2xl overflow-hidden p-3" style={{ background: "#fff", boxShadow: "0 0 30px rgba(0,194,168,0.3)" }}>
+            <QRCanvas value={`https://sportscout.sa/athlete/${PLAYER.id}`} size={140} />
+          </div>
+          <div className="text-[#00C2A8] text-xs font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>امسح للتحقق من الهوية</div>
+          <div className="text-white/20 text-[9px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>اضغط للرجوع</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Onboarding Modal ──────────────────────────────────────────────────────────
+function OnboardingModal({ onComplete }: { onComplete: () => void }) {
+  const [step, setStep] = useState<"auth" | "verify" | "done">("auth");
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading] = useState(false);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleAuth = () => {
+    if (phone.length < 9) return;
+    setLoading(true);
+    setTimeout(() => { setLoading(false); setStep("verify"); }, 1500);
+  };
+
+  const handleOtpChange = (i: number, val: string) => {
+    if (!/^\d*$/.test(val)) return;
+    const next = [...otp]; next[i] = val.slice(-1); setOtp(next);
+    if (val && i < 5) otpRefs.current[i + 1]?.focus();
+  };
+
+  const handleVerify = () => {
+    setLoading(true);
+    setTimeout(() => { setLoading(false); setStep("done"); setTimeout(onComplete, 1200); }, 1800);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}>
+      <div className="w-full max-w-sm rounded-3xl overflow-hidden" style={{ background: "linear-gradient(180deg, #0D3B2A 0%, #071A14 100%)", border: "1px solid rgba(0,194,168,0.3)", boxShadow: "0 40px 80px rgba(0,0,0,0.6)" }}>
+        {/* Ministry header */}
+        <div className="flex flex-col items-center pt-8 pb-6 px-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style={{ background: "rgba(0,194,168,0.15)", border: "1px solid rgba(0,194,168,0.3)" }}>
+            <span style={{ fontSize: 28 }}>🏃</span>
+          </div>
+          <div className="text-white/40 text-xs mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>وزارة الرياضة السعودية</div>
+          <div className="text-white font-black text-xl" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>SportID</div>
+          <div className="text-white/50 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Secure Onboarding</div>
+        </div>
+        <div className="px-6 py-6">
+          {step === "auth" && (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-center gap-2 py-3 rounded-2xl" style={{ background: "rgba(0,194,168,0.08)", border: "1px solid rgba(0,194,168,0.2)" }}>
+                <Fingerprint size={20} style={{ color: "#00C2A8" }} />
+                <span className="text-[#00C2A8] font-bold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>نفاذ · Authentication</span>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: "rgba(0,194,168,0.1)", border: "2px solid rgba(0,194,168,0.3)" }}>
+                  <Fingerprint size={32} style={{ color: "#00C2A8" }} />
+                </div>
+                <p className="text-white/50 text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>أدخل رقم الهوية الوطنية السعودية</p>
+              </div>
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <span className="text-white/40 text-sm">🇸🇦</span>
+                <input
+                  type="tel"
+                  placeholder="+966 xx-xxx-xxxx"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="flex-1 bg-transparent text-white text-sm outline-none placeholder-white/25"
+                  style={{ fontFamily: "'Space Grotesk', sans-serif", direction: "ltr" }}
+                />
+              </div>
+              <button
+                onClick={handleAuth}
+                disabled={loading || phone.length < 9}
+                className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all disabled:opacity-40"
+                style={{ background: loading ? "rgba(0,194,168,0.4)" : "linear-gradient(135deg, #00A896, #007A6E)", fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                {loading ? "جاري التحقق..." : "Continue"}
+              </button>
+            </div>
+          )}
+          {step === "verify" && (
+            <div className="flex flex-col gap-4">
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: "rgba(0,194,168,0.15)" }}>
+                  <Shield size={24} style={{ color: "#00C2A8" }} />
+                </div>
+                <p className="text-white font-bold mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>أدخل رمز التحقق</p>
+                <p className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>تم إرسال رمز SMS إلى {phone}</p>
+              </div>
+              <div className="flex gap-2 justify-center" dir="ltr">
+                {otp.map((digit, i) => (
+                  <input
+                    key={i}
+                    ref={(el) => { otpRefs.current[i] = el; }}
+                    type="text"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(i, e.target.value)}
+                    className="w-10 h-12 text-center text-white text-lg font-bold rounded-xl outline-none transition-all"
+                    style={{
+                      background: digit ? "rgba(0,194,168,0.2)" : "rgba(255,255,255,0.05)",
+                      border: digit ? "1.5px solid rgba(0,194,168,0.6)" : "1px solid rgba(255,255,255,0.1)",
+                      fontFamily: "'Space Grotesk', sans-serif"
+                    }}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={handleVerify}
+                disabled={loading || otp.some((d) => !d)}
+                className="w-full py-3.5 rounded-xl font-bold text-white text-sm transition-all disabled:opacity-40"
+                style={{ background: "linear-gradient(135deg, #00A896, #007A6E)", fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                {loading ? "جاري التحقق..." : "تحقق من الهوية"}
+              </button>
+            </div>
+          )}
+          {step === "done" && (
+            <div className="flex flex-col items-center gap-4 py-4">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "rgba(0,194,168,0.2)", border: "2px solid #00C2A8" }}>
+                <CheckCircle size={32} style={{ color: "#00C2A8" }} />
+              </div>
+              <div className="text-white font-black text-lg" style={{ fontFamily: "'Tajawal', sans-serif" }}>تم التحقق بنجاح!</div>
+              <div className="text-white/50 text-sm text-center" style={{ fontFamily: "'Tajawal', sans-serif" }}>مرحباً {PLAYER.name}، جواز سفرك الرياضي جاهز</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+export default function SportIDPage() {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [cardFlipped, setCardFlipped] = useState(false);
+  const [activeTab, setActiveTab] = useState<"stats" | "certs" | "trials" | "sessions">("stats");
+
+  const currentLevel = LEVELS.find((l) => PLAYER.points >= l.min && PLAYER.points < l.max) || LEVELS[2];
+  const progressPct = Math.round(((PLAYER.points - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100);
+
+  function handleShare() {
+    const text = `مرحباً، أنا ${PLAYER.name} — لاعب ${PLAYER.sport} من ${PLAYER.city}.\nملفي الرياضي على SportScout: https://sportscout.sa/athlete/${PLAYER.id}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }
 
   function handleCopy() {
-    navigator.clipboard?.writeText(`${athlete.nameAr} · ${athlete.level} Athlete · ${athlete.sportPoints} pts · SportScout SA`).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard?.writeText(`https://sportscout.sa/athlete/${PLAYER.id}`).then(() => {
+      toast.success("تم نسخ الرابط!");
     });
   }
 
   return (
-    <div className="min-h-screen text-white" style={{ background: "linear-gradient(180deg, #071020 0%, #0A1628 50%, #071020 100%)" }} dir="rtl">
+    <div className="min-h-screen text-white" style={{ background: "oklch(0.08 0.02 240)", fontFamily: "'Tajawal', sans-serif" }} dir="rtl">
       <Navbar />
+      {showOnboarding && (
+        <OnboardingModal onComplete={() => { setShowOnboarding(false); setIsAuthenticated(true); }} />
+      )}
 
-      {/* Header */}
-      <section className="pt-24 pb-6 relative overflow-hidden">
-        <div className="absolute inset-0 grid-bg opacity-15" />
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${cfg.accent}, transparent)` }} />
-        <div className="container mx-auto px-4 relative z-10 text-center">
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-4" style={{ background: "rgba(0,194,168,0.12)", border: "1px solid rgba(0,194,168,0.3)", color: "#00C2A8", fontFamily: "'Tajawal', sans-serif" }}>
-            <Shield size={12} /> جواز السفر الرياضي الرقمي
-          </span>
-          <h1 className="text-4xl md:text-5xl font-black text-white mb-2 mt-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>SportID</h1>
-          <p className="text-white/45 text-base" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>هويتك الرياضية الرقمية الموثقة · موثق بنفاذ</p>
+      {/* Page Banner */}
+      <div className="relative pt-24 pb-12 overflow-hidden" style={{ background: "linear-gradient(180deg, #071A14 0%, oklch(0.08 0.02 240) 100%)", borderBottom: "1px solid rgba(0,194,168,0.1)" }}>
+        <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(0,194,168,0.07) 0%, transparent 70%)" }} />
+        <div className="container mx-auto px-4 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "rgba(0,194,168,0.1)", border: "1px solid rgba(0,194,168,0.3)", color: "#00C2A8" }}>
+            <Shield size={12} /> هوية رياضية رقمية موثّقة
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black text-white mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            Sport<span style={{ color: "#00C2A8" }}>ID</span>
+          </h1>
+          <p className="text-white/50 max-w-lg mx-auto text-sm leading-relaxed">
+            جواز سفرك الرياضي الرقمي — موثّق بنفاذ، معترف به في جميع الأكاديميات والمنشآت الرياضية
+          </p>
         </div>
-      </section>
+      </div>
 
-      <section className="pb-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-md mx-auto">
+      <div className="container mx-auto px-4 py-10 max-w-5xl">
 
-            {/* ── FLIP PASSPORT CARD ── */}
-            <div className="mb-6" style={{ perspective: "1400px" }}>
-              <div style={{
-                transformStyle: "preserve-3d",
-                transition: "transform 0.75s cubic-bezier(0.4,0,0.2,1)",
-                transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
-                position: "relative",
-                minHeight: "420px",
-              }}>
-
-                {/* FRONT */}
-                <div className="rounded-3xl overflow-hidden" style={{
-                  backfaceVisibility: "hidden",
-                  background: "linear-gradient(135deg, #0F2340 0%, #0A1628 60%, #071020 100%)",
-                  border: `1px solid ${cfg.border}`,
-                  boxShadow: `0 0 60px ${cfg.glow}, 0 20px 40px rgba(0,0,0,0.4)`,
-                }}>
-                  {/* Holographic shimmer */}
-                  <div className="absolute inset-0 rounded-3xl z-10 pointer-events-none" style={{
-                    background: "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%, rgba(255,255,255,0.02) 100%)",
-                  }} />
-                  {/* Top accent line */}
-                  <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-3xl" style={{ background: `linear-gradient(90deg, transparent, ${cfg.accent}, transparent)` }} />
-                  {/* Glow orbs */}
-                  <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none" style={{ background: `radial-gradient(circle, ${cfg.accent}30, transparent 70%)` }} />
-                  <div className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, #1E90FF20, transparent 70%)" }} />
-
-                  <div className="relative p-6">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-5">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r ${cfg.gradient} text-white shadow`}>
-                            {athlete.level} Athlete
-                          </span>
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium" style={{ background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", color: "#4ade80" }}>
-                            ✓ نفاذ موثق
-                          </span>
-                        </div>
-                        <div>
-                          <h2 className="text-2xl font-black text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{athlete.name}</h2>
-                          <p className="text-white/40 text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>{athlete.nameAr}</p>
-                        </div>
-                      </div>
-                      <button onClick={() => setShowShare(true)} className="p-2.5 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                        <Share2 size={16} />
-                      </button>
-                    </div>
-
-                    {/* Info grid */}
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                      {[
-                        { label: "ID", value: athlete.id },
-                        { label: "نفاذ", value: `****${athlete.nafathId.slice(-4)}` },
-                        { label: "المدينة", value: athlete.city },
-                        { label: "العمر", value: `${athlete.age} سنة` },
-                      ].map(({ label, value }) => (
-                        <div key={label} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                          <div className="text-white/30 text-xs mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>{label}</div>
-                          <div className="text-white font-semibold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{value}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Sports */}
-                    <div className="mb-4">
-                      <div className="text-white/30 text-xs mb-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>الرياضات</div>
-                      <div className="flex gap-2 flex-wrap">
-                        {athlete.sports.map((s) => (
-                          <span key={s} className="px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: "rgba(0,194,168,0.12)", border: "1px solid rgba(0,194,168,0.25)", color: "#00C2A8" }}>
-                            {sportIcons[s] || "🏅"} {s}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Points bar */}
-                    <div className="rounded-2xl p-4 mb-4" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-white/50 text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>نقاط رياضية</span>
-                        <span className="text-2xl font-black" style={{ color: cfg.accent, fontFamily: "'Space Grotesk', sans-serif" }}>
-                          {athlete.sportPoints.toLocaleString()} ⭐
-                        </span>
-                      </div>
-                      <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
-                        <div className={`h-full bg-gradient-to-r ${cfg.gradient} rounded-full transition-all duration-1000`} style={{ width: `${progressPct}%` }} />
-                      </div>
-                      {cfg.next && (
-                        <div className="text-white/30 text-xs mt-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                          {cfg.needed} نقطة للوصول إلى {cfg.next}
-                        </div>
-                      )}
-                    </div>
-
-                    <button onClick={() => setFlipped(true)} className="w-full py-3.5 rounded-2xl font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2" style={{ background: `linear-gradient(135deg, ${cfg.accent}cc, ${cfg.accent}77)`, border: `1px solid ${cfg.accent}44`, fontFamily: "'Tajawal', sans-serif" }}>
-                      <QrCode size={16} /> عرض QR للحضور
-                    </button>
-                  </div>
-                </div>
-
-                {/* BACK */}
-                <div className="rounded-3xl overflow-hidden absolute inset-0" style={{
-                  backfaceVisibility: "hidden",
-                  transform: "rotateY(180deg)",
-                  background: "linear-gradient(135deg, #071020 0%, #0A1628 60%, #0F2340 100%)",
-                  border: `1px solid ${cfg.border}`,
-                  boxShadow: `0 0 60px ${cfg.glow}, 0 20px 40px rgba(0,0,0,0.4)`,
-                }}>
-                  <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-3xl" style={{ background: `linear-gradient(90deg, transparent, ${cfg.accent}, transparent)` }} />
-                  <div className="absolute -bottom-12 -right-12 w-40 h-40 rounded-full pointer-events-none" style={{ background: `radial-gradient(circle, ${cfg.accent}20, transparent 70%)` }} />
-
-                  <div className="relative p-6 flex flex-col items-center">
-                    <div className="flex items-center justify-between w-full mb-4">
-                      <span className="text-white/40 text-sm font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>SportID QR</span>
-                      <button onClick={() => setFlipped(false)} className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all">
-                        <X size={16} />
-                      </button>
-                    </div>
-
-                    {qrDataUrl ? (
-                      <div className="rounded-2xl p-3 mb-4" style={{ background: "#071020", border: `2px solid ${cfg.border}` }}>
-                        <img src={qrDataUrl} alt="QR Code" className="w-52 h-52 rounded-xl" />
-                      </div>
-                    ) : (
-                      <div className="w-52 h-52 rounded-2xl flex items-center justify-center mb-4" style={{ background: "rgba(255,255,255,0.05)" }}>
-                        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: cfg.accent }} />
-                      </div>
-                    )}
-
-                    <p className="text-white/40 text-xs text-center mb-4" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                      امسح الكود في المنشأة الرياضية لتسجيل الحضور وكسب النقاط
-                    </p>
-
-                    <button
-                      onClick={handleCheckIn}
-                      disabled={scanning || scanned}
-                      className="w-full py-3 rounded-2xl font-semibold text-sm text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
-                      style={{ background: scanned ? "rgba(34,197,94,0.3)" : `linear-gradient(135deg, ${cfg.accent}cc, ${cfg.accent}77)`, border: `1px solid ${scanned ? "rgba(34,197,94,0.5)" : cfg.accent + "44"}`, fontFamily: "'Tajawal', sans-serif" }}
-                    >
-                      {scanning ? (
-                        <><div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin border-white" /> جاري المسح...</>
-                      ) : scanned ? (
-                        <><CheckCircle size={16} /> تم تسجيل الحضور! +45 نقطة</>
-                      ) : (
-                        <><QrCode size={16} /> تسجيل الحضور يدوياً</>
-                      )}
-                    </button>
-                  </div>
+        {/* ── UNAUTHENTICATED STATE ── */}
+        {!isAuthenticated ? (
+          <div className="flex flex-col items-center gap-8">
+            {/* Blurred passport preview */}
+            <div className="relative w-full max-w-sm">
+              <div style={{ filter: "blur(3px)", opacity: 0.5, pointerEvents: "none" }}>
+                <PassportCard flipped={false} onFlip={() => {}} />
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                <div className="px-8 py-4 rounded-2xl text-center" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", border: "1px solid rgba(0,194,168,0.3)" }}>
+                  <Shield size={28} style={{ color: "#00C2A8" }} className="mx-auto mb-2" />
+                  <p className="text-white font-bold mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>سجّل دخولك للوصول</p>
+                  <p className="text-white/50 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>التحقق عبر نفاذ مطلوب</p>
                 </div>
               </div>
             </div>
 
-            {/* ── TABS ── */}
-            <div className="flex gap-1 p-1 rounded-xl mb-5" style={{ background: "rgba(255,255,255,0.05)" }}>
-              {[
-                { key: "overview", label: "نظرة عامة" },
-                { key: "sessions", label: "الجلسات" },
-                { key: "achievements", label: "الإنجازات" },
-                { key: "certs", label: "الشهادات" },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key as typeof activeTab)}
-                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${activeTab === tab.key ? "text-white" : "text-white/40 hover:text-white/70"}`}
-                  style={activeTab === tab.key ? { background: `linear-gradient(135deg, ${cfg.accent}30, ${cfg.accent}15)`, fontFamily: "'Tajawal', sans-serif", border: `1px solid ${cfg.accent}30` } : { fontFamily: "'Tajawal', sans-serif" }}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            {/* Auth CTA */}
+            <div className="w-full max-w-md rounded-2xl p-6 text-center" style={{ background: "rgba(0,194,168,0.05)", border: "1px solid rgba(0,194,168,0.2)" }}>
+              <div className="flex justify-center gap-4 mb-4">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{ background: "rgba(0,194,168,0.1)", border: "1px solid rgba(0,194,168,0.25)" }}>
+                  <Fingerprint size={16} style={{ color: "#00C2A8" }} />
+                  <span className="text-white/80 text-sm font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>نفاذ</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)" }}>
+                  <BarChart2 size={16} style={{ color: "#22c55e" }} />
+                  <span className="text-white/80 text-sm font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>أبشر</span>
+                </div>
+              </div>
+              <p className="text-white/50 text-sm mb-5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                سجّل دخولك بهويتك الوطنية للحصول على جواز سفرك الرياضي الرقمي
+              </p>
+              <button
+                onClick={() => setShowOnboarding(true)}
+                className="w-full py-3.5 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                style={{ background: "linear-gradient(135deg, #00A896, #007A6E)", boxShadow: "0 8px 24px rgba(0,194,168,0.25)", fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                <Fingerprint size={16} /> تسجيل الدخول عبر نفاذ
+              </button>
             </div>
 
-            {/* ── OVERVIEW TAB ── */}
-            {activeTab === "overview" && (
-              <div className="space-y-4">
-                {/* Stats row */}
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { label: "إجمالي الجلسات", value: athlete.sessions.length, icon: <Calendar size={16} />, color: cfg.accent },
-                    { label: "الإنجازات", value: athlete.achievements.length, icon: <Award size={16} />, color: "#EAB308" },
-                    { label: "الشهادات", value: athlete.certifications.length, icon: <CheckCircle size={16} />, color: "#4ade80" },
-                  ].map((s, i) => (
-                    <div key={i} className="rounded-xl p-4 text-center" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                      <div className="flex justify-center mb-2" style={{ color: s.color }}>{s.icon}</div>
-                      <div className="text-2xl font-black mb-0.5" style={{ color: s.color, fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</div>
-                      <div className="text-white/35 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s.label}</div>
+            {/* Feature pills */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
+              {[
+                { icon: "🔲", title: "QR للحضور", desc: "سجّل حضورك في أي منشأة رياضية بمسح QR واحد", color: "#00C2A8" },
+                { icon: "🏆", title: "نظام النقاط", desc: "اكسب نقاطاً مع كل تدريب وارتقِ من Bronze إلى Platinum", color: "#FFD700" },
+                { icon: "🎖️", title: "شهادات موثّقة", desc: "شهاداتك الرياضية معترف بها من وزارة الرياضة", color: "#22c55e" },
+              ].map((f) => (
+                <div key={f.title} className="rounded-xl p-4 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  <div className="text-2xl mb-2">{f.icon}</div>
+                  <div className="text-white font-bold text-sm mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>{f.title}</div>
+                  <div className="text-white/40 text-xs leading-relaxed" style={{ fontFamily: "'Tajawal', sans-serif" }}>{f.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* ── AUTHENTICATED STATE ── */
+          <div className="flex flex-col gap-8">
+            {/* Passport + Level side by side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <div className="flex flex-col items-center gap-4">
+                <PassportCard flipped={cardFlipped} onFlip={() => setCardFlipped(!cardFlipped)} />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setCardFlipped(!cardFlipped)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-105"
+                    style={{ background: "rgba(0,194,168,0.1)", border: "1px solid rgba(0,194,168,0.25)", color: "#00C2A8", fontFamily: "'Space Grotesk', sans-serif" }}
+                  >
+                    <QrCode size={13} /> عرض QR الكامل
+                  </button>
+                  <button
+                    onClick={handleShare}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-105"
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", fontFamily: "'Space Grotesk', sans-serif" }}
+                  >
+                    <Share2 size={13} /> مشاركة
+                  </button>
+                  <button
+                    onClick={handleCopy}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-105"
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", fontFamily: "'Space Grotesk', sans-serif" }}
+                  >
+                    <Copy size={13} /> نسخ الرابط
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                {/* Level card */}
+                <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <div className="text-white/40 text-xs mb-0.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>المستوى الحالي</div>
+                      <div className="font-black text-2xl" style={{ color: currentLevel.color, fontFamily: "'Space Grotesk', sans-serif" }}>{currentLevel.name}</div>
                     </div>
-                  ))}
+                    <div className="text-right">
+                      <div className="text-white/40 text-xs mb-0.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>النقاط</div>
+                      <div className="font-black text-2xl text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{PLAYER.points.toLocaleString()}</div>
+                    </div>
+                  </div>
+                  <div className="w-full h-2 rounded-full mb-2" style={{ background: "rgba(255,255,255,0.08)" }}>
+                    <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${progressPct}%`, background: `linear-gradient(90deg, ${currentLevel.color}, ${currentLevel.color}99)` }} />
+                  </div>
+                  <div className="flex justify-between text-xs text-white/30" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                    <span>{currentLevel.min.toLocaleString()}</span>
+                    <span>{currentLevel.max - PLAYER.points} نقطة للمستوى التالي</span>
+                    <span>{currentLevel.max.toLocaleString()}</span>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    {LEVELS.map((l) => (
+                      <div key={l.name} className="flex-1 py-1.5 rounded-lg text-center text-[10px] font-bold transition-all" style={{
+                        background: PLAYER.points >= l.min ? `${l.color}20` : "rgba(255,255,255,0.03)",
+                        border: `1px solid ${PLAYER.points >= l.min ? l.color + "60" : "rgba(255,255,255,0.06)"}`,
+                        color: PLAYER.points >= l.min ? l.color : "rgba(255,255,255,0.2)",
+                        fontFamily: "'Space Grotesk', sans-serif"
+                      }}>
+                        {l.name}
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Radar */}
-                <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                  <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                    <Target size={14} style={{ color: cfg.accent }} /> خريطة الأداء
-                  </h3>
-                  <div className="flex gap-3 mb-2">
-                    <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full" style={{ background: cfg.accent }} /><span className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>أنت</span></div>
-                    <div className="flex items-center gap-1.5"><div className="w-3 h-0.5 rounded-full bg-white/20" style={{ borderTop: "1px dashed rgba(255,255,255,0.2)" }} /><span className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>المتوسط</span></div>
-                  </div>
-                  <ResponsiveContainer width="100%" height={220}>
-                    <RadarChart data={athlete.radarData}>
-                      <PolarGrid stroke="rgba(255,255,255,0.07)" />
-                      <PolarAngleAxis dataKey="subject" tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 11, fontFamily: "'Tajawal', sans-serif" }} />
-                      <Radar name="أنت" dataKey="A" stroke={cfg.accent} fill={cfg.accent} fillOpacity={0.15} strokeWidth={2} />
-                      <Radar name="المتوسط" dataKey="avg" stroke="rgba(255,255,255,0.2)" fill="rgba(255,255,255,0.03)" strokeWidth={1} strokeDasharray="4 2" />
-                      <Tooltip contentStyle={{ background: "#0A1628", border: `1px solid ${cfg.accent}40`, borderRadius: "8px", color: "white", fontFamily: "'Tajawal', sans-serif", fontSize: "12px" }} />
+                {/* Radar Chart */}
+                <div className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <div className="text-white/60 text-xs font-semibold mb-2 text-center" style={{ fontFamily: "'Tajawal', sans-serif" }}>خريطة المهارات</div>
+                  <ResponsiveContainer width="100%" height={180}>
+                    <RadarChart data={SKILLS}>
+                      <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                      <PolarAngleAxis dataKey="skill" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10, fontFamily: "'Tajawal', sans-serif" }} />
+                      <Radar name="المهارات" dataKey="A" stroke="#00C2A8" fill="#00C2A8" fillOpacity={0.15} strokeWidth={1.5} />
+                      <Tooltip
+                        contentStyle={{ background: "#0D2B1A", border: "1px solid rgba(0,194,168,0.3)", borderRadius: 8, fontSize: 11 }}
+                        labelStyle={{ color: "#fff" }}
+                        itemStyle={{ color: "#00C2A8" }}
+                      />
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
-
-                {/* Level progress */}
-                <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${cfg.border}` }}>
-                  <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                    <Star size={14} style={{ color: cfg.accent }} /> مسار المستويات
-                  </h3>
-                  <div className="flex items-center justify-between mb-3">
-                    {["Bronze", "Silver", "Gold", "Platinum"].map((lvl, i) => {
-                      const levels = ["Bronze", "Silver", "Gold", "Platinum"];
-                      const currentIdx = levels.indexOf(athlete.level);
-                      const lvlIdx = levels.indexOf(lvl);
-                      const isDone = lvlIdx <= currentIdx;
-                      const lCfg = levelConfig[lvl as keyof typeof levelConfig];
-                      return (
-                        <div key={lvl} className="flex flex-col items-center gap-1">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${isDone ? `bg-gradient-to-r ${lCfg.gradient}` : "bg-white/10"}`} style={{ color: isDone ? "white" : "rgba(255,255,255,0.3)" }}>
-                            {isDone ? "✓" : i + 1}
-                          </div>
-                          <span className="text-xs" style={{ color: isDone ? lCfg.accent : "rgba(255,255,255,0.25)", fontFamily: "'Space Grotesk', sans-serif" }}>{lvl}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-                    <div className={`h-full bg-gradient-to-r ${cfg.gradient} rounded-full`} style={{ width: `${progressPct}%`, transition: "width 1.2s ease" }} />
-                  </div>
-                  <p className="text-white/30 text-xs mt-2 text-center" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                    {cfg.next ? `${cfg.needed} نقطة للوصول إلى ${cfg.next}` : "وصلت إلى أعلى مستوى! 🏆"}
-                  </p>
-                </div>
               </div>
-            )}
+            </div>
 
-            {/* ── SESSIONS TAB ── */}
-            {activeTab === "sessions" && (
-              <div className="space-y-2.5">
-                {athlete.sessions.map((s) => (
-                  <div key={s.id} className="flex items-center gap-4 p-4 rounded-2xl transition-all hover:bg-white/5" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: "rgba(0,194,168,0.12)", border: "1px solid rgba(0,194,168,0.2)" }}>
-                      {sportIcons[s.sport] || "🏅"}
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {STATS.map((s) => (
+                <div key={s.label} className="rounded-xl p-4 flex flex-col gap-2" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  <span className="text-xl">{s.icon}</span>
+                  <div className="font-black text-2xl text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</div>
+                  <div className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Tabs */}
+            <div>
+              <div className="flex gap-1 p-1 rounded-xl mb-6 overflow-x-auto w-fit" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                {([
+                  { key: "stats" as const, label: "الإحصائيات", icon: <Activity size={13} /> },
+                  { key: "certs" as const, label: "الشهادات", icon: <Award size={13} /> },
+                  { key: "trials" as const, label: "التجارب القادمة", icon: <Calendar size={13} /> },
+                  { key: "sessions" as const, label: "الجلسات", icon: <Clock size={13} /> },
+                ]).map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
+                    style={{
+                      background: activeTab === tab.key ? "rgba(0,194,168,0.15)" : "transparent",
+                      color: activeTab === tab.key ? "#00C2A8" : "rgba(255,255,255,0.4)",
+                      border: activeTab === tab.key ? "1px solid rgba(0,194,168,0.3)" : "1px solid transparent",
+                      fontFamily: "'Tajawal', sans-serif"
+                    }}
+                  >
+                    {tab.icon} {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {activeTab === "stats" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {SKILLS.map((s) => (
+                    <div key={s.skill} className="flex items-center gap-3">
+                      <div className="text-white/60 text-sm w-24 text-right flex-shrink-0" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s.skill}</div>
+                      <div className="flex-1 h-2 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
+                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${s.A}%`, background: "linear-gradient(90deg, #00C2A8, #22c55e)" }} />
+                      </div>
+                      <div className="text-white/80 text-sm font-bold w-8 text-left flex-shrink-0" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.A}</div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white text-sm font-semibold" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s.facilityName}</div>
-                      <div className="text-white/40 text-xs mt-0.5 flex items-center gap-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                        <span>{s.sport}</span>
-                        <span>·</span>
-                        <Clock size={10} />
-                        <span>{s.duration} دقيقة</span>
-                        <span>·</span>
-                        <span>{new Date(s.date).toLocaleDateString("ar-SA")}</span>
+                  ))}
+                </div>
+              )}
+
+              {activeTab === "certs" && (
+                <div className="flex flex-col gap-3">
+                  {CERTIFICATIONS.map((c) => (
+                    <div key={c.title} className="flex items-center gap-4 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${c.color}15`, border: `1px solid ${c.color}40` }}>
+                        <Award size={18} style={{ color: c.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-bold text-sm truncate" style={{ fontFamily: "'Tajawal', sans-serif" }}>{c.title}</div>
+                        <div className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{c.issuer}</div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <div className="text-white/30 text-xs mb-1">{c.date}</div>
+                        {c.verified && (
+                          <div className="flex items-center gap-1 text-[10px]" style={{ color: "#00C2A8" }}>
+                            <CheckCircle size={10} /> موثّق
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="font-black text-sm" style={{ color: "#00C2A8", fontFamily: "'Space Grotesk', sans-serif" }}>+{s.points}</div>
-                      <div className="text-white/20 text-xs">نقطة</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            {/* ── ACHIEVEMENTS TAB ── */}
-            {activeTab === "achievements" && (
-              <div className="grid grid-cols-1 gap-3">
-                {athlete.achievements.map((a) => (
-                  <div key={a.id} className="relative overflow-hidden rounded-2xl p-5 transition-all hover:-translate-y-0.5 group" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                    <div className="absolute top-0 right-0 w-20 h-20 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "radial-gradient(circle, rgba(234,179,8,0.1), transparent 70%)", transform: "translate(30%, -30%)" }} />
-                    <div className="text-4xl mb-3">{a.icon}</div>
-                    <div className="text-white font-bold text-sm mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>{a.title}</div>
-                    <div className="text-white/40 text-xs leading-relaxed mb-3" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>{a.description}</div>
-                    <div className="flex items-center justify-between pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                      <span className="text-yellow-400 text-xs font-black" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>+{a.points} pts</span>
-                      <span className="text-white/20 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{new Date(a.date).toLocaleDateString("ar-SA")}</span>
+              {activeTab === "trials" && (
+                <div className="flex flex-col gap-3">
+                  {TRIALS.map((t) => (
+                    <div key={t.title} className="flex items-center gap-4 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${t.color}15`, border: `1px solid ${t.color}40` }}>
+                        <Calendar size={18} style={{ color: t.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-bold text-sm truncate" style={{ fontFamily: "'Tajawal', sans-serif" }}>{t.title}</div>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-white/40 text-xs flex items-center gap-1"><Clock size={10} />{t.date}</span>
+                          <span className="text-white/40 text-xs flex items-center gap-1"><MapPin size={10} />{t.location}</span>
+                        </div>
+                      </div>
+                      <div className="px-3 py-1 rounded-full text-[10px] font-bold flex-shrink-0" style={{ background: `${t.color}15`, border: `1px solid ${t.color}40`, color: t.color, fontFamily: "'Tajawal', sans-serif" }}>
+                        {t.status}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            {/* ── CERTS TAB ── */}
-            {activeTab === "certs" && (
-              <div className="space-y-2.5">
-                {athlete.certifications.map((c) => (
-                  <div key={c.id} className="flex items-center gap-4 p-4 rounded-2xl transition-all" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: "rgba(168,85,247,0.12)", border: "1px solid rgba(168,85,247,0.2)" }}>📜</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white font-semibold text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>{c.name}</div>
-                      <div className="text-white/40 text-xs mt-0.5 truncate" style={{ fontFamily: "'Tajawal', sans-serif" }}>{c.issuedBy} · {new Date(c.issuedAt).toLocaleDateString("ar-SA")}</div>
+              {activeTab === "sessions" && (
+                <div className="flex flex-col gap-3">
+                  {SESSIONS.map((s, i) => (
+                    <div key={i} className="flex items-center gap-4 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(0,194,168,0.1)", border: "1px solid rgba(0,194,168,0.2)" }}>
+                        <Activity size={18} style={{ color: "#00C2A8" }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-bold text-sm truncate" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s.academy}</div>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s.date}</span>
+                          <span className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s.duration}</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)", fontFamily: "'Tajawal', sans-serif" }}>{s.type}</span>
+                        </div>
+                      </div>
+                      <div className="font-bold text-sm flex-shrink-0" style={{ color: "#00C2A8", fontFamily: "'Space Grotesk', sans-serif" }}>{s.points}</div>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-green-400 font-black text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>+{c.points}</span>
-                      {c.verified && (
-                        <span className="px-2 py-0.5 rounded-full text-xs" style={{ background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", color: "#4ade80", fontFamily: "'Tajawal', sans-serif" }}>
-                          ✓ موثق
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
 
-            {/* CTA to Scout AI */}
-            <div className="mt-6 rounded-2xl p-5 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <p className="text-white/50 text-sm mb-3" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                هل أنت كشاف رياضي؟ اكتشف المواهب بالذكاء الاصطناعي
-              </p>
-              <button onClick={() => navigate("/scouts")} className="btn-primary px-6 py-2.5 flex items-center justify-center gap-2 mx-auto" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                <Users size={15} /> لوحة الكشافين
+            {/* WhatsApp CTA */}
+            <div className="rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4" style={{ background: "rgba(37,211,102,0.06)", border: "1px solid rgba(37,211,102,0.2)" }}>
+              <div>
+                <div className="text-white font-bold mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>شارك جواز سفرك الرياضي</div>
+                <div className="text-white/40 text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>أرسل ملفك الرياضي للأكاديميات والكشافين عبر واتساب</div>
+              </div>
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white text-sm transition-all hover:scale-105 flex-shrink-0"
+                style={{ background: "#25D366", boxShadow: "0 4px 16px rgba(37,211,102,0.3)", fontFamily: "'Tajawal', sans-serif" }}
+              >
+                <span>📱</span> مشاركة عبر واتساب
               </button>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ── SHARE MODAL ── */}
-      {showShare && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4" onClick={() => setShowShare(false)}>
-          <div className="relative w-full max-w-sm rounded-3xl overflow-hidden" onClick={(e) => e.stopPropagation()} style={{
-            background: "linear-gradient(135deg, #0F2340 0%, #0A1628 100%)",
-            border: `2px solid ${cfg.border}`,
-            boxShadow: `${cfg.glow}, 0 25px 50px rgba(0,0,0,0.5)`,
-          }}>
-            <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: `linear-gradient(90deg, transparent, ${cfg.accent}, transparent)` }} />
-            <div className="relative p-8 text-center">
-              <div className="text-6xl mb-4">🪪</div>
-              <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-black bg-gradient-to-r ${cfg.gradient} text-white mb-3 shadow`}>
-                {athlete.level} Athlete
-              </span>
-              <h3 className="text-2xl font-black text-white mt-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{athlete.name}</h3>
-              <p className="text-white/40 text-sm mt-0.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>{athlete.nameAr}</p>
-
-              <div className="flex justify-center gap-6 my-6">
-                {[
-                  { value: athlete.sportPoints, label: "نقطة", color: cfg.accent },
-                  { value: athlete.careerScore, label: "مسار", color: "#3b82f6" },
-                  { value: athlete.sessions.length, label: "جلسة", color: "#00C2A8" },
-                ].map((s, i) => (
-                  <div key={i} className="text-center">
-                    <div className="text-3xl font-black" style={{ color: s.color, fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</div>
-                    <div className="text-white/40 text-xs mt-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-white/20 text-xs font-mono mb-5">sportscout.sa · {athlete.id}</div>
-
-              <div className="flex gap-2.5">
-                <button onClick={handleCopy} className="flex-1 py-3 rounded-2xl text-white text-sm font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2" style={{ background: `linear-gradient(135deg, ${cfg.accent}cc, ${cfg.accent}88)`, fontFamily: "'Tajawal', sans-serif" }}>
-                  {copied ? <><CheckCircle size={15} /> تم النسخ!</> : <><Copy size={15} /> نسخ البطاقة</>}
-                </button>
-                <button onClick={() => setShowShare(false)} className="px-4 py-3 rounded-2xl text-white/50 hover:bg-white/10 transition-all" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                  <X size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
+        )}
+      </div>
       <Footer />
     </div>
   );

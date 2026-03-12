@@ -1,6 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { ChevronDown, Zap, Shield, Star } from "lucide-react";
+import { ChevronDown, Zap, Shield } from "lucide-react";
+
+const VIDEO_URL =
+  "https://private-us-east-1.manuscdn.com/user_upload_by_module/session_file/115062705/fgWPNJSEdMZeRqbF.mp4?Expires=1804876422&Signature=KhA1M5QZFDYK1NaXDtIfPpbYEFNeP9DgjIB1QnEAJ1gx234uN9UhgfxDURf0Cyl17HUj-veP6ANpFgtZ4~WPfT2PWLIzR8X-f6iEeBVDUzRXcXtnhF~BYLK3J~j617ZBFzNdsBTKXhEU4n~DJRqXwKd2TBeNEbmIbU6f5A4CKqDZIlo37rp~h1R8OEOzFE0eqscaLT8jcPduds7NqWVqvgREuMt-feLr~fk-8A02zqO8Bm4ehnYBxXblEiJ7SxXhQLYzi-ij3~ah9Y6pbSa8XhDHVztBHTrUNLUv8yH~R2r43Ugu4inqRs~wahshK1CdEk-zxz68m2G~HQq16cD65g__&Key-Pair-Id=K2HSFNDJXOU9YS";
 
 // Design: Saudi Digital Noir — deep navy #0A1628 + teal #00C2A8 + neon green
 // Two pillars: Scout AI (talent discovery) + SportID (digital passport)
@@ -17,7 +20,16 @@ export default function HeroSection() {
   const [typedText, setTypedText] = useState("");
   const [showCursor, setShowCursor] = useState(true);
   const [activeCard, setActiveCard] = useState<"scout" | "sport">("scout");
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const fullText = "اكتشف · حلّل · وثّق";
+
+  // Autoplay video on mount
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.play().catch(() => {});
+  }, []);
 
   useEffect(() => {
     let i = 0;
@@ -44,13 +56,28 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden" style={{ paddingTop: "4rem" }}>
-      {/* Background */}
-      <div className="absolute inset-0 z-0" style={{
-        backgroundImage: `url(https://d2xsxph8kpxj0f.cloudfront.net/115062705/gJEX8KKv2DgTKGvafGwXZn/scout-ai-hero-bg-K8zgnitrWWupru7JHQnRda.webp)`,
-        backgroundSize: "cover", backgroundPosition: "center", opacity: 0.15,
-      }} />
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#071020/80] via-[#0A1628/40] to-[#071020]" />
-      <div className="absolute inset-0 z-0 grid-bg opacity-20" />
+      {/* ── VIDEO BACKGROUND ── */}
+      <video
+        ref={videoRef}
+        src={VIDEO_URL}
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{
+          opacity: videoLoaded ? 0.28 : 0,
+          transition: "opacity 2s ease",
+          zIndex: 0,
+        }}
+        muted
+        loop
+        playsInline
+        autoPlay
+        preload="auto"
+        onCanPlay={() => setVideoLoaded(true)}
+      />
+      {/* Dark overlay on top of video */}
+      <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(180deg, oklch(0.06 0.02 240 / 0.85) 0%, oklch(0.08 0.02 240 / 0.55) 40%, oklch(0.08 0.02 240 / 0.75) 75%, oklch(0.06 0.02 240) 100%)" }} />
+      {/* Vignette */}
+      <div className="absolute inset-0 z-0" style={{ background: "radial-gradient(ellipse at center, transparent 25%, oklch(0.04 0.02 240 / 0.65) 100%)" }} />
+      <div className="absolute inset-0 z-0 grid-bg opacity-10" />
 
       {/* Dual glow orbs */}
       <div className="absolute top-1/3 left-1/4 w-80 h-80 rounded-full pointer-events-none z-0"

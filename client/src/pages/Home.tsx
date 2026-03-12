@@ -10,7 +10,6 @@ import CompetitiveSection from "@/components/sections/CompetitiveSection";
 import PricingSection from "@/components/sections/PricingSection";
 import Vision2030Section from "@/components/sections/Vision2030Section";
 import ContactSection from "@/components/sections/ContactSection";
-import VideoSection from "@/components/sections/VideoSection";
 import Footer from "@/components/Footer";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
@@ -23,7 +22,6 @@ export default function Home() {
       <Navbar />
       <main>
         <HeroSection />
-        <VideoSection />
         <ProblemSection />
         <SolutionSection />
         <HowItWorksSection />
