@@ -298,72 +298,143 @@ export default function UploadPage() {
     setCurrentStage(0);
     setAnalysisError(null);
 
-    // Stage progress animation
+    // Stage progress animation — runs independently of AI call
     const durations = [1500, 2000, 1800, 2200, 1600, 1800];
-    let elapsed = 0;
+    const totalDuration = durations.reduce((a, b) => a + b, 0); // ~10.9s
+    const startTime = Date.now();
     const stageTimers: ReturnType<typeof setTimeout>[] = [];
+    let cumulativeDelay = 0;
     durations.forEach((d, i) => {
-      elapsed += d;
-      const t = setTimeout(() => setCurrentStage(i + 1), elapsed);
+      cumulativeDelay += d;
+      const t = setTimeout(() => setCurrentStage(i + 1), cumulativeDelay);
       stageTimers.push(t);
     });
 
+    // Helper: finish with simulated data
+    const finishSimulated = (delay = 0) => {
+      stageTimers.forEach(clearTimeout);
+      setTimeout(() => {
+        setCurrentStage(6);
+        setAiReport(null);
+        setAnalysisMode("simulated");
+        setTimeout(() => {
+          setAnalysisResult(runAIAnalysis(form));
+          setStep("done");
+        }, 600);
+      }, delay);
+    };
+
+    // Helper: finish with AI report
+    const finishAI = (report: AIScoutReport) => {
+      stageTimers.forEach(clearTimeout);
+      setCurrentStage(6);
+      setAiReport(report);
+      setAnalysisMode("ai");
+      setTimeout(() => {
+        setAnalysisResult(runAIAnalysis(form));
+        setStep("done");
+      }, 800);
+    };
+
+    // Helper: extract a frame from video as base64 JPEG
+    const extractVideoFrame = (videoFile: File): Promise<{ data: string; mimeType: string }> => {
+      return new Promise((resolve, reject) => {
+        const video = document.createElement("video");
+        const url = URL.createObjectURL(videoFile);
+        video.src = url;
+        video.muted = true;
+        video.preload = "metadata";
+        video.onloadedmetadata = () => {
+          // Seek to 20% of video for a representative frame
+          video.currentTime = Math.min(video.duration * 0.2, 5);
+        };
+        video.onseeked = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.min(video.videoWidth, 1280);
+          canvas.height = Math.min(video.videoHeight, 720);
+          const ctx = canvas.getContext("2d");
+          if (!ctx) { reject(new Error("Canvas not supported")); return; }
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          URL.revokeObjectURL(url);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+          resolve({ data: dataUrl.split(",")[1], mimeType: "image/jpeg" });
+        };
+        video.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Video load failed")); };
+        video.load();
+      });
+    };
+
     try {
-      // Only try AI for images (Claude vision works best with images)
+      let fileData: string;
+      let mimeType: string;
+      let fileName: string;
+
       if (file.type.startsWith("image/")) {
-        // Step 1: Upload to S3
+        // Read image as base64
         const reader = new FileReader();
-        const fileData = await new Promise<string>((resolve, reject) => {
+        fileData = await new Promise<string>((resolve, reject) => {
           reader.onload = (e) => resolve((e.target?.result as string).split(",")[1]);
           reader.onerror = reject;
           reader.readAsDataURL(file);
         });
-
-        const uploadRes = await fetch("/api/scout/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fileData, mimeType: file.type, fileName: file.name }),
-        });
-        const { url: imageUrl } = await uploadRes.json();
-
-        // Step 2: Analyze with Claude
-        const analyzeRes = await fetch("/api/scout/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            imageUrl,
-            playerInfo: { name: form.playerName, age: form.age, position: form.position, city: form.city },
-          }),
-        });
-        const { report } = await analyzeRes.json();
-
-        if (report) {
-          stageTimers.forEach(clearTimeout);
-          setCurrentStage(6);
-          setAiReport(report);
-          setAnalysisMode("ai");
-          setTimeout(() => {
-            setAnalysisResult(runAIAnalysis(form)); // fallback for charts
-            setStep("done");
-          }, 800);
-          return;
-        }
+        mimeType = file.type;
+        fileName = file.name;
+      } else if (file.type.startsWith("video/")) {
+        // Extract representative frame from video
+        toast.info("جاري استخراج إطار تمثيلي من الفيديو...", { duration: 3000 });
+        const frame = await extractVideoFrame(file);
+        fileData = frame.data;
+        mimeType = frame.mimeType;
+        fileName = file.name.replace(/\.[^.]+$/, ".jpg");
+      } else {
+        throw new Error("Unsupported file type");
       }
-    } catch (err) {
-      console.warn("[Scout AI] Real analysis failed, using simulation:", err);
-    }
 
-    // Fallback: simulated analysis (for videos or if AI fails)
-    const totalDuration = durations.reduce((a, b) => a + b, 0);
-    setTimeout(() => {
-      setCurrentStage(6);
-      setAiReport(null);
-      setAnalysisMode("simulated");
-      setTimeout(() => {
-        setAnalysisResult(runAIAnalysis(form));
-        setStep("done");
-      }, 600);
-    }, totalDuration);
+      // Upload to S3
+      const uploadRes = await fetch("/api/scout/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileData, mimeType, fileName }),
+      });
+
+      if (!uploadRes.ok) throw new Error(`Upload failed: ${uploadRes.status}`);
+      const uploadData = await uploadRes.json();
+      if (!uploadData.url) throw new Error("No URL returned from upload");
+
+      // Analyze with Claude — wait up to 60s
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
+
+      const analyzeRes = await fetch("/api/scout/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          imageUrl: uploadData.url,
+          playerInfo: { name: form.playerName, age: form.age, position: form.position, city: form.city },
+        }),
+      });
+      clearTimeout(timeout);
+
+      if (!analyzeRes.ok) throw new Error(`Analysis failed: ${analyzeRes.status}`);
+      const analyzeData = await analyzeRes.json();
+
+      if (analyzeData.report) {
+        // Wait for stage animation to reach at least 60% before showing results
+        const elapsedNow = Date.now() - startTime;
+        const minWait = Math.max(0, totalDuration * 0.6 - elapsedNow);
+        await new Promise(r => setTimeout(r, minWait));
+        finishAI(analyzeData.report);
+        return;
+      }
+      throw new Error("No report in response");
+    } catch (err: any) {
+      console.warn("[Scout AI] Real analysis failed, using simulation:", err?.message || err);
+      // Ensure we wait for at least the stage animation to complete
+      const elapsedNow = Date.now() - startTime;
+      const remaining = totalDuration - elapsedNow;
+      finishSimulated(Math.max(0, remaining));
+    }
   };
 
   const sendWhatsApp = () => {

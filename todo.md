@@ -36,3 +36,10 @@
 - [ ] تفعيل QR للحضور الحقيقي
 - [ ] تحليل الفيديو الحقيقي (يتطلب video processing API)
 - [ ] صفحة مدونة/أخبار لتحسين SEO
+
+## Bug Fixes & New Features (Current Sprint)
+
+- [x] إصلاح مشكلة عدم اكتمال تحليل الصورة بـ Claude AI (إزالة patchedFetch المسبب للتوقف)
+- [x] بناء نظام تحليل الفيديو الحقيقي (استخراج إطارات + Claude Vision)
+- [x] تحسين معالجة أخطاء الـ API وعرضها للمستخدم
+- [x] إصلاح حساب elapsed time في frontend لضمان اكتمال الـ animation
