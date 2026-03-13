@@ -201,6 +201,35 @@ function getScoreLabel(score: number) {
 type Step = "form" | "upload" | "analyzing" | "done";
 type AnalysisResult = ReturnType<typeof runAIAnalysis>;
 
+// AI Report from Claude (real analysis)
+type AIScoutReport = {
+  reportId: string;
+  analysisDate: string;
+  estimatedAge: { range: string; category: string; saff_category: string };
+  physicalProfile: {
+    bodyType: string; bodyTypeAr: string;
+    heightEstimate: string; heightEstimateAr: string;
+    balance: number; posture: string; coordinationIndicators: string;
+  };
+  athleticIndicators: Record<string, { score: number; label: string; note: string }>;
+  technicalIndicators: Record<string, { score: number; label: string; note: string }>;
+  tacticalProfile: Record<string, { score: number; label: string; note: string }>;
+  mentalProfile: Record<string, { score: number; label: string }>;
+  overallRating: number;
+  sportDNA: Record<string, number>;
+  bestPosition: string;
+  bestPositionAr: string;
+  tacticalHints: string;
+  strengths: string[];
+  developmentAreas: string[];
+  fifaStandardComparison: {
+    technicalLevel: string; physicalLevel: string; saffYouthBenchmark: number;
+  };
+  scoutRecommendation: string;
+  scoutConfidence: number;
+  confidenceNote: string;
+};
+
 const positions = ["مهاجم", "وسط", "مدافع", "جناح أيمن", "جناح أيسر", "حارس مرمى"];
 const cities = ["دمام", "خبر", "ظهران", "القطيف", "الأحساء"];
 const academies = [
@@ -232,6 +261,9 @@ export default function UploadPage() {
   const [currentStage, setCurrentStage] = useState(0);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [activeResultTab, setActiveResultTab] = useState<"overview" | "technical" | "physical" | "tactical" | "mental" | "dna">("overview");
+  const [aiReport, setAiReport] = useState<AIScoutReport | null>(null);
+  const [analysisMode, setAnalysisMode] = useState<"ai" | "simulated">("simulated");
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFormSubmit = () => {
@@ -260,24 +292,78 @@ export default function UploadPage() {
     if (f) handleFileSelect(f);
   }, [handleFileSelect]);
 
-  const startAnalysis = () => {
+  const startAnalysis = async () => {
     if (!file) { toast.error("يرجى رفع فيديو أو صورة أولاً"); return; }
     setStep("analyzing");
     setCurrentStage(0);
-    const durations = [2200, 2800, 2000, 2600, 1800, 2200];
+    setAnalysisError(null);
+
+    // Stage progress animation
+    const durations = [1500, 2000, 1800, 2200, 1600, 1800];
     let elapsed = 0;
+    const stageTimers: ReturnType<typeof setTimeout>[] = [];
     durations.forEach((d, i) => {
       elapsed += d;
-      setTimeout(() => {
-        setCurrentStage(i + 1);
-        if (i === durations.length - 1) {
-          setTimeout(() => {
-            setAnalysisResult(runAIAnalysis(form));
-            setStep("done");
-          }, 600);
-        }
-      }, elapsed);
+      const t = setTimeout(() => setCurrentStage(i + 1), elapsed);
+      stageTimers.push(t);
     });
+
+    try {
+      // Only try AI for images (Claude vision works best with images)
+      if (file.type.startsWith("image/")) {
+        // Step 1: Upload to S3
+        const reader = new FileReader();
+        const fileData = await new Promise<string>((resolve, reject) => {
+          reader.onload = (e) => resolve((e.target?.result as string).split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const uploadRes = await fetch("/api/scout/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileData, mimeType: file.type, fileName: file.name }),
+        });
+        const { url: imageUrl } = await uploadRes.json();
+
+        // Step 2: Analyze with Claude
+        const analyzeRes = await fetch("/api/scout/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageUrl,
+            playerInfo: { name: form.playerName, age: form.age, position: form.position, city: form.city },
+          }),
+        });
+        const { report } = await analyzeRes.json();
+
+        if (report) {
+          stageTimers.forEach(clearTimeout);
+          setCurrentStage(6);
+          setAiReport(report);
+          setAnalysisMode("ai");
+          setTimeout(() => {
+            setAnalysisResult(runAIAnalysis(form)); // fallback for charts
+            setStep("done");
+          }, 800);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("[Scout AI] Real analysis failed, using simulation:", err);
+    }
+
+    // Fallback: simulated analysis (for videos or if AI fails)
+    const totalDuration = durations.reduce((a, b) => a + b, 0);
+    setTimeout(() => {
+      setCurrentStage(6);
+      setAiReport(null);
+      setAnalysisMode("simulated");
+      setTimeout(() => {
+        setAnalysisResult(runAIAnalysis(form));
+        setStep("done");
+      }, 600);
+    }, totalDuration);
   };
 
   const sendWhatsApp = () => {
@@ -607,20 +693,184 @@ export default function UploadPage() {
         {/* ── STEP 4: RESULTS ── */}
         {step === "done" && analysisResult && (
           <div className="space-y-6">
+
+            {/* AI Mode Badge */}
+            {analysisMode === "ai" && aiReport ? (
+              <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "oklch(0.65 0.2 145 / 0.08)", border: "1px solid oklch(0.65 0.2 145 / 0.3)" }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "oklch(0.65 0.2 145 / 0.2)" }}>
+                  <Brain size={16} style={{ color: "oklch(0.65 0.2 145)" }} />
+                </div>
+                <div>
+                  <div className="text-white font-bold text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>تحليل Claude AI الحقيقي ✔️</div>
+                  <div className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>تم التحليل الفعلي بالذكاء الاصطناعي وفق معايير FIFA + الاتحاد السعودي — رقم التقرير: {aiReport.reportId}</div>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)" }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(245,158,11,0.15)" }}>
+                  <Activity size={16} style={{ color: "#F59E0B" }} />
+                </div>
+                <div>
+                  <div className="text-white font-bold text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>وضع المحاكاة (للفيديو والعرض التوضيحي)</div>
+                  <div className="text-white/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>ارفع صورة للحصول على تحليل Claude AI الحقيقي</div>
+                </div>
+              </div>
+            )}
+
+            {/* PLAYER VISUAL SCOUT REPORT — Claude AI real report */}
+            {analysisMode === "ai" && aiReport && (
+              <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid oklch(0.65 0.2 145 / 0.3)", background: "oklch(0.06 0.03 145 / 0.3)" }}>
+                {/* Report Header */}
+                <div className="p-5" style={{ background: "linear-gradient(135deg, oklch(0.12 0.05 145 / 0.8), oklch(0.08 0.02 240 / 0.9))", borderBottom: "1px solid oklch(0.65 0.2 145 / 0.2)" }}>
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                      <div className="text-xs font-semibold mb-1" style={{ color: "oklch(0.65 0.2 145)", fontFamily: "'Space Grotesk', sans-serif" }}>PLAYER VISUAL SCOUT REPORT</div>
+                      <div className="text-white font-black text-xl" style={{ fontFamily: "'Tajawal', sans-serif" }}>{form.playerName}</div>
+                      <div className="text-white/50 text-xs mt-0.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>{form.position} • {form.city} • {aiReport.analysisDate}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-5xl font-black" style={{ color: getScoreColor(aiReport.overallRating), fontFamily: "'Space Grotesk', sans-serif" }}>{aiReport.overallRating}</div>
+                      <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Tajawal', sans-serif" }}>Overall Rating</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-5">
+                  {/* Age + Physical Profile */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      <div className="text-xs font-semibold mb-3" style={{ color: "oklch(0.65 0.2 145)", fontFamily: "'Space Grotesk', sans-serif" }}>ESTIMATED AGE</div>
+                      <div className="text-white font-bold text-lg" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{aiReport.estimatedAge.range}</div>
+                      <div className="text-white/50 text-xs mt-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>{aiReport.estimatedAge.category} — {aiReport.estimatedAge.saff_category}</div>
+                    </div>
+                    <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      <div className="text-xs font-semibold mb-3" style={{ color: "#00C2A8", fontFamily: "'Space Grotesk', sans-serif" }}>PHYSICAL PROFILE</div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div><span className="text-white/40" style={{ fontFamily: "'Tajawal', sans-serif" }}>الجسم: </span><span className="text-white" style={{ fontFamily: "'Tajawal', sans-serif" }}>{aiReport.physicalProfile.bodyTypeAr}</span></div>
+                        <div><span className="text-white/40" style={{ fontFamily: "'Tajawal', sans-serif" }}>الطول: </span><span className="text-white" style={{ fontFamily: "'Tajawal', sans-serif" }}>{aiReport.physicalProfile.heightEstimateAr}</span></div>
+                        <div><span className="text-white/40" style={{ fontFamily: "'Tajawal', sans-serif" }}>التوازن: </span><span className="text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{aiReport.physicalProfile.balance}/10</span></div>
+                      </div>
+                      <div className="text-white/40 text-xs mt-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>{aiReport.physicalProfile.posture}</div>
+                    </div>
+                  </div>
+
+                  {/* Athletic Indicators */}
+                  <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <div className="text-xs font-semibold mb-4" style={{ color: "#F59E0B", fontFamily: "'Space Grotesk', sans-serif" }}>ATHLETIC INDICATORS</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {Object.entries(aiReport.athleticIndicators).map(([key, val]) => (
+                        <div key={key} className="text-center">
+                          <div className="text-2xl font-black mb-1" style={{ color: getScoreColor(val.score * 10), fontFamily: "'Space Grotesk', sans-serif" }}>{val.score}</div>
+                          <div className="text-white/60 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{val.label}</div>
+                          {val.note && <div className="text-white/30 text-xs mt-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>{val.note}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Technical Indicators */}
+                  <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <div className="text-xs font-semibold mb-4" style={{ color: "#00C2A8", fontFamily: "'Space Grotesk', sans-serif" }}>TECHNICAL INDICATORS</div>
+                    <div className="space-y-2">
+                      {Object.entries(aiReport.technicalIndicators).map(([key, val]) => (
+                        <div key={key} className="flex items-center gap-3">
+                          <div className="w-24 text-white/60 text-xs flex-shrink-0" style={{ fontFamily: "'Tajawal', sans-serif" }}>{val.label}</div>
+                          <div className="flex-1 h-2 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
+                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${val.score * 10}%`, background: `linear-gradient(90deg, #00C2A8, #00C2A888)` }} />
+                          </div>
+                          <div className="w-6 text-right font-bold text-xs" style={{ color: "#00C2A8", fontFamily: "'Space Grotesk', sans-serif" }}>{val.score}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sport DNA */}
+                  <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <div className="text-xs font-semibold mb-3" style={{ color: "oklch(0.65 0.2 145)", fontFamily: "'Space Grotesk', sans-serif" }}>SPORT DNA POSITION PREDICTION</div>
+                    <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+                      {Object.entries(aiReport.sportDNA).sort(([,a],[,b]) => b - a).map(([pos, score]) => (
+                        <div key={pos} className="text-center rounded-lg p-2" style={{ background: score >= 70 ? "oklch(0.65 0.2 145 / 0.1)" : "rgba(255,255,255,0.02)", border: `1px solid ${score >= 70 ? "oklch(0.65 0.2 145 / 0.3)" : "rgba(255,255,255,0.06)"}` }}>
+                          <div className="font-black text-sm" style={{ color: score >= 70 ? "oklch(0.65 0.2 145)" : "rgba(255,255,255,0.4)", fontFamily: "'Space Grotesk', sans-serif" }}>{pos}</div>
+                          <div className="text-xs" style={{ color: score >= 70 ? "oklch(0.65 0.2 145)" : "rgba(255,255,255,0.3)", fontFamily: "'Space Grotesk', sans-serif" }}>{score}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 text-white/50 text-xs leading-relaxed" style={{ fontFamily: "'Tajawal', sans-serif" }}>{aiReport.tacticalHints}</div>
+                  </div>
+
+                  {/* Strengths & Development */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="rounded-xl p-4" style={{ background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.15)" }}>
+                      <div className="text-xs font-semibold mb-3 flex items-center gap-2" style={{ color: "#22c55e", fontFamily: "'Space Grotesk', sans-serif" }}><TrendingUp size={12} /> STRENGTHS</div>
+                      {aiReport.strengths.map((s, i) => (
+                        <div key={i} className="flex items-start gap-2 py-1">
+                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: "#22c55e" }} />
+                          <span className="text-white/70 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="rounded-xl p-4" style={{ background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.15)" }}>
+                      <div className="text-xs font-semibold mb-3 flex items-center gap-2" style={{ color: "#ef4444", fontFamily: "'Space Grotesk', sans-serif" }}><AlertTriangle size={12} /> DEVELOPMENT AREAS</div>
+                      {aiReport.developmentAreas.map((s, i) => (
+                        <div key={i} className="flex items-start gap-2 py-1">
+                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: "#ef4444" }} />
+                          <span className="text-white/70 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{s}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* FIFA Standard Comparison */}
+                  <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div className="text-xs font-semibold mb-3" style={{ color: "#F59E0B", fontFamily: "'Space Grotesk', sans-serif" }}>FIFA STANDARD COMPARISON</div>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      <div>
+                        <div className="text-white/40 text-xs mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>التقني</div>
+                        <div className="text-xs font-bold" style={{ color: aiReport.fifaStandardComparison.technicalLevel.includes("Above") ? "#22c55e" : aiReport.fifaStandardComparison.technicalLevel.includes("Meets") ? "#F59E0B" : "#ef4444", fontFamily: "'Space Grotesk', sans-serif" }}>{aiReport.fifaStandardComparison.technicalLevel}</div>
+                      </div>
+                      <div>
+                        <div className="text-white/40 text-xs mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>البدني</div>
+                        <div className="text-xs font-bold" style={{ color: aiReport.fifaStandardComparison.physicalLevel.includes("Above") ? "#22c55e" : aiReport.fifaStandardComparison.physicalLevel.includes("Meets") ? "#F59E0B" : "#ef4444", fontFamily: "'Space Grotesk', sans-serif" }}>{aiReport.fifaStandardComparison.physicalLevel}</div>
+                      </div>
+                      <div>
+                        <div className="text-white/40 text-xs mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>SAFF Benchmark</div>
+                        <div className="text-xl font-black" style={{ color: "#F59E0B", fontFamily: "'Space Grotesk', sans-serif" }}>{aiReport.fifaStandardComparison.saffYouthBenchmark}%</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Scout Recommendation */}
+                  <div className="rounded-xl p-4" style={{ background: "oklch(0.65 0.2 145 / 0.05)", border: "1px solid oklch(0.65 0.2 145 / 0.2)" }}>
+                    <div className="text-xs font-semibold mb-2 flex items-center gap-2" style={{ color: "oklch(0.65 0.2 145)", fontFamily: "'Space Grotesk', sans-serif" }}><Star size={12} /> SCOUT RECOMMENDATION</div>
+                    <div className="text-white/70 text-sm leading-relaxed" style={{ fontFamily: "'Tajawal', sans-serif" }}>{aiReport.scoutRecommendation}</div>
+                    <div className="mt-3 flex items-center gap-3">
+                      <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Tajawal', sans-serif" }}>Scout Confidence:</div>
+                      <div className="flex-1 h-2 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
+                        <div className="h-full rounded-full" style={{ width: `${aiReport.scoutConfidence}%`, background: "oklch(0.65 0.2 145)" }} />
+                      </div>
+                      <div className="font-black text-sm" style={{ color: "oklch(0.65 0.2 145)", fontFamily: "'Space Grotesk', sans-serif" }}>{aiReport.scoutConfidence}%</div>
+                    </div>
+                    <div className="text-white/30 text-xs mt-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>{aiReport.confidenceNote}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Simulated Analysis (always shown as supplementary) */}
             {/* Overall score hero */}
             <div className="rounded-2xl p-6 text-center relative overflow-hidden" style={{ background: "linear-gradient(135deg, oklch(0.12 0.04 145) 0%, oklch(0.08 0.02 240) 100%)", border: "1px solid oklch(0.65 0.2 145 / 0.3)" }}>
               <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, oklch(0.65 0.2 145 / 0.06) 0%, transparent 70%)" }} />
               <div className="relative z-10">
                 <div className="text-white/50 text-sm mb-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>التقييم الكلي — معايير FIFA</div>
-                <div className="text-7xl font-black mb-2" style={{ color: getScoreColor(analysisResult.overall), fontFamily: "'Space Grotesk', sans-serif" }}>
-                  {analysisResult.overall}
+                <div className="text-7xl font-black mb-2" style={{ color: getScoreColor(analysisMode === "ai" && aiReport ? aiReport.overallRating : analysisResult.overall), fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {analysisMode === "ai" && aiReport ? aiReport.overallRating : analysisResult.overall}
                 </div>
-                <div className="text-white/60 text-sm mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>{getScoreLabel(analysisResult.overall)}</div>
+                <div className="text-white/60 text-sm mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>{getScoreLabel(analysisMode === "ai" && aiReport ? aiReport.overallRating : analysisResult.overall)}</div>
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
-                  <Shield size={11} /> نسبة الثقة: {analysisResult.confidence}%
+                  <Shield size={11} /> نسبة الثقة: {analysisMode === "ai" && aiReport ? aiReport.scoutConfidence : analysisResult.confidence}%
                 </div>
                 <div className="mt-4 text-white/70 text-sm max-w-lg mx-auto leading-relaxed" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                  {analysisResult.recommendation}
+                  {analysisMode === "ai" && aiReport ? aiReport.scoutRecommendation : analysisResult.recommendation}
                 </div>
               </div>
             </div>

@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1773359568261,
+      "tag": "0000_magenta_the_hunter",
+      "breakpoints": true
+    }
+  ]
+}

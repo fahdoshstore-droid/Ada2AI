@@ -11,8 +11,8 @@ import Scouts from "./pages/Scouts";
 import Upload from "./pages/Upload";
 import Compare from "./pages/Compare";
 import SportID from "./pages/SportID";
-
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
