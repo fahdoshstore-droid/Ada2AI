@@ -2,11 +2,12 @@ import { useEffect, useRef } from "react";
 import { Link } from "wouter";
 import {
   Brain, Zap, Users, BarChart3, MapPin, Play,
-  ChevronRight, ArrowRight, CheckCircle2, Star,
-  Activity, Trophy, Target, Shield, Globe, Cpu,
-  Dumbbell, Waves, Timer, Swords, TrendingUp,
-  AlertTriangle, Database, Eye, Network,
-  Building2, Award, Handshake, BarChart2
+  ChevronRight, ArrowRight, CheckCircle2,
+  Activity, Trophy, Target, Shield, Globe,
+  Waves, TrendingUp, Bike, Swords,
+  Database, Network,
+  Building2, Award, Handshake,
+  Search, UserX, Layers, Lock
 } from "lucide-react";
 import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 
@@ -79,10 +80,12 @@ function ParticleBackground() {
 // ── Sports Sectors — Federation-aligned ───────────────────────────────────────
 const sportsSectors = [
   { icon: <Trophy size={22} />, name: "Football", color: "#00DCC8" },
+  { icon: <Activity size={22} />, name: "Basketball", color: "#007ABA" },
+  { icon: <Swords size={22} />, name: "Boxing", color: "#FFA500" },
+  { icon: <Bike size={22} />, name: "Cycling", color: "#00DCC8" },
   { icon: <Waves size={22} />, name: "Swimming", color: "#007ABA" },
-  { icon: <Activity size={22} />, name: "Free Diving", color: "#00DCC8" },
-  { icon: <Swords size={22} />, name: "Boxing", color: "#007ABA" },
-  { icon: <Globe size={22} />, name: "Other Federation Sports", color: "#00DCC8" },
+  { icon: <Waves size={22} />, name: "Free Diving", color: "#00DCC8" },
+  { icon: <Globe size={22} />, name: "Other Sports", color: "rgba(238,239,238,0.5)" },
 ];
 
 // ── 6 Platform Modules ─────────────────────────────────────────────────────────
@@ -140,12 +143,12 @@ const modules = [
   {
     num: "06",
     icon: <Play size={24} />,
-    title: "Demo Module",
+    title: "AI Demo",
     badge: "FREE ACCESS",
     badgeColor: "#00DCC8",
-    desc: "Zero-friction onboarding with an interactive AI analysis preview. Athletes experience the full platform value before signing up — driving conversion.",
+    desc: "Experience the full platform before signing up — upload a photo or video and receive a professional athlete analysis report instantly. Zero friction, zero equipment.",
     link: "/demo",
-    cta: "Start Free",
+    cta: "Try Free",
   },
 ];
 
@@ -198,9 +201,9 @@ const benefits = [
 // ── How It Works — 6 steps ─────────────────────────────────────────────────────
 const steps = [
   { n: "01", title: "Registration", desc: "Athletes and scouts register on the platform to create their verified profile." },
-  { n: "02", title: "Recording / Monitoring", desc: "Upload media or connect wearables to capture real-time performance data." },
-  { n: "03", title: "Analyzing", desc: "AI engine processes 18 performance metrics across sport-specific benchmarks." },
-  { n: "04", title: "Performance Enhancement Reports", desc: "Receive a professional report with scores, Sport DNA, and development recommendations." },
+  { n: "02", title: "Upload Media", desc: "Upload a photo or video of the athlete performing in their sport. No special equipment required." },
+  { n: "03", title: "AI Analysis", desc: "The AI engine processes performance metrics across sport-specific benchmarks and governance standards." },
+  { n: "04", title: "Performance Report", desc: "Receive a professional report with scores, Sport DNA, and development recommendations." },
   { n: "05", title: "Decision Support", desc: "Scouts, coaches, and federations access structured intelligence to make informed decisions." },
   { n: "06", title: "Results Tracking", desc: "Monitor athlete progress over time and track development milestones." },
 ];
@@ -246,12 +249,23 @@ export default function Home() {
         {/* Radial glow */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "radial-gradient(ellipse 70% 60% at 50% 40%, rgba(0,220,200,0.07) 0%, transparent 70%)",
-          }}
-        />
-        {/* Grid overlay */}
-        <div className="absolute inset-0 ada-grid-bg opacity-60 pointer-events-none" />
+            style={{
+              background: "radial-gradient(ellipse 70% 60% at 50% 40%, rgba(0,220,200,0.07) 0%, transparent 70%)",
+            }}
+          />
+          {/* Video background */}
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            style={{ opacity: 0.12, zIndex: 0 }}
+          >
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-soccer-player-kicking-ball-in-a-stadium-34761-large.mp4" type="video/mp4" />
+          </video>
+          {/* Grid overlay */}
+          <div className="absolute inset-0 ada-grid-bg opacity-60 pointer-events-none" />
 
         <div className="relative z-10 container mx-auto px-4 text-center py-20">
           {/* Badge — item 2: replace "Powered by Claude Vision" */}
@@ -278,10 +292,10 @@ export default function Home() {
             </span>
           </h1>
 
-          {/* Sub — item 2: new subtitle */}
+          {/* Sub — English only, no Arabic */}
           <p className="text-lg mb-8 max-w-2xl mx-auto"
             style={{ color: "rgba(238,239,238,0.75)", fontFamily: "'Cairo', sans-serif", lineHeight: 1.8 }}>
-            منصة لاكتشاف المواهب الرياضية من القاعدة (Grassroots) تهدف إلى اكتشاف وتطوير الرياضيين في جميع مناطق المملكة العربية السعودية.
+            A grassroots-to-professional talent discovery platform — identifying and developing athletes across all sports sectors in Saudi Arabia. No equipment. No experts. Just AI.
           </p>
 
           {/* Sports tags — item 3: federation-aligned sports */}
@@ -362,24 +376,40 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               {
-                icon: <BarChart2 size={28} style={{ color: "#00DCC8" }} />,
-                title: "No Standardized Metrics",
-                desc: "Scouting relies on subjective human judgment with no consistent measurement framework across sports.",
+                icon: (
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: "rgba(0,220,200,0.08)", border: "1px solid rgba(0,220,200,0.2)" }}>
+                    <Search size={26} style={{ color: "#00DCC8" }} />
+                  </div>
+                ),
+                title: "Scouting is Fragmented",
+                desc: "Traditional scouting is manual, inconsistent, and limited to scouts who are physically present — missing thousands of talented athletes in underserved regions.",
               },
               {
-                icon: <AlertTriangle size={28} style={{ color: "#FFA500" }} />,
-                title: "High Cost Barrier",
-                desc: "Professional scouting costs SAR 50,000–200,000/year — inaccessible to grassroots athletes and small institutes.",
+                icon: (
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,165,0,0.08)", border: "1px solid rgba(255,165,0,0.2)" }}>
+                    <Lock size={26} style={{ color: "#FFA500" }} />
+                  </div>
+                ),
+                title: "Access is Locked by Cost",
+                desc: "Professional scouting infrastructure is prohibitively expensive — accessible only to top-tier clubs, leaving grassroots athletes without any discovery pathway.",
               },
               {
-                icon: <Globe size={28} style={{ color: "#007ABA" }} />,
+                icon: (
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: "rgba(0,122,186,0.08)", border: "1px solid rgba(0,122,186,0.2)" }}>
+                    <UserX size={26} style={{ color: "#007ABA" }} />
+                  </div>
+                ),
                 title: "Geographical Blindspots",
-                desc: "Talent outside major cities is virtually invisible to clubs and national federations across Saudi Arabia's emerging sports ecosystems.",
+                desc: "Talent outside major cities is virtually invisible to clubs and national federations — Saudi Arabia's emerging sports ecosystems remain largely undiscovered.",
               },
               {
-                icon: <Database size={28} style={{ color: "#00DCC8" }} />,
+                icon: (
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: "rgba(0,220,200,0.08)", border: "1px solid rgba(0,220,200,0.2)" }}>
+                    <Layers size={26} style={{ color: "#00DCC8" }} />
+                  </div>
+                ),
                 title: "No Data Infrastructure",
-                desc: "No unified platform tracks athlete development, performance history, or cross-sport potential in the Kingdom.",
+                desc: "No unified platform tracks athlete development, performance history, or cross-sport potential in the Kingdom — data is siloed, paper-based, or simply absent.",
               },
             ].map((p, i) => (
               <div key={i} className="ada-card p-6 reveal" style={{ animationDelay: `${i * 0.1}s` }}>
@@ -399,8 +429,8 @@ export default function Home() {
         <div className="relative container mx-auto px-4">
           <div className="text-center mb-16 reveal">
             <span className="badge-pro mb-4 inline-block">The Solution</span>
-            <h2 className="font-orbitron font-bold text-3xl lg:text-4xl mb-5 text-[#EEEFEE]">
-              ada2ai: One Platform.<br />
+              <h2 className="font-orbitron font-bold text-3xl lg:text-4xl mb-5">
+              <span style={{ background: "linear-gradient(135deg, #00DCC8 0%, #007ABA 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>ada2ai</span><span className="text-[#EEEFEE]">: One Platform.</span><br />
               <span style={{ color: "#00DCC8" }}>Six Powerful Modules. Zero Barriers.</span>
             </h2>
             <p className="text-base max-w-2xl mx-auto"
@@ -501,7 +531,7 @@ export default function Home() {
             </h2>
             <p className="text-sm max-w-xl mx-auto"
               style={{ color: "rgba(238,239,238,0.6)", fontFamily: "'Cairo', sans-serif", lineHeight: 1.8 }}>
-              ada2ai's AI analysis engine adapts to the biomechanics and performance metrics of each sport — delivering sport-specific insights for every athlete across Saudi Arabia's emerging sports ecosystems.
+              ada2ai adapts to the biomechanics and performance metrics of each sport — delivering sport-specific insights for every athlete across Saudi Arabia's emerging sports ecosystems.
             </p>
           </div>
 

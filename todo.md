@@ -84,3 +84,31 @@
 - [x] استبدال جميع مراجع "Claude Vision" بـ "AI Vision" في جميع الصفحات
 - [x] استبدال "FIFA/SAFF" بـ "Professional Standards" في جميع الصفحات المرئية
 - [x] استبدال "Passport" بـ "Digital ID" في جميع الصفحات
+
+## Home & Product Enhancement Sprint (Clipboard 0 & 1)
+
+### Home Page
+- [x] Add background video at the start of the landing page hero
+- [x] Remove all Arabic text from the English version (pure English)
+- [x] Update sports icons list: Football, Basketball, Boxing, Cycling, Swimming, Free Diving, Other Sports
+- [x] Replace Problem section icons with creative unique icons per box
+- [x] Rewrite "High Cost Barrier" problem card to focus on scouting process
+- [x] Update Solution section: match ada2ai logo color scheme
+- [x] Replace Demo module card in Solution section with a core platform statement tied to the 6 modules
+- [x] How It Works: remove "recording" from step 1, remove "18" from analyzing step
+- [x] Multi-Sport section: sync sports list with hero section list
+- [x] Multi-Sport section: remove "AI analysis" after "ada2ai's"
+
+### Product Page
+- [x] Change "Ada2ai" text in first section to follow logo color scheme (teal gradient)
+- [x] Switch order: Sport ID first, then AI Analysis Engine
+- [x] Unify all "Passport" references to "Digital ID" on Product page
+- [x] AI Analysis Engine: remove "8" from "8 seconds", remove "18" from "performance metrics"
+- [x] AI Analysis Engine: revise icon in the right section box
+- [x] Change "25-field FIFA/SAFF standardized report" to "Sport-related governance standards"
+- [x] Add Pilot Phase box/circle near Standardized Report: "Pilot phase Football — 25-field FIFA/SAFF standardized report — 10 Sport DNA position prediction"
+- [x] Scouts Dashboard: remove "18" from metrics, remove "from Riyadh to Abha"
+- [x] Compare Engine: remove "18" from metric reference
+- [x] Academies Directory: rename to "Sports Institutes", add "sports clubs, academies, and gyms" in text
+- [x] Demo section: replace demo module card with core platform statement matching home page
+- [x] Technology section: change "FIFA SAFF standards" to "International federations related Standards"

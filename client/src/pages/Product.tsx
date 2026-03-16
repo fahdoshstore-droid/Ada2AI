@@ -8,44 +8,44 @@ import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 
 const modules = [
   {
-    num: "01", icon: <Brain size={28} />, title: "AI Analysis Engine",
-    badge: "CORE MODULE", badgeColor: "#00DCC8",
-    headline: "Professional Scout Report in 8 Seconds",
-    desc: "Upload a photo or video of any athlete. AI analyzes 18 performance metrics delivering a 25-field professional scout report — no equipment, no specialist required.",
+    num: "01", icon: <Shield size={28} />, title: "SportID",
+    badge: "DIGITAL IDENTITY", badgeColor: "#007ABA",
+    headline: "The Athlete's Verifiable Digital Identity",
+    desc: "Every athlete gets a permanent digital profile with a unique QR code, radar chart visualization, certifications, and a tamper-proof performance history. Shareable with clubs, institutes, and national federations across all sports.",
     features: [
-      "18 performance metrics analyzed simultaneously",
-      "25-field FIFA/SAFF standardized report",
-      "Sport DNA position prediction (10 positions)",
+      "Unique QR code for instant sharing",
+      "Radar chart performance visualization",
+      "Verifiable performance history",
+      "Certification and achievement tracking",
+      "Institute and federation submission ready",
+    ],
+    link: "/demo", cta: "View Example",
+  },
+  {
+    num: "02", icon: <Brain size={28} />, title: "AI Analysis Engine",
+    badge: "CORE MODULE", badgeColor: "#00DCC8",
+    headline: "Professional Athlete Report in Seconds",
+    desc: "Upload a photo or video of any athlete. The AI engine analyzes performance metrics and delivers a comprehensive professional scout report — no equipment, no specialist required. Works across all sports sectors.",
+    features: [
+      "Multi-metric performance analysis",
+      "Standardized professional report format",
+      "Sport DNA position prediction",
       "Works with any sport, any device",
       "Arabic-first output with bilingual support",
     ],
     link: "/demo", cta: "Try Free Demo",
   },
   {
-    num: "02", icon: <Shield size={28} />, title: "SportID Passport",
-    badge: "DIGITAL IDENTITY", badgeColor: "#007ABA",
-    headline: "The Athlete's Verifiable Digital Identity",
-    desc: "Every athlete gets a permanent digital passport with a unique QR code, radar chart visualization, certifications, and a tamper-proof performance history. Shareable with clubs, academies, and national federations.",
-    features: [
-      "Unique QR code for instant sharing",
-      "Radar chart performance visualization",
-      "Verifiable performance history",
-      "Certification and achievement tracking",
-      "Club and academy submission ready",
-    ],
-    link: "/demo", cta: "View Example",
-  },
-  {
     num: "03", icon: <Users size={28} />, title: "Scouts Dashboard",
     badge: "TALENT DISCOVERY", badgeColor: "#00DCC8",
     headline: "Discover Regional Talent at Scale",
-    desc: "Search, filter, and rank athletes by 18 metrics across all Saudi regions. From Riyadh to Abha, discover grassroots talent that would otherwise be invisible. Built for professional scouts, academy directors, and federation talent managers.",
+    desc: "Search, filter, and rank athletes by performance metrics across all Saudi regions. From Riyadh to Abha, discover grassroots talent that would otherwise be invisible. Built for professional scouts, institute directors, and federation talent managers.",
     features: [
-      "18-metric multi-filter search",
+      "Multi-metric filter search",
       "Geographic coverage across all KSA regions",
-      "Age category and position filtering",
+      "Age category and sport filtering",
       "Bulk comparison and shortlisting",
-      "Export scout reports",
+      "Export professional reports",
     ],
     link: "/scouts", cta: "Explore Dashboard",
   },
@@ -56,36 +56,36 @@ const modules = [
     desc: "Compare any two athletes with overlaid radar charts, metric-by-metric breakdowns, and AI-generated recommendations. Eliminate subjective bias from recruitment decisions with data-driven insights.",
     features: [
       "Dual radar chart overlay",
-      "18-metric side-by-side comparison",
+      "Side-by-side metric comparison",
       "AI-generated recommendation summary",
-      "Position-specific benchmarking",
+      "Sport-specific benchmarking",
       "Shareable comparison reports",
     ],
     link: "/compare", cta: "Compare Athletes",
   },
   {
-    num: "05", icon: <MapPin size={28} />, title: "Academies Directory",
+    num: "05", icon: <MapPin size={28} />, title: "Partnerships Directory",
     badge: "NETWORK", badgeColor: "#007ABA",
     headline: "Connect Athletes to Pathways",
-    desc: "Google Maps integration with 500+ academies across KSA. Filter by city, sport, age group, and accreditation status. Athletes find their pathway; academies find their next intake.",
+    desc: "Google Maps integration with 500+ sports institutes and academies across KSA. Filter by city, sport, age group, and accreditation status. Athletes find their pathway; institutes find their next intake.",
     features: [
-      "500+ academies mapped across KSA",
+      "500+ institutes mapped across KSA",
       "Multi-sport and age group filtering",
       "Accreditation status verification",
       "Direct contact and enrollment",
-      "Academy performance ratings",
+      "Institute performance ratings",
     ],
-    link: "/academies", cta: "Find Academies",
+    link: "/academies", cta: "Find Partners",
   },
   {
-    num: "06", icon: <Play size={28} />, title: "Demo Module",
+    num: "06", icon: <Play size={28} />, title: "AI Demo",
     badge: "FREE ACCESS", badgeColor: "#00DCC8",
     headline: "Experience the Platform Before Signing Up",
-    desc: "Zero-friction onboarding — upload a photo, get a real AI scout report immediately. No registration required. Designed to convert first-time visitors into platform users by delivering immediate, tangible value.",
+    desc: "Zero-friction onboarding — upload a photo or video, get a real AI analysis report immediately. No registration required. Designed to deliver immediate, tangible value on first visit.",
     features: [
       "No registration required",
       "Full AI analysis on first visit",
-      "Instant scout report generation",
+      "Instant professional report generation",
       "Conversion-optimized flow",
       "Available in Arabic and English",
     ],
@@ -94,9 +94,9 @@ const modules = [
 ];
 
 const techStack = [
-  { name: "AI Analysis Engine", desc: "Advanced AI vision model for multi-sport athlete analysis", icon: <Brain size={20} /> },
-  { name: "FIFA/SAFF Standards", desc: "Dual-standard scoring framework", icon: <Trophy size={20} /> },
-  { name: "Google Maps API", desc: "Real-time academy geolocation", icon: <Globe size={20} /> },
+  { name: "AI Vision Engine", desc: "Advanced AI model for multi-sport athlete analysis", icon: <Brain size={20} /> },
+  { name: "Governance Standards", desc: "Aligned with national sports federation benchmarks", icon: <Trophy size={20} /> },
+  { name: "Google Maps API", desc: "Real-time institute geolocation", icon: <Globe size={20} /> },
   { name: "S3 Cloud Storage", desc: "Secure media and report storage", icon: <Cpu size={20} /> },
   { name: "Arabic-First Design", desc: "RTL layout and Arabic output", icon: <Star size={20} /> },
   { name: "Vision 2030 Aligned", desc: "National sports agenda integration", icon: <Target size={20} /> },
@@ -114,8 +114,9 @@ export default function Product() {
           style={{ background: "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,220,200,0.06) 0%, transparent 70%)" }} />
         <div className="relative container mx-auto px-4 text-center">
           <span className="badge-verified mb-6 inline-block">Platform Overview</span>
-          <h1 className="font-orbitron font-black text-4xl lg:text-5xl mb-5 text-[#EEEFEE]">
-            ada2ai Platform
+          <h1 className="font-orbitron font-black text-4xl lg:text-5xl mb-5">
+            <span style={{ background: "linear-gradient(135deg, #00DCC8 0%, #007ABA 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>ada2ai</span>
+            <span className="text-[#EEEFEE]"> Platform</span>
           </h1>
           <p className="text-lg max-w-2xl mx-auto mb-8"
             style={{ color: "rgba(238,239,238,0.7)", fontFamily: "'Cairo', sans-serif", lineHeight: 1.8 }}>
