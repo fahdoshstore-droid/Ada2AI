@@ -175,7 +175,7 @@ const sports = ["الكل", "كرة القدم", "متعدد"];
 const ageGroups = ["الكل", "5-10", "10-15", "15-25"];
 
 export default function Academies() {
-  const { isRTL } = useLanguage();
+  const { isRTL, t, lang } = useLanguage();
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   const [selectedCity, setSelectedCity] = useState("الكل");
@@ -265,7 +265,7 @@ export default function Academies() {
   };
 
   return (
-    <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]" dir="rtl">
+    <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]" dir={isRTL ? "rtl" : "ltr"}>
       <Ada2aiNavbar />
 
       {/* Header */}
@@ -273,18 +273,18 @@ export default function Academies() {
         <div className="absolute inset-0 grid-bg opacity-20" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-8">
-            <span className="tag-green mb-4">دليل الأكاديميات</span>
+            <span className="tag-green mb-4">{lang === "ar" ? "دليل الأكاديميات" : "Academies Directory"}</span>
             <h1
               className="text-4xl md:text-5xl font-black text-[#EEEFEE] mb-3 mt-4"
-              style={{ fontFamily: "'Tajawal', sans-serif" }}
+              style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}
             >
-              أكاديميات المنطقة الشرقية
+              {lang === "ar" ? "أكاديميات المنطقة الشرقية" : "Eastern Province Academies"}
             </h1>
             <p
               className="text-[#EEEFEE]/50 text-lg"
-              style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
+              style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}
             >
-              {academies.length} أكاديمية ونادٍ في دمام، خبر، وظهران
+              {lang === "ar" ? `${academies.length} أكاديمية ونادٍ في دمام، خبر، وظهران` : `${academies.length} academies and clubs in Dammam, Khobar, and Dhahran`}
             </p>
           </div>
 
@@ -295,7 +295,7 @@ export default function Academies() {
                 <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#EEEFEE]/30" />
                 <input
                   type="text"
-                  placeholder="ابحث عن أكاديمية..."
+                  placeholder={lang === "ar" ? "ابحث عن أكاديمية..." : "Search academies..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-[#0A1628] border border-white/10 rounded-lg pr-10 pl-4 py-2.5 text-[#EEEFEE] placeholder-white/30 text-sm focus:outline-none focus:border-[oklch(0.65_0.2_145/0.5)]"
@@ -312,14 +312,14 @@ export default function Academies() {
                 style={{ fontFamily: "'Tajawal', sans-serif" }}
               >
                 <Filter size={15} />
-                فلاتر
+                {lang === "ar" ? "فلاتر" : "Filters"}
               </button>
             </div>
 
             {showFilters && (
               <div className="card-dark rounded-xl p-4 mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-[#EEEFEE]/40 text-xs mb-2 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>المدينة</label>
+                  <label className="text-[#EEEFEE]/40 text-xs mb-2 block" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "المدينة" : "City"}</label>
                   <div className="flex flex-wrap gap-2">
                     {cities.map((c) => (
                       <button
@@ -336,7 +336,7 @@ export default function Academies() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-[#EEEFEE]/40 text-xs mb-2 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>الرياضة</label>
+                  <label className="text-[#EEEFEE]/40 text-xs mb-2 block" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "الرياضة" : "Sport"}</label>
                   <div className="flex flex-wrap gap-2">
                     {sports.map((s) => (
                       <button
@@ -353,7 +353,7 @@ export default function Academies() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-[#EEEFEE]/40 text-xs mb-2 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>الفئة العمرية</label>
+                  <label className="text-[#EEEFEE]/40 text-xs mb-2 block" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "الفئة العمرية" : "Age Group"}</label>
                   <div className="flex flex-wrap gap-2">
                     {ageGroups.map((ag) => (
                       <button
@@ -372,8 +372,8 @@ export default function Academies() {
               </div>
             )}
 
-            <div className="text-[#EEEFEE]/35 text-sm" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-              عرض {filtered.length} من {academies.length} أكاديمية
+            <div className="text-[#EEEFEE]/35 text-sm" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+              {lang === "ar" ? `عرض ${filtered.length} من ${academies.length} أكاديمية` : `Showing ${filtered.length} of ${academies.length} academies`}
             </div>
           </div>
         </div>

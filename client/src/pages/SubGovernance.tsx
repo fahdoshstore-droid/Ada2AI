@@ -31,33 +31,36 @@ const policies = [
 ];
 
 export default function SubGovernance() {
-  const { isRTL } = useLanguage();
+  const { isRTL, t, lang } = useLanguage();
   return (
-    <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]">
+    <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]" dir={isRTL ? "rtl" : "ltr"}>
       <Ada2aiNavbar />
       <div className="container mx-auto px-4 py-32">
         <div className="max-w-3xl mx-auto">
           <Link href="/governance">
             <div className="flex items-center gap-2 mb-8 cursor-pointer text-sm"
-              style={{ color: "rgba(238,239,238,0.5)", fontFamily: "'Cairo', sans-serif" }}>
-              <ChevronLeft size={14} /> Back to Governance
+              style={{ color: "rgba(238,239,238,0.5)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+              <ChevronLeft size={14} className={isRTL ? "rotate-180" : ""} /> {lang === "ar" ? "العودة إلى الحوكمة" : "Back to Governance"}
             </div>
           </Link>
           <div className="mb-12">
-            <span className="badge-verified mb-4 inline-block">Sub-Governance</span>
-            <h1 className="font-orbitron font-black text-3xl lg:text-4xl mb-4 text-[#EEEFEE]">
-              Operational <span style={{ color: "#00DCC8" }}>Policies</span>
+            <span className="badge-verified mb-4 inline-block">{t("gov.sub-gov")}</span>
+            <h1 className="font-orbitron font-black text-3xl lg:text-4xl mb-4 text-[#EEEFEE]"
+              style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "'Orbitron', sans-serif" }}>
+              {lang === "ar" ? "سياسات" : "Operational"} <span style={{ color: "#00DCC8" }}>{lang === "ar" ? "تشغيلية" : "Policies"}</span>
             </h1>
             <p className="text-base"
-              style={{ color: "rgba(238,239,238,0.65)", fontFamily: "'Cairo', sans-serif", lineHeight: 1.8 }}>
-              ada2ai's governance framework ensures responsible AI deployment, transparent data practices, and accountable operations across all platform functions.
+              style={{ color: "rgba(238,239,238,0.65)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit", lineHeight: 1.8 }}>
+              {lang === "ar"
+                ? "يضمن إطار حوكمة ada2ai نشر الذكاء الاصطناعي بشكل مسؤول، وممارسات بيانات شفافة، وعمليات خاضعة للمساءلة عبر جميع وظائف المنصة."
+                : "ada2ai's governance framework ensures responsible AI deployment, transparent data practices, and accountable operations across all platform functions."}
             </p>
           </div>
           <div className="flex flex-col gap-5">
             {policies.map((p, i) => (
               <div key={i} className="ada-card p-7 flex items-start gap-5">
                 <div className="ada-icon-box flex-shrink-0 mt-0.5">{p.icon}</div>
-                <div className="flex-1">
+                <div className="flex-1" style={{ textAlign: isRTL ? "right" : "left" }}>
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-bold text-base text-[#EEEFEE]"
                       style={{ fontFamily: "'Orbitron', sans-serif" }}>{p.title}</h3>

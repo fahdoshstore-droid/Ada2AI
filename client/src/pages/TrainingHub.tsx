@@ -1,6 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import Sidebar from "@/training-hub/components/Sidebar";
+import HubDashboard from "@/training-hub/pages/Dashboard";
+import HubAIChat from "@/training-hub/pages/AIChat";
+import HubPlayers from "@/training-hub/pages/Players";
+import HubTraining from "@/training-hub/pages/Training";
+import HubProgress from "@/training-hub/pages/Progress";
+import HubMatches from "@/training-hub/pages/Matches";
+import HubCoachDashboard from "@/training-hub/pages/CoachDashboard";
+import HubSettings from "@/training-hub/pages/Settings";
+import { X } from "lucide-react";
 import {
   Brain, Dumbbell, Users, TrendingUp, Trophy, MessageCircle,
   Play, Zap, Target, Activity, ChevronRight, Star, Shield,
@@ -138,14 +150,78 @@ function RadarHex({ data, color }: { data: number[]; color: string }) {
   );
 }
 
+// ─── Hub App (full-screen overlay) ─────────────────────────────────────────────
+
+type HubPage = "dashboard" | "ai-chat" | "coach" | "players" | "training" | "progress" | "matches" | "settings";
+interface HubNavContext { prompt?: string; }
+
+function TrainingHubApp({ onClose, lang, isRTL }: { onClose: () => void; lang: "ar" | "en"; isRTL: boolean }) {
+  const [activePage, setActivePage] = useState<HubPage>("dashboard");
+  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
+
+  const handleNavigate = (page: string, context?: unknown) => {
+    setActivePage(page as HubPage);
+    if (context && typeof context === "object" && (context as HubNavContext).prompt) {
+      setPendingPrompt((context as HubNavContext).prompt!);
+    }
+  };
+
+  useEffect(() => {
+    if (activePage !== "ai-chat") setPendingPrompt(null);
+  }, [activePage]);
+
+  const renderPage = () => {
+    switch (activePage) {
+      case "dashboard": return <HubDashboard onNavigate={handleNavigate} lang={lang} />;
+      case "ai-chat": return <HubAIChat initialPrompt={pendingPrompt} onPromptConsumed={() => setPendingPrompt(null)} lang={lang} />;
+      case "players": return <HubPlayers onNavigate={handleNavigate} lang={lang} />;
+      case "training": return <HubTraining lang={lang} />;
+      case "coach": return <HubCoachDashboard onNavigate={handleNavigate} lang={lang} />;
+      case "progress": return <HubProgress lang={lang} />;
+      case "matches": return <HubMatches onNavigate={handleNavigate} lang={lang} />;
+      case "settings": return <HubSettings lang={lang} />;
+      default: return <HubDashboard onNavigate={handleNavigate} lang={lang} />;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex" style={{ background: "#0A0E1A", direction: isRTL ? "rtl" : "ltr" }}>
+      <TooltipProvider>
+        <Toaster position="top-center" richColors />
+        {isRTL && <Sidebar activePage={activePage} onNavigate={handleNavigate} lang={lang} />}
+        <main className="flex-1 overflow-hidden relative">
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 z-10 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all"
+            style={{
+              [isRTL ? "left" : "right"]: "16px",
+              background: "rgba(255,255,255,0.06)",
+              color: "rgba(238,239,238,0.5)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+          >
+            <X size={13} />
+            {lang === "ar" ? "إغلاق" : "Close"}
+          </button>
+          {renderPage()}
+        </main>
+        {!isRTL && <Sidebar activePage={activePage} onNavigate={handleNavigate} lang={lang} />}
+      </TooltipProvider>
+    </div>
+  );
+}
+
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function TrainingHub() {
   const [activeTab, setActiveTab] = useState<"overview" | "players" | "training">("overview");
-  const { isRTL } = useLanguage();
+  const [hubOpen, setHubOpen] = useState(false);
+  const { isRTL, lang } = useLanguage();
 
   return (
     <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]" dir={isRTL ? "rtl" : "ltr"}>
+      {hubOpen && <TrainingHubApp onClose={() => setHubOpen(false)} lang={lang} isRTL={isRTL} />}
       <Ada2aiNavbar />
 
       {/* ── Hero ── */}
@@ -215,11 +291,9 @@ export default function TrainingHub() {
           </div>
 
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/dashboards">
-              <button className="btn-ada-primary text-sm px-8 py-3.5 flex items-center gap-2">
-                <Zap size={16} /> Open Training Hub
+            <button onClick={() => setHubOpen(true)} className="btn-ada-primary text-sm px-8 py-3.5 flex items-center gap-2">
+                <Zap size={16} /> {lang === "ar" ? "فتح Training Hub" : "Open Training Hub"}
               </button>
-            </Link>
             <Link href="/upload">
               <button className="btn-ada-outline text-sm px-8 py-3.5 flex items-center gap-2">
                 <Activity size={16} /> Analyze Athlete
@@ -706,11 +780,9 @@ export default function TrainingHub() {
             Access the full Training Hub — AI coaching, player management, and match analytics in one platform.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/dashboards">
-              <button className="btn-ada-primary text-sm px-10 py-4 flex items-center gap-2 mx-auto">
-                <Zap size={16} /> Open Training Hub
+            <button onClick={() => setHubOpen(true)} className="btn-ada-primary text-sm px-10 py-4 flex items-center gap-2 mx-auto">
+                <Zap size={16} /> {lang === "ar" ? "فتح Training Hub" : "Open Training Hub"}
               </button>
-            </Link>
             <Link href="/product">
               <button className="btn-ada-outline text-sm px-8 py-4 flex items-center gap-2">
                 View All Modules <ArrowRight size={14} />

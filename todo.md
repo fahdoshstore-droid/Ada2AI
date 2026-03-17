@@ -137,3 +137,19 @@
 - [ ] Training Hub page: bilingual training platform preview
 - [ ] Governance pages: bilingual content
 - [ ] Navbar: language toggle + all routes updated
+
+## Training Hub Full App Integration Sprint
+
+- [ ] Create client/src/training-hub/ directory with all sub-components
+- [ ] Create Sidebar component for Training Hub
+- [ ] Create Dashboard page for Training Hub
+- [ ] Create AIChat page for Training Hub
+- [ ] Create Players page for Training Hub
+- [ ] Create Training page for Training Hub
+- [ ] Create Progress page for Training Hub
+- [ ] Create Matches page for Training Hub
+- [ ] Create CoachDashboard page for Training Hub
+- [ ] Create Settings page for Training Hub
+- [ ] Rewrite TrainingHub.tsx as self-contained app with internal routing
+- [ ] Restore original Home page structure (all sections + Navbar)
+- [ ] Save checkpoint

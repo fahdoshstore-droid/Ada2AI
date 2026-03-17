@@ -1,417 +1,312 @@
 import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useMemo } from "react";
-
-
 import { useLocation } from "wouter";
 import {
-  Search,
-  Filter,
-  Star,
-  TrendingUp,
-  MapPin,
-  Users,
-  Eye,
-  GitCompare,
-  ChevronUp,
-  ChevronDown,
-  MessageCircle,
-  Award,
-  Zap,
-  Target,
+  Search, Filter, Star, TrendingUp, MapPin, Users, Eye,
+  GitCompare, ChevronUp, ChevronDown, Award, Zap, Target,
 } from "lucide-react";
 
+// Bilingual player data
 const allPlayers = [
-  { id: 1, name: "محمد العمري", age: 16, position: "مهاجم", city: "دمام", academy: "أكاديمية كابتن", score: 87, potential: 94, speed: 92, skill: 88, goals: 23, assists: 12, matches: 31, rating: 8.4, status: "نشط", flag: "⭐" },
-  { id: 2, name: "عبدالله الشهري", age: 14, position: "وسط", city: "خبر", academy: "أكاديمية الموهبة الكروية", score: 82, potential: 91, speed: 78, skill: 85, goals: 8, assists: 27, matches: 28, rating: 8.1, status: "نشط", flag: "🔥" },
-  { id: 3, name: "فيصل القحطاني", age: 17, position: "حارس مرمى", city: "ظهران", academy: "أكاديمية الظهران الرياضية", score: 85, potential: 89, speed: 74, skill: 87, goals: 0, assists: 3, matches: 25, rating: 7.9, status: "نشط", flag: "" },
-  { id: 4, name: "خالد المطيري", age: 15, position: "مدافع", city: "دمام", academy: "مدرسة الأبطال الرياضية", score: 79, potential: 86, speed: 80, skill: 76, goals: 4, assists: 8, matches: 22, rating: 7.6, status: "نشط", flag: "" },
-  { id: 5, name: "سلطان الغامدي", age: 18, position: "مهاجم", city: "خبر", academy: "أكاديمية النجوم الصاعدة", score: 83, potential: 85, speed: 88, skill: 82, goals: 19, assists: 7, matches: 30, rating: 7.8, status: "نشط", flag: "" },
-  { id: 6, name: "عمر الدوسري", age: 13, position: "وسط", city: "ظهران", academy: "أكاديمية الخليج للرياضة", score: 76, potential: 93, speed: 72, skill: 79, goals: 5, assists: 14, matches: 18, rating: 7.4, status: "موهبة ناشئة", flag: "🌟" },
-  { id: 7, name: "يوسف العتيبي", age: 16, position: "جناح", city: "دمام", academy: "أكاديمية كابتن", score: 81, potential: 88, speed: 90, skill: 80, goals: 14, assists: 18, matches: 27, rating: 7.7, status: "نشط", flag: "" },
-  { id: 8, name: "تركي الزهراني", age: 17, position: "مدافع", city: "خبر", academy: "أكاديمية الشرقية للكرة", score: 78, potential: 82, speed: 76, skill: 74, goals: 2, assists: 5, matches: 24, rating: 7.3, status: "نشط", flag: "" },
-  { id: 9, name: "بدر الحربي", age: 15, position: "مهاجم", city: "ظهران", academy: "أكاديمية الرياضة والتميز", score: 80, potential: 90, speed: 85, skill: 78, goals: 16, assists: 6, matches: 26, rating: 7.5, status: "نشط", flag: "🔥" },
-  { id: 10, name: "ماجد السبيعي", age: 14, position: "وسط", city: "دمام", academy: "نادي الاتحاد الرياضي", score: 77, potential: 89, speed: 74, skill: 81, goals: 6, assists: 19, matches: 21, rating: 7.6, status: "موهبة ناشئة", flag: "🌟" },
-  { id: 11, name: "راشد العنزي", age: 18, position: "جناح", city: "خبر", academy: "أكاديمية النجوم الصاعدة", score: 84, potential: 84, speed: 91, skill: 83, goals: 21, assists: 11, matches: 32, rating: 8.0, status: "نشط", flag: "" },
-  { id: 12, name: "حمد البقمي", age: 16, position: "حارس مرمى", city: "ظهران", academy: "أكاديمية الخليج للرياضة", score: 80, potential: 86, speed: 70, skill: 82, goals: 0, assists: 2, matches: 20, rating: 7.5, status: "نشط", flag: "" },
+  { id: 1, nameAr: "محمد العمري", nameEn: "Mohammed Al-Omari", age: 16, positionAr: "مهاجم", positionEn: "Forward", cityAr: "الدمام", cityEn: "Dammam", sport: "Football", score: 87, potential: 94, speed: 92, skill: 88, goals: 23, assists: 12, matches: 31, rating: 8.4, statusAr: "نشط", statusEn: "Active", flag: "⭐" },
+  { id: 2, nameAr: "عبدالله الشهري", nameEn: "Abdullah Al-Shahri", age: 14, positionAr: "وسط", positionEn: "Midfielder", cityAr: "الخبر", cityEn: "Khobar", sport: "Football", score: 82, potential: 91, speed: 78, skill: 85, goals: 8, assists: 27, matches: 28, rating: 8.1, statusAr: "نشط", statusEn: "Active", flag: "🔥" },
+  { id: 3, nameAr: "فيصل القحطاني", nameEn: "Faisal Al-Qahtani", age: 17, positionAr: "حارس مرمى", positionEn: "Goalkeeper", cityAr: "الظهران", cityEn: "Dhahran", sport: "Football", score: 85, potential: 89, speed: 74, skill: 87, goals: 0, assists: 3, matches: 25, rating: 7.9, statusAr: "نشط", statusEn: "Active", flag: "" },
+  { id: 4, nameAr: "خالد المطيري", nameEn: "Khalid Al-Mutairi", age: 15, positionAr: "مدافع", positionEn: "Defender", cityAr: "الدمام", cityEn: "Dammam", sport: "Football", score: 79, potential: 86, speed: 80, skill: 76, goals: 4, assists: 8, matches: 22, rating: 7.6, statusAr: "نشط", statusEn: "Active", flag: "" },
+  { id: 5, nameAr: "سلطان الغامدي", nameEn: "Sultan Al-Ghamdi", age: 18, positionAr: "مهاجم", positionEn: "Forward", cityAr: "الخبر", cityEn: "Khobar", sport: "Basketball", score: 83, potential: 85, speed: 88, skill: 82, goals: 19, assists: 7, matches: 30, rating: 7.8, statusAr: "نشط", statusEn: "Active", flag: "" },
+  { id: 6, nameAr: "عمر الدوسري", nameEn: "Omar Al-Dosari", age: 13, positionAr: "وسط", positionEn: "Midfielder", cityAr: "الظهران", cityEn: "Dhahran", sport: "Football", score: 76, potential: 93, speed: 72, skill: 79, goals: 5, assists: 14, matches: 18, rating: 7.4, statusAr: "موهبة ناشئة", statusEn: "Rising Talent", flag: "🌟" },
+  { id: 7, nameAr: "يوسف العتيبي", nameEn: "Yousuf Al-Otaibi", age: 16, positionAr: "جناح", positionEn: "Winger", cityAr: "الدمام", cityEn: "Dammam", sport: "Football", score: 81, potential: 88, speed: 90, skill: 80, goals: 14, assists: 18, matches: 27, rating: 7.7, statusAr: "نشط", statusEn: "Active", flag: "" },
+  { id: 8, nameAr: "تركي الزهراني", nameEn: "Turki Al-Zahrani", age: 17, positionAr: "مدافع", positionEn: "Defender", cityAr: "الخبر", cityEn: "Khobar", sport: "Swimming", score: 78, potential: 82, speed: 76, skill: 74, goals: 2, assists: 5, matches: 24, rating: 7.3, statusAr: "نشط", statusEn: "Active", flag: "" },
+  { id: 9, nameAr: "بدر الحربي", nameEn: "Badr Al-Harbi", age: 15, positionAr: "مهاجم", positionEn: "Forward", cityAr: "الظهران", cityEn: "Dhahran", sport: "Boxing", score: 80, potential: 90, speed: 85, skill: 78, goals: 16, assists: 6, matches: 26, rating: 7.5, statusAr: "نشط", statusEn: "Active", flag: "🔥" },
+  { id: 10, nameAr: "ماجد السبيعي", nameEn: "Majed Al-Subaie", age: 14, positionAr: "وسط", positionEn: "Midfielder", cityAr: "الدمام", cityEn: "Dammam", sport: "Football", score: 77, potential: 89, speed: 74, skill: 81, goals: 6, assists: 19, matches: 21, rating: 7.6, statusAr: "موهبة ناشئة", statusEn: "Rising Talent", flag: "🌟" },
+  { id: 11, nameAr: "راشد العنزي", nameEn: "Rashed Al-Anzi", age: 18, positionAr: "جناح", positionEn: "Winger", cityAr: "الخبر", cityEn: "Khobar", sport: "Basketball", score: 84, potential: 84, speed: 91, skill: 83, goals: 21, assists: 11, matches: 32, rating: 8.0, statusAr: "نشط", statusEn: "Active", flag: "" },
+  { id: 12, nameAr: "حمد البقمي", nameEn: "Hamad Al-Baqami", age: 16, positionAr: "حارس مرمى", positionEn: "Goalkeeper", cityAr: "الظهران", cityEn: "Dhahran", sport: "Football", score: 80, potential: 86, speed: 70, skill: 82, goals: 0, assists: 2, matches: 20, rating: 7.5, statusAr: "نشط", statusEn: "Active", flag: "" },
 ];
-
-const positions = ["الكل", "مهاجم", "وسط", "مدافع", "جناح", "حارس مرمى"];
-const cities = ["الكل", "دمام", "خبر", "ظهران"];
-const ageRanges = ["الكل", "13-14", "15-16", "17-18"];
 
 type SortKey = "score" | "potential" | "speed" | "skill" | "goals" | "rating" | "age";
 type SortDir = "asc" | "desc";
 
-const positionColors: Record<string, string> = {
-  "مهاجم": "oklch(0.65 0.22 25)",
-  "وسط": "oklch(0.65 0.2 145)",
-  "مدافع": "oklch(0.65 0.2 200)",
-  "جناح": "oklch(0.85 0.18 85)",
-  "حارس مرمى": "oklch(0.65 0.18 290)",
-};
-
 export default function Scouts() {
-  const { isRTL } = useLanguage();
+  const { t, isRTL, lang } = useLanguage();
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
-  const [position, setPosition] = useState("الكل");
-  const [city, setCity] = useState("الكل");
-  const [ageRange, setAgeRange] = useState("الكل");
+  const [sportFilter, setSportFilter] = useState("all");
+  const [cityFilter, setCityFilter] = useState("all");
+  const [ageRange, setAgeRange] = useState("all");
   const [sortKey, setSortKey] = useState<SortKey>("score");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showFilters, setShowFilters] = useState(false);
   const [compareList, setCompareList] = useState<number[]>([]);
-  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+
+  const sports = ["all", "Football", "Basketball", "Boxing", "Swimming"];
+  const cities = ["all", "Dammam", "Khobar", "Dhahran"];
+  const ageRanges = ["all", "13-14", "15-16", "17-18"];
+
+  const sportLabels: Record<string, string> = {
+    all: t("scouts.filter.all"),
+    Football: t("sports.football"),
+    Basketball: t("sports.basketball"),
+    Boxing: t("sports.boxing"),
+    Swimming: t("sports.swimming"),
+  };
+
+  const cityLabels: Record<string, string> = {
+    all: t("scouts.filter.all"),
+    Dammam: lang === "ar" ? "الدمام" : "Dammam",
+    Khobar: lang === "ar" ? "الخبر" : "Khobar",
+    Dhahran: lang === "ar" ? "الظهران" : "Dhahran",
+  };
 
   const filtered = useMemo(() => {
     return allPlayers
       .filter((p) => {
-        const searchMatch =
-          search === "" || p.name.includes(search) || p.academy.includes(search) || p.city.includes(search);
-        const posMatch = position === "الكل" || p.position === position;
-        const cityMatch = city === "الكل" || p.city === city;
+        const name = lang === "ar" ? p.nameAr : p.nameEn;
+        const city = lang === "ar" ? p.cityAr : p.cityEn;
+        const searchMatch = search === "" || name.toLowerCase().includes(search.toLowerCase()) || city.toLowerCase().includes(search.toLowerCase());
+        const sportMatch = sportFilter === "all" || p.sport === sportFilter;
+        const cityMatch = cityFilter === "all" || p.cityEn === cityFilter;
         const ageMatch =
-          ageRange === "الكل" ||
+          ageRange === "all" ||
           (ageRange === "13-14" && p.age >= 13 && p.age <= 14) ||
           (ageRange === "15-16" && p.age >= 15 && p.age <= 16) ||
           (ageRange === "17-18" && p.age >= 17 && p.age <= 18);
-        return searchMatch && posMatch && cityMatch && ageMatch;
+        return searchMatch && sportMatch && cityMatch && ageMatch;
       })
       .sort((a, b) => {
-        const av = a[sortKey] as number;
-        const bv = b[sortKey] as number;
-        return sortDir === "desc" ? bv - av : av - bv;
+        const aVal = a[sortKey as keyof typeof a] as number;
+        const bVal = b[sortKey as keyof typeof b] as number;
+        return sortDir === "desc" ? bVal - aVal : aVal - bVal;
       });
-  }, [search, position, city, ageRange, sortKey, sortDir]);
+  }, [search, sportFilter, cityFilter, ageRange, sortKey, sortDir, lang]);
 
   const toggleSort = (key: SortKey) => {
-    if (sortKey === key) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    if (sortKey === key) setSortDir(d => d === "desc" ? "asc" : "desc");
     else { setSortKey(key); setSortDir("desc"); }
   };
 
   const toggleCompare = (id: number) => {
-    setCompareList((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : prev.length < 2 ? [...prev, id] : prev
+    setCompareList(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : prev.length < 2 ? [...prev, id] : prev
     );
   };
 
-  const SortIcon = ({ k }: { k: SortKey }) =>
-    sortKey === k ? (
-      sortDir === "desc" ? <ChevronDown size={13} className="neon-text" /> : <ChevronUp size={13} className="neon-text" />
-    ) : (
-      <ChevronDown size={13} className="opacity-20" />
-    );
+  const avgScore = filtered.length > 0 ? Math.round(filtered.reduce((s, p) => s + p.score, 0) / filtered.length) : 0;
+  const uniqueSports = new Set(filtered.map(p => p.sport)).size;
+  const uniqueCities = new Set(filtered.map(p => p.cityEn)).size;
 
-  const kpis = [
-    { label: "إجمالي اللاعبين", value: allPlayers.length, icon: <Users size={18} />, color: "oklch(0.65 0.2 145)" },
-    { label: "متوسط التقييم", value: (allPlayers.reduce((a, b) => a + b.score, 0) / allPlayers.length).toFixed(1), icon: <Star size={18} />, color: "oklch(0.85 0.18 85)" },
-    { label: "أعلى إمكانية", value: Math.max(...allPlayers.map((p) => p.potential)), icon: <TrendingUp size={18} />, color: "oklch(0.65 0.2 200)" },
-    { label: "مدن مُغطاة", value: 3, icon: <MapPin size={18} />, color: "oklch(0.65 0.22 25)" },
-  ];
+  const SortIcon = ({ k }: { k: SortKey }) => (
+    <span className="inline-flex flex-col ml-1" style={{ opacity: sortKey === k ? 1 : 0.3 }}>
+      {sortDir === "asc" && sortKey === k ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+    </span>
+  );
 
   return (
-    <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]" dir="rtl">
+    <div className="min-h-screen" style={{ background: "#000A0F", color: "#EEEFEE", direction: isRTL ? "rtl" : "ltr" }}>
       <Ada2aiNavbar />
+      <div className="container mx-auto px-4 pt-28 pb-16">
 
-      {/* Header */}
-      <section className="pt-24 pb-8 relative overflow-hidden">
-        <div className="absolute inset-0 grid-bg opacity-20" />
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-8">
-            <span className="tag-green mb-4">لوحة الكشافين</span>
-            <h1 className="text-4xl md:text-5xl font-black text-[#EEEFEE] mb-3 mt-4" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-              اكتشف المواهب المحلية
-            </h1>
-            <p className="text-[#EEEFEE]/50 text-lg" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
-              {allPlayers.length} لاعب موثق في المنطقة الشرقية — محلل بالذكاء الاصطناعي
-            </p>
+        {/* Header */}
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs mb-4"
+            style={{ background: "rgba(0,220,200,0.08)", border: "1px solid rgba(0,220,200,0.2)", color: "#00DCC8" }}>
+            <Users size={12} /> {t("scouts.title")}
           </div>
+          <h1 className="text-3xl font-black mb-2" style={{ fontFamily: "'Orbitron', sans-serif", color: "#EEEFEE" }}>
+            {t("scouts.title")}
+          </h1>
+          <p style={{ color: "rgba(238,239,238,0.55)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+            {t("scouts.sub")}
+          </p>
+        </div>
 
-          {/* KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto mb-6">
-            {kpis.map((kpi, i) => (
-              <div key={i} className="card-dark rounded-xl p-4 text-center">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center mx-auto mb-2" style={{ background: `${kpi.color.replace(")", " / 0.12)")}`, color: kpi.color }}>
-                  {kpi.icon}
-                </div>
-                <div className="text-2xl font-black mb-0.5" style={{ color: kpi.color, fontFamily: "'Space Grotesk', sans-serif" }}>{kpi.value}</div>
-                <div className="text-[#EEEFEE]/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{kpi.label}</div>
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {[
+            { icon: <Users size={18} />, val: filtered.length, label: t("scouts.total") },
+            { icon: <Star size={18} />, val: avgScore, label: t("scouts.avgScore") },
+            { icon: <Zap size={18} />, val: uniqueSports, label: t("scouts.sports") },
+            { icon: <MapPin size={18} />, val: uniqueCities, label: t("scouts.regions") },
+          ].map((s, i) => (
+            <div key={i} className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div className="flex items-center gap-2 mb-1" style={{ color: "#00DCC8" }}>{s.icon}</div>
+              <div className="text-2xl font-black" style={{ fontFamily: "'Orbitron', sans-serif", color: "#EEEFEE" }}>{s.val}</div>
+              <div className="text-xs mt-1" style={{ color: "rgba(238,239,238,0.45)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Search & Filters */}
+        <div className="mb-6 flex flex-col md:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute top-1/2 -translate-y-1/2" style={{ left: isRTL ? "auto" : "12px", right: isRTL ? "12px" : "auto", color: "rgba(238,239,238,0.35)" }} />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder={t("scouts.search")}
+              className="w-full rounded-xl py-2.5 text-sm outline-none"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: "#EEEFEE",
+                paddingLeft: isRTL ? "12px" : "36px",
+                paddingRight: isRTL ? "36px" : "12px",
+                fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit",
+              }}
+            />
+          </div>
+          <button
+            onClick={() => setShowFilters(f => !f)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm"
+            style={{ background: showFilters ? "rgba(0,220,200,0.12)" : "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: showFilters ? "#00DCC8" : "rgba(238,239,238,0.7)" }}
+          >
+            <Filter size={15} /> {t("common.filter")}
+          </button>
+        </div>
+
+        {showFilters && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+            {[
+              { label: t("scouts.filter.sport"), val: sportFilter, set: setSportFilter, opts: sports, labels: sportLabels },
+              { label: t("scouts.filter.region"), val: cityFilter, set: setCityFilter, opts: cities, labels: cityLabels },
+              { label: t("scouts.filter.age"), val: ageRange, set: setAgeRange, opts: ageRanges, labels: Object.fromEntries(ageRanges.map(a => [a, a === "all" ? t("scouts.filter.all") : a])) },
+            ].map((f, i) => (
+              <div key={i}>
+                <label className="block text-xs mb-1.5" style={{ color: "rgba(238,239,238,0.45)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{f.label}</label>
+                <select
+                  value={f.val}
+                  onChange={e => f.set(e.target.value)}
+                  className="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#EEEFEE" }}
+                >
+                  {f.opts.map(o => <option key={o} value={o}>{f.labels[o] ?? o}</option>)}
+                </select>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        )}
 
-      {/* Filters + Table */}
-      <section className="pb-16">
-        <div className="container mx-auto px-4">
-          {/* Search + filter bar */}
-          <div className="flex flex-wrap gap-3 mb-4">
-            <div className="flex-1 min-w-[200px] relative">
-              <Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#EEEFEE]/30" />
-              <input
-                type="text"
-                placeholder="ابحث باسم اللاعب أو الأكاديمية..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-[#0A1628] border border-white/10 rounded-lg pr-9 pl-4 py-2.5 text-[#EEEFEE] placeholder-white/30 text-sm focus:outline-none focus:border-[oklch(0.65_0.2_145/0.5)]"
-                style={{ fontFamily: "'Tajawal', sans-serif" }}
-              />
-            </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all ${showFilters ? "bg-[oklch(0.65_0.2_145/0.15)] border-[oklch(0.65_0.2_145/0.5)] text-[oklch(0.65_0.2_145)]" : "bg-[#0A1628] border-white/10 text-[#EEEFEE]/60"}`}
-              style={{ fontFamily: "'Tajawal', sans-serif" }}
-            >
-              <Filter size={14} /> فلاتر
-            </button>
-            <div className="flex items-center gap-1 bg-[#0A1628] border border-white/10 rounded-lg p-1">
-              <button onClick={() => setViewMode("table")} className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${viewMode === "table" ? "bg-[oklch(0.65_0.2_145/0.2)] text-[oklch(0.65_0.2_145)]" : "text-[#EEEFEE]/40"}`} style={{ fontFamily: "'Tajawal', sans-serif" }}>جدول</button>
-              <button onClick={() => setViewMode("cards")} className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${viewMode === "cards" ? "bg-[oklch(0.65_0.2_145/0.2)] text-[oklch(0.65_0.2_145)]" : "text-[#EEEFEE]/40"}`} style={{ fontFamily: "'Tajawal', sans-serif" }}>بطاقات</button>
-            </div>
+        {/* Compare bar */}
+        {compareList.length > 0 && (
+          <div className="mb-4 flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(0,122,186,0.1)", border: "1px solid rgba(0,122,186,0.3)" }}>
+            <GitCompare size={16} style={{ color: "#007ABA" }} />
+            <span className="text-sm" style={{ color: "rgba(238,239,238,0.7)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+              {compareList.length}/2 {t("scouts.compare")}
+            </span>
             {compareList.length === 2 && (
               <button
-                onClick={() => navigate(`/compare?p1=${compareList[0]}&p2=${compareList[1]}`)}
-                className="btn-primary text-sm px-4 py-2.5 flex items-center gap-2"
-                style={{ fontFamily: "'Tajawal', sans-serif" }}
+                onClick={() => navigate("/compare")}
+                className="ml-auto px-4 py-1.5 rounded-lg text-sm font-semibold"
+                style={{ background: "#007ABA", color: "#fff" }}
               >
-                <GitCompare size={15} /> مقارنة ({compareList.length})
+                {t("scouts.compare")} →
               </button>
             )}
           </div>
+        )}
 
-          {showFilters && (
-            <div className="card-dark rounded-xl p-4 mb-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="text-[#EEEFEE]/40 text-xs mb-2 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>المركز</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {positions.map((p) => (
-                    <button key={p} onClick={() => setPosition(p)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${position === p ? "bg-[oklch(0.65_0.2_145)] text-[oklch(0.08_0.02_240)]" : "bg-white/5 text-[#EEEFEE]/50 hover:bg-white/10"}`} style={{ fontFamily: "'Tajawal', sans-serif" }}>{p}</button>
+        {/* Table */}
+        <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ background: "rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                  {[
+                    { label: t("scouts.col.name"), key: null },
+                    { label: t("scouts.col.sport"), key: null },
+                    { label: t("scouts.col.age"), key: "age" as SortKey },
+                    { label: t("scouts.col.region"), key: null },
+                    { label: t("scouts.col.score"), key: "score" as SortKey },
+                    { label: t("scouts.col.actions"), key: null },
+                  ].map((col, i) => (
+                    <th
+                      key={i}
+                      className={`px-4 py-3 text-left font-semibold ${col.key ? "cursor-pointer select-none" : ""}`}
+                      style={{ color: "rgba(238,239,238,0.55)", textAlign: isRTL ? "right" : "left", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}
+                      onClick={() => col.key && toggleSort(col.key)}
+                    >
+                      {col.label}{col.key && <SortIcon k={col.key} />}
+                    </th>
                   ))}
-                </div>
-              </div>
-              <div>
-                <label className="text-[#EEEFEE]/40 text-xs mb-2 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>المدينة</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {cities.map((c) => (
-                    <button key={c} onClick={() => setCity(c)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${city === c ? "bg-[oklch(0.65_0.2_145)] text-[oklch(0.08_0.02_240)]" : "bg-white/5 text-[#EEEFEE]/50 hover:bg-white/10"}`} style={{ fontFamily: "'Tajawal', sans-serif" }}>{c}</button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="text-[#EEEFEE]/40 text-xs mb-2 block" style={{ fontFamily: "'Tajawal', sans-serif" }}>الفئة العمرية</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {ageRanges.map((a) => (
-                    <button key={a} onClick={() => setAgeRange(a)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${ageRange === a ? "bg-[oklch(0.65_0.2_145)] text-[oklch(0.08_0.02_240)]" : "bg-white/5 text-[#EEEFEE]/50 hover:bg-white/10"}`} style={{ fontFamily: "'Tajawal', sans-serif", direction: "ltr" }}>{a}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="text-[#EEEFEE]/35 text-xs mb-3" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-            {filtered.length} لاعب · {compareList.length > 0 && <span className="neon-text">اختر {2 - compareList.length} لاعب للمقارنة</span>}
-          </div>
-
-          {/* TABLE VIEW */}
-          {viewMode === "table" && (
-            <div className="card-dark rounded-xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-white/8" style={{ background: "oklch(0.11 0.02 240)" }}>
-                      <th className="text-right px-4 py-3 text-[#EEEFEE]/40 font-medium" style={{ fontFamily: "'Tajawal', sans-serif" }}>اللاعب</th>
-                      <th className="text-center px-3 py-3 text-[#EEEFEE]/40 font-medium" style={{ fontFamily: "'Tajawal', sans-serif" }}>المركز</th>
-                      <th className="text-center px-3 py-3 text-[#EEEFEE]/40 font-medium cursor-pointer hover:text-[#EEEFEE]/70" onClick={() => toggleSort("age")} style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                        <span className="flex items-center justify-center gap-1">العمر <SortIcon k="age" /></span>
-                      </th>
-                      <th className="text-center px-3 py-3 text-[#EEEFEE]/40 font-medium cursor-pointer hover:text-[#EEEFEE]/70" onClick={() => toggleSort("score")} style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                        <span className="flex items-center justify-center gap-1">التقييم <SortIcon k="score" /></span>
-                      </th>
-                      <th className="text-center px-3 py-3 text-[#EEEFEE]/40 font-medium cursor-pointer hover:text-[#EEEFEE]/70" onClick={() => toggleSort("potential")} style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                        <span className="flex items-center justify-center gap-1">الإمكانية <SortIcon k="potential" /></span>
-                      </th>
-                      <th className="text-center px-3 py-3 text-[#EEEFEE]/40 font-medium cursor-pointer hover:text-[#EEEFEE]/70" onClick={() => toggleSort("speed")} style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                        <span className="flex items-center justify-center gap-1">السرعة <SortIcon k="speed" /></span>
-                      </th>
-                      <th className="text-center px-3 py-3 text-[#EEEFEE]/40 font-medium cursor-pointer hover:text-[#EEEFEE]/70" onClick={() => toggleSort("goals")} style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                        <span className="flex items-center justify-center gap-1">أهداف <SortIcon k="goals" /></span>
-                      </th>
-                      <th className="text-center px-3 py-3 text-[#EEEFEE]/40 font-medium" style={{ fontFamily: "'Tajawal', sans-serif" }}>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={6} className="px-4 py-12 text-center" style={{ color: "rgba(238,239,238,0.35)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{t("scouts.noResults")}</td></tr>
+                ) : filtered.map((p, idx) => {
+                  const name = lang === "ar" ? p.nameAr : p.nameEn;
+                  const position = lang === "ar" ? p.positionAr : p.positionEn;
+                  const city = lang === "ar" ? p.cityAr : p.cityEn;
+                  const status = lang === "ar" ? p.statusAr : p.statusEn;
+                  const isSelected = compareList.includes(p.id);
+                  return (
+                    <tr key={p.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", background: isSelected ? "rgba(0,122,186,0.06)" : idx % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                            style={{ background: "linear-gradient(135deg, #007ABA, #00DCC8)", color: "#fff" }}>
+                            {name.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="font-semibold" style={{ color: "#EEEFEE", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                              {p.flag} {name}
+                            </div>
+                            <div className="text-xs" style={{ color: "rgba(238,239,238,0.4)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{position}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3" style={{ color: "rgba(238,239,238,0.7)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                        {sportLabels[p.sport] ?? p.sport}
+                      </td>
+                      <td className="px-4 py-3" style={{ color: "rgba(238,239,238,0.7)" }}>{p.age}</td>
+                      <td className="px-4 py-3">
+                        <span className="flex items-center gap-1 text-xs" style={{ color: "rgba(238,239,238,0.55)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                          <MapPin size={11} /> {city}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold" style={{ color: p.score >= 85 ? "#00DCC8" : p.score >= 80 ? "#FFA500" : "#EEEFEE", fontFamily: "'Orbitron', sans-serif", fontSize: "0.85rem" }}>
+                            {p.score}
+                          </span>
+                          <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
+                            <div className="h-full rounded-full" style={{ width: `${p.score}%`, background: p.score >= 85 ? "#00DCC8" : p.score >= 80 ? "#FFA500" : "#007ABA" }} />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => navigate(`/sport-id`)}
+                            className="p-1.5 rounded-lg transition-all"
+                            title={t("scouts.viewProfile")}
+                            style={{ background: "rgba(0,220,200,0.08)", color: "#00DCC8" }}
+                          >
+                            <Eye size={14} />
+                          </button>
+                          <button
+                            onClick={() => toggleCompare(p.id)}
+                            className="p-1.5 rounded-lg transition-all"
+                            title={t("scouts.compare")}
+                            style={{ background: isSelected ? "rgba(0,122,186,0.2)" : "rgba(0,122,186,0.08)", color: "#007ABA" }}
+                          >
+                            <GitCompare size={14} />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((player, idx) => {
-                      const isSelected = compareList.includes(player.id);
-                      return (
-                        <tr
-                          key={player.id}
-                          className={`border-b border-white/5 transition-all hover:bg-white/3 ${isSelected ? "bg-[oklch(0.65_0.2_145/0.05)]" : ""}`}
-                        >
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0" style={{ background: "oklch(0.65 0.2 145 / 0.12)", color: "oklch(0.65 0.2 145)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                                {player.name.charAt(0)}
-                              </div>
-                              <div>
-                                <div className="text-[#EEEFEE] font-medium flex items-center gap-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                                  {player.name} {player.flag && <span>{player.flag}</span>}
-                                </div>
-                                <div className="text-[#EEEFEE]/35 text-xs flex items-center gap-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                                  <MapPin size={10} /> {player.city} · {player.academy.replace("أكاديمية ", "").replace("مدرسة ", "")}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-3 py-3 text-center">
-                            <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ background: `${(positionColors[player.position] || "oklch(0.65 0.2 145)").replace(")", " / 0.12)")}`, color: positionColors[player.position] || "oklch(0.65 0.2 145)", fontFamily: "'Tajawal', sans-serif" }}>
-                              {player.position}
-                            </span>
-                          </td>
-                          <td className="px-3 py-3 text-center text-[#EEEFEE]/60 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{player.age}</td>
-                          <td className="px-3 py-3 text-center">
-                            <span className="font-bold text-base" style={{ color: player.score >= 85 ? "oklch(0.65 0.2 145)" : player.score >= 80 ? "oklch(0.85 0.18 85)" : "white", fontFamily: "'Space Grotesk', sans-serif" }}>
-                              {player.score}
-                            </span>
-                          </td>
-                          <td className="px-3 py-3 text-center">
-                            <span className="font-bold text-sm" style={{ color: "oklch(0.65 0.2 200)", fontFamily: "'Space Grotesk', sans-serif" }}>{player.potential}</span>
-                          </td>
-                          <td className="px-3 py-3 text-center text-[#EEEFEE]/60 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{player.speed}</td>
-                          <td className="px-3 py-3 text-center text-[#EEEFEE]/60 text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{player.goals}</td>
-                          <td className="px-3 py-3">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                onClick={() => navigate(`/demo`)}
-                                className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[oklch(0.65_0.2_145/0.15)] text-[#EEEFEE]/40 hover:text-[oklch(0.65_0.2_145)] transition-all flex items-center justify-center"
-                                title="عرض التقرير"
-                              >
-                                <Eye size={13} />
-                              </button>
-                              <button
-                                onClick={() => toggleCompare(player.id)}
-                                className={`w-7 h-7 rounded-lg transition-all flex items-center justify-center ${isSelected ? "bg-[oklch(0.65_0.2_145/0.2)] text-[oklch(0.65_0.2_145)]" : "bg-white/5 text-[#EEEFEE]/40 hover:text-[oklch(0.65_0.2_145)] hover:bg-[oklch(0.65_0.2_145/0.1)]"}`}
-                                title="مقارنة"
-                                disabled={!isSelected && compareList.length >= 2}
-                              >
-                                <GitCompare size={13} />
-                              </button>
-                              <a
-                                href={`https://wa.me/966500000000?text=أريد معلومات عن اللاعب ${player.name}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[oklch(0.65_0.2_145/0.15)] text-[#EEEFEE]/40 hover:text-[oklch(0.65_0.2_145)] transition-all flex items-center justify-center"
-                                title="واتساب"
-                              >
-                                <MessageCircle size={13} />
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-                {filtered.length === 0 && (
-                  <div className="text-center py-12 text-[#EEEFEE]/30" style={{ fontFamily: "'Tajawal', sans-serif" }}>لا توجد نتائج</div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* CARDS VIEW */}
-          {viewMode === "cards" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filtered.map((player) => {
-                const isSelected = compareList.includes(player.id);
-                return (
-                  <div
-                    key={player.id}
-                    className={`card-dark rounded-xl p-5 transition-all duration-300 ${isSelected ? "neon-border" : "hover:border-white/20"}`}
-                    style={{ borderRight: `3px solid ${positionColors[player.position] || "oklch(0.65 0.2 145)"}` }}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-full flex items-center justify-center text-lg font-black" style={{ background: "oklch(0.65 0.2 145 / 0.12)", color: "oklch(0.65 0.2 145)", fontFamily: "'Space Grotesk', sans-serif" }}>
-                          {player.name.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="text-[#EEEFEE] font-bold" style={{ fontFamily: "'Tajawal', sans-serif" }}>{player.name} {player.flag}</div>
-                          <div className="text-[#EEEFEE]/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{player.position} · {player.age} سنة</div>
-                        </div>
-                      </div>
-                      <div className="text-2xl font-black" style={{ color: "oklch(0.65 0.2 145)", fontFamily: "'Space Grotesk', sans-serif" }}>{player.score}</div>
-                    </div>
-
-                    <div className="flex items-center gap-2 mb-3">
-                      <MapPin size={11} className="text-[#EEEFEE]/30" />
-                      <span className="text-[#EEEFEE]/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{player.city} · {player.academy.replace("أكاديمية ", "")}</span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 mb-4">
-                      {[
-                        { label: "إمكانية", value: player.potential, icon: <TrendingUp size={11} />, color: "oklch(0.65 0.2 200)" },
-                        { label: "سرعة", value: player.speed, icon: <Zap size={11} />, color: "oklch(0.85 0.18 85)" },
-                        { label: "أهداف", value: player.goals, icon: <Target size={11} />, color: "oklch(0.65 0.22 25)" },
-                      ].map((stat, i) => (
-                        <div key={i} className="bg-white/4 rounded-lg p-2 text-center">
-                          <div style={{ color: stat.color }} className="flex justify-center mb-0.5">{stat.icon}</div>
-                          <div className="font-bold text-sm" style={{ color: stat.color, fontFamily: "'Space Grotesk', sans-serif" }}>{stat.value}</div>
-                          <div className="text-[#EEEFEE]/30 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>{stat.label}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex gap-2">
-                      <button onClick={() => navigate("/demo")} className="flex-1 btn-outline-green text-xs py-2 flex items-center justify-center gap-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                        <Eye size={12} /> تقرير AI
-                      </button>
-                      <button
-                        onClick={() => toggleCompare(player.id)}
-                        className={`flex-1 text-xs py-2 rounded-lg border transition-all flex items-center justify-center gap-1 ${isSelected ? "bg-[oklch(0.65_0.2_145/0.2)] border-[oklch(0.65_0.2_145/0.5)] text-[oklch(0.65_0.2_145)]" : "bg-white/5 border-white/10 text-[#EEEFEE]/50 hover:text-[#EEEFEE]"}`}
-                        style={{ fontFamily: "'Tajawal', sans-serif" }}
-                        disabled={!isSelected && compareList.length >= 2}
-                      >
-                        <GitCompare size={12} /> مقارنة
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-              {filtered.length === 0 && (
-                <div className="col-span-3 text-center py-12 text-[#EEEFEE]/30" style={{ fontFamily: "'Tajawal', sans-serif" }}>لا توجد نتائج</div>
-              )}
-            </div>
-          )}
-
-          {/* Compare banner */}
-          {compareList.length > 0 && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-              <div className="card-dark neon-border rounded-2xl px-6 py-3 flex items-center gap-4 shadow-2xl">
-                <div className="flex items-center gap-2">
-                  <GitCompare size={16} className="neon-text" />
-                  <span className="text-[#EEEFEE] text-sm font-medium" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                    {compareList.length === 1 ? "اختر لاعباً ثانياً للمقارنة" : "جاهز للمقارنة"}
-                  </span>
-                </div>
-                {compareList.length === 2 && (
-                  <button
-                    onClick={() => navigate(`/compare?p1=${compareList[0]}&p2=${compareList[1]}`)}
-                    className="btn-primary text-sm px-4 py-1.5"
-                    style={{ fontFamily: "'Tajawal', sans-serif" }}
-                  >
-                    قارن الآن
-                  </button>
-                )}
-                <button onClick={() => setCompareList([])} className="text-[#EEEFEE]/40 hover:text-[#EEEFEE] text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>إلغاء</button>
-              </div>
-            </div>
-          )}
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </section>
 
-      
+        {/* Footer count */}
+        <div className="mt-4 text-xs" style={{ color: "rgba(238,239,238,0.35)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+          {filtered.length} {t("common.results")}
+        </div>
+      </div>
     </div>
   );
 }

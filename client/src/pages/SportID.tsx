@@ -300,7 +300,7 @@ function OnboardingModal({ onComplete, onSelectPlayer }: { onComplete: () => voi
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function SportIDPage() {
-  const { isRTL } = useLanguage();
+  const { isRTL, t, lang } = useLanguage();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedPlayerIdx, setSelectedPlayerIdx] = useState(0);
@@ -324,7 +324,7 @@ export default function SportIDPage() {
   }
 
   return (
-    <div className="min-h-screen text-[#EEEFEE]" style={{ background: "oklch(0.08 0.02 240)", fontFamily: "'Tajawal', sans-serif" }} dir="rtl">
+    <div className="min-h-screen text-[#EEEFEE]" style={{ background: "oklch(0.08 0.02 240)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }} dir={isRTL ? "rtl" : "ltr"}>
       <Ada2aiNavbar />
       {showOnboarding && (
         <OnboardingModal
@@ -338,13 +338,13 @@ export default function SportIDPage() {
         <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(0,194,168,0.07) 0%, transparent 70%)" }} />
         <div className="container mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "rgba(0,194,168,0.1)", border: "1px solid rgba(0,194,168,0.3)", color: "#00C2A8" }}>
-            <Shield size={12} /> هوية رياضية رقمية موثّقة
+            <Shield size={12} /> {lang === "ar" ? "هوية رياضية رقمية موثّقة" : "Verified Digital Sport Identity"}
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-[#EEEFEE] mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             Sport<span style={{ color: "#00C2A8" }}>ID</span>
           </h1>
           <p className="text-[#EEEFEE]/50 max-w-lg mx-auto text-sm leading-relaxed">
-            جواز سفرك الرياضي الرقمي — موثّق بنفاذ، معترف به في جميع الأكاديميات والمنشآت الرياضية
+            {lang === "ar" ? "جواز سفرك الرياضي الرقمي — موثّق بنفاذ، معترف به في جميع الأكاديميات والمنشآت الرياضية" : "Your digital sports passport — verified with Nafath, recognized across all academies and sports facilities"}
           </p>
         </div>
       </div>
@@ -362,8 +362,8 @@ export default function SportIDPage() {
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                 <div className="px-8 py-4 rounded-2xl text-center" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", border: "1px solid rgba(0,194,168,0.3)" }}>
                   <Shield size={28} style={{ color: "#00C2A8" }} className="mx-auto mb-2" />
-                  <p className="text-[#EEEFEE] font-bold mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>سجّل دخولك للوصول</p>
-                  <p className="text-[#EEEFEE]/50 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>التحقق عبر نفاذ مطلوب</p>
+                  <p className="text-[#EEEFEE] font-bold mb-1" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "سجّل دخولك للوصول" : "Sign in to access"}</p>
+                  <p className="text-[#EEEFEE]/50 text-xs" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "التحقق عبر نفاذ مطلوب" : "Nafath verification required"}</p>
                 </div>
               </div>
             </div>

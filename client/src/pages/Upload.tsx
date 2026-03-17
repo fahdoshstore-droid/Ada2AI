@@ -147,12 +147,12 @@ function runAIAnalysis(form: {
 
   // Radar data (6 axes for display)
   const radarData = [
-    { subject: "التقنية", A: Math.round(techAvg), fullMark: 100 },
-    { subject: "البدنية", A: Math.round(physAvg), fullMark: 100 },
-    { subject: "التكتيك", A: Math.round(tactAvg), fullMark: 100 },
-    { subject: "الذهنية", A: Math.round(mentAvg), fullMark: 100 },
-    { subject: "التسديد", A: technical.shooting, fullMark: 100 },
-    { subject: "السرعة", A: physical.speed, fullMark: 100 },
+    { subject: "Technical", A: Math.round(techAvg), fullMark: 100 },
+    { subject: "Physical", A: Math.round(physAvg), fullMark: 100 },
+    { subject: "Tactical", A: Math.round(tactAvg), fullMark: 100 },
+    { subject: "Mental", A: Math.round(mentAvg), fullMark: 100 },
+    { subject: "Shooting", A: technical.shooting, fullMark: 100 },
+    { subject: "Speed", A: physical.speed, fullMark: 100 },
   ];
 
   const confidence = form.mediaType === "video" ? rand(82, 96, 20) : rand(68, 84, 21);
@@ -193,10 +193,10 @@ function getScoreColor(score: number) {
 }
 
 function getScoreLabel(score: number) {
-  if (score >= 85) return "ممتاز";
-  if (score >= 72) return "جيد جداً";
-  if (score >= 60) return "جيد";
-  return "يحتاج تطوير";
+  if (score >= 85) return "Excellent";
+  if (score >= 72) return "Very Good";
+  if (score >= 60) return "Good";
+  return "Needs Development";
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -252,7 +252,7 @@ const analysisStages = [
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function UploadPage() {
-  const { isRTL } = useLanguage();
+  const { isRTL, t, lang } = useLanguage();
   const [, navigate] = useLocation();
   const [step, setStep] = useState<Step>("form");
   const [form, setForm] = useState({
@@ -448,7 +448,7 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="min-h-screen text-[#EEEFEE]" style={{ background: "oklch(0.08 0.02 240)", fontFamily: "'Tajawal', sans-serif" }} dir="rtl">
+    <div className="min-h-screen text-[#EEEFEE]" style={{ background: "oklch(0.08 0.02 240)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }} dir={isRTL ? "rtl" : "ltr"}>
       <Ada2aiNavbar />
 
       {/* Banner */}
@@ -456,13 +456,13 @@ export default function UploadPage() {
         <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, oklch(0.65 0.2 145 / 0.06) 0%, transparent 70%)" }} />
         <div className="container mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "oklch(0.65 0.2 145 / 0.1)", border: "1px solid oklch(0.65 0.2 145 / 0.3)", color: "oklch(0.65 0.2 145)" }}>
-            <Brain size={12} /> محرك تحليل AI — المعايير الاحترافية
+            <Brain size={12} /> {t("upload.title")} — Professional Standards
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-[#EEEFEE] mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            تحليل <span style={{ color: "oklch(0.65 0.2 145)" }}>AI</span> للاعب
+          <h1 className="text-4xl md:text-5xl font-black text-[#EEEFEE] mb-3" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "'Orbitron', sans-serif" }}>
+            {t("upload.title")}
           </h1>
-          <p className="text-[#EEEFEE]/50 max-w-xl mx-auto text-sm leading-relaxed">
-            ارفع فيديو أو صورة للاعب وسيحلل الذكاء الاصطناعي أداءه وفق <strong className="text-[#EEEFEE]/70">المعايير الاحترافية الدولية</strong> ومعايير <strong className="text-[#EEEFEE]/70">الاتحادات الرياضية السعودية</strong>
+          <p className="text-[#EEEFEE]/50 max-w-xl mx-auto text-sm leading-relaxed" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+            {t("upload.sub")}
           </p>
         </div>
       </div>
@@ -476,9 +476,9 @@ export default function UploadPage() {
             <div className="rounded-2xl p-4 flex gap-3" style={{ background: "oklch(0.65 0.2 145 / 0.05)", border: "1px solid oklch(0.65 0.2 145 / 0.2)" }}>
               <Info size={18} style={{ color: "oklch(0.65 0.2 145)", flexShrink: 0, marginTop: 2 }} />
               <div>
-                <div className="text-[#EEEFEE] font-bold text-sm mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>معايير التحليل المعتمدة</div>
-                <div className="text-[#EEEFEE]/50 text-xs leading-relaxed">
-                  يعتمد محرك التحليل على <strong className="text-[#EEEFEE]/70">Professional Scout Standards</strong> لقياس المهارات التقنية والبدنية، و<strong className="text-[#EEEFEE]/70">معايير الاتحادات الرياضية السعودية</strong> للفئات العمرية المحلية (U13–U19)، مع تقييم 4 محاور رئيسية: التقني، البدني، التكتيكي، والذهني.
+                <div className="text-[#EEEFEE] font-bold text-sm mb-1" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "معايير التحليل المعتمدة" : "Approved Analysis Standards"}</div>
+                <div className="text-[#EEEFEE]/50 text-xs leading-relaxed" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                  {lang === "ar" ? <>يعتمد محرك التحليل على <strong className="text-[#EEEFEE]/70">Professional Scout Standards</strong> لقياس المهارات التقنية والبدنية، و<strong className="text-[#EEEFEE]/70">معايير الاتحادات الرياضية السعودية</strong> للفئات العمرية المحلية (U13–U19)، مع تقييم 4 محاور رئيسية: التقني، البدني، التكتيكي، والذهني.</> : <>Analysis engine uses <strong className="text-[#EEEFEE]/70">Professional Scout Standards</strong> for technical and physical metrics, and <strong className="text-[#EEEFEE]/70">Saudi Sports Federation standards</strong> for local age groups (U13–U19), evaluating 4 main axes: Technical, Physical, Tactical, and Mental.</>}
                 </div>
               </div>
             </div>
@@ -486,13 +486,13 @@ export default function UploadPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Player Name */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                  <User size={12} /> اسم اللاعب <span className="text-red-400">*</span>
+                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                  <User size={12} /> {lang === "ar" ? "اسم اللاعب" : "Athlete Name"} <span className="text-red-400">*</span>
                 </label>
                 <input
                   value={form.playerName}
                   onChange={(e) => setForm((p) => ({ ...p, playerName: e.target.value }))}
-                  placeholder="الاسم الثلاثي"
+                  placeholder={lang === "ar" ? "الاسم الثلاثي" : "Full Name"}
                   className="w-full px-4 py-3 rounded-xl text-[#EEEFEE] text-sm outline-none transition-all"
                   style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "'Tajawal', sans-serif" }}
                   onFocus={(e) => (e.target.style.borderColor = "oklch(0.65 0.2 145 / 0.5)")}
@@ -502,14 +502,14 @@ export default function UploadPage() {
 
               {/* Age */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                  <Clock size={12} /> العمر <span className="text-red-400">*</span>
+                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                  <Clock size={12} /> {lang === "ar" ? "العمر" : "Age"} <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="number" min="8" max="35"
                   value={form.age}
                   onChange={(e) => setForm((p) => ({ ...p, age: e.target.value }))}
-                  placeholder="مثال: 16"
+                  placeholder={lang === "ar" ? "مثال: 16" : "e.g. 16"}
                   className="w-full px-4 py-3 rounded-xl text-[#EEEFEE] text-sm outline-none transition-all"
                   style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "'Space Grotesk', sans-serif" }}
                   onFocus={(e) => (e.target.style.borderColor = "oklch(0.65 0.2 145 / 0.5)")}
@@ -519,8 +519,8 @@ export default function UploadPage() {
 
               {/* Position */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                  <Target size={12} /> المركز <span className="text-red-400">*</span>
+                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                  <Target size={12} /> {lang === "ar" ? "المركز" : "Position"} <span className="text-red-400">*</span>
                 </label>
                 <select
                   value={form.position}
@@ -528,15 +528,15 @@ export default function UploadPage() {
                   className="w-full px-4 py-3 rounded-xl text-[#EEEFEE] text-sm outline-none transition-all"
                   style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "'Tajawal', sans-serif" }}
                 >
-                  <option value="" style={{ background: "#0D1B2A" }}>اختر المركز</option>
+                  <option value="" style={{ background: "#0D1B2A" }}>{lang === "ar" ? "اختر المركز" : "Select Position"}</option>
                   {positions.map((p) => <option key={p} value={p} style={{ background: "#0D1B2A" }}>{p}</option>)}
                 </select>
               </div>
 
               {/* City */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                  <MapPin size={12} /> المدينة <span className="text-red-400">*</span>
+                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                  <MapPin size={12} /> {lang === "ar" ? "المدينة" : "City"} <span className="text-red-400">*</span>
                 </label>
                 <select
                   value={form.city}
@@ -544,15 +544,15 @@ export default function UploadPage() {
                   className="w-full px-4 py-3 rounded-xl text-[#EEEFEE] text-sm outline-none transition-all"
                   style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "'Tajawal', sans-serif" }}
                 >
-                  <option value="" style={{ background: "#0D1B2A" }}>اختر المدينة</option>
+                  <option value="" style={{ background: "#0D1B2A" }}>{lang === "ar" ? "اختر المدينة" : "Select City"}</option>
                   {cities.map((c) => <option key={c} value={c} style={{ background: "#0D1B2A" }}>{c}</option>)}
                 </select>
               </div>
 
               {/* Academy */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                  <Award size={12} /> الأكاديمية
+                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                  <Award size={12} /> {lang === "ar" ? "الأكاديمية" : "Academy"}
                 </label>
                 <select
                   value={form.academy}
@@ -560,15 +560,15 @@ export default function UploadPage() {
                   className="w-full px-4 py-3 rounded-xl text-[#EEEFEE] text-sm outline-none transition-all"
                   style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "'Tajawal', sans-serif" }}
                 >
-                  <option value="" style={{ background: "#0D1B2A" }}>اختر الأكاديمية</option>
+                  <option value="" style={{ background: "#0D1B2A" }}>{lang === "ar" ? "اختر الأكاديمية" : "Select Academy"}</option>
                   {academies.map((a) => <option key={a} value={a} style={{ background: "#0D1B2A" }}>{a}</option>)}
                 </select>
               </div>
 
               {/* Guardian Phone */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                  <MessageCircle size={12} /> واتساب ولي الأمر
+                <label className="text-[#EEEFEE]/60 text-xs font-semibold flex items-center gap-1.5" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                  <MessageCircle size={12} /> {lang === "ar" ? "واتساب ولي الأمر" : "Guardian WhatsApp"}
                 </label>
                 <input
                   type="tel"

@@ -51,7 +51,7 @@ const playerColors = [
 ];
 
 export default function Compare() {
-  const { isRTL } = useLanguage();
+  const { isRTL, t, lang } = useLanguage();
   const [, navigate] = useLocation();
   const search = useSearch();
   const params = new URLSearchParams(search);
@@ -65,21 +65,21 @@ export default function Compare() {
   const p2 = allPlayers.find((p) => p.id === p2Id) || allPlayers[1];
 
   const radarData = [
-    { subject: "السرعة", p1: p1.speed, p2: p2.speed },
-    { subject: "المهارة", p1: p1.skill, p2: p2.skill },
-    { subject: "التكتيك", p1: p1.tactical, p2: p2.tactical },
-    { subject: "اللياقة", p1: p1.fitness, p2: p2.fitness },
-    { subject: "التمرير", p1: p1.passing, p2: p2.passing },
-    { subject: "التسديد", p1: p1.shooting, p2: p2.shooting },
+    { subject: lang === "ar" ? "السرعة" : "Speed", p1: p1.speed, p2: p2.speed },
+    { subject: lang === "ar" ? "المهارة" : "Skill", p1: p1.skill, p2: p2.skill },
+    { subject: lang === "ar" ? "التكتيك" : "Tactics", p1: p1.tactical, p2: p2.tactical },
+    { subject: lang === "ar" ? "اللياقة" : "Fitness", p1: p1.fitness, p2: p2.fitness },
+    { subject: lang === "ar" ? "التمرير" : "Passing", p1: p1.passing, p2: p2.passing },
+    { subject: lang === "ar" ? "التسديد" : "Shooting", p1: p1.shooting, p2: p2.shooting },
   ];
 
   const barData = [
-    { name: "التقييم", p1: p1.score, p2: p2.score },
-    { name: "الإمكانية", p1: p1.potential, p2: p2.potential },
-    { name: "السرعة", p1: p1.speed, p2: p2.speed },
-    { name: "المهارة", p1: p1.skill, p2: p2.skill },
-    { name: "التمرير", p1: p1.passing, p2: p2.passing },
-    { name: "التسديد", p1: p1.shooting, p2: p2.shooting },
+    { name: lang === "ar" ? "التقييم" : "Score", p1: p1.score, p2: p2.score },
+    { name: lang === "ar" ? "الإمكانية" : "Potential", p1: p1.potential, p2: p2.potential },
+    { name: lang === "ar" ? "السرعة" : "Speed", p1: p1.speed, p2: p2.speed },
+    { name: lang === "ar" ? "المهارة" : "Skill", p1: p1.skill, p2: p2.skill },
+    { name: lang === "ar" ? "التمرير" : "Passing", p1: p1.passing, p2: p2.passing },
+    { name: lang === "ar" ? "التسديد" : "Shooting", p1: p1.shooting, p2: p2.shooting },
   ];
 
   const winner = p1.score > p2.score ? p1 : p2.score > p1.score ? p2 : null;
@@ -113,19 +113,19 @@ export default function Compare() {
   };
 
   return (
-    <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]" dir="rtl">
+    <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]" dir={isRTL ? "rtl" : "ltr"}>
       <Ada2aiNavbar />
 
       {/* Header */}
       <section className="pt-24 pb-8 relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-20" />
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <span className="tag-green mb-4">مقارنة اللاعبين</span>
-          <h1 className="text-4xl md:text-5xl font-black text-[#EEEFEE] mb-3 mt-4" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-            قارن بين اللاعبين
+          <span className="tag-green mb-4">{t("compare.title")}</span>
+          <h1 className="text-4xl md:text-5xl font-black text-[#EEEFEE] mb-3 mt-4" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "'Orbitron', sans-serif" }}>
+            {t("compare.title")}
           </h1>
-          <p className="text-[#EEEFEE]/50 text-lg" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
-            مقارنة مرئية شاملة مدعومة بتحليل AI
+          <p className="text-[#EEEFEE]/50 text-lg" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+            {t("compare.sub")}
           </p>
         </div>
       </section>
@@ -136,14 +136,14 @@ export default function Compare() {
           {/* Player selectors */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-8">
             <div>
-              <label className="text-[oklch(0.65_0.2_145)] text-xs font-bold mb-2 block flex items-center gap-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                <div className="w-3 h-3 rounded-full bg-[oklch(0.65_0.2_145)]" /> اللاعب الأول
+              <label className="text-[oklch(0.65_0.2_145)] text-xs font-bold mb-2 block flex items-center gap-1" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                <div className="w-3 h-3 rounded-full bg-[oklch(0.65_0.2_145)]" /> {t("compare.select1")}
               </label>
               <PlayerSelector value={p1Id} onChange={setP1Id} exclude={p2Id} />
             </div>
             <div>
-              <label className="text-[oklch(0.65_0.22_25)] text-xs font-bold mb-2 block flex items-center gap-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                <div className="w-3 h-3 rounded-full bg-[oklch(0.65_0.22_25)]" /> اللاعب الثاني
+              <label className="text-[oklch(0.65_0.22_25)] text-xs font-bold mb-2 block flex items-center gap-1" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                <div className="w-3 h-3 rounded-full bg-[oklch(0.65_0.22_25)]" /> {t("compare.select2")}
               </label>
               <PlayerSelector value={p2Id} onChange={setP2Id} exclude={p1Id} />
             </div>
@@ -171,7 +171,7 @@ export default function Compare() {
                   <div>
                     <div className="text-[#EEEFEE] font-bold flex items-center gap-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
                       {player.name}
-                      {winner?.id === player.id && <span className="text-yellow-400 text-xs">🏆 الأفضل</span>}
+                      {winner?.id === player.id && <span className="text-yellow-400 text-xs">🏆 {t("compare.winner")}</span>}
                     </div>
                     <div className="text-[#EEEFEE]/40 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>
                       {player.position} · {player.age} سنة · {player.city}
@@ -191,8 +191,8 @@ export default function Compare() {
 
           {/* Radar Chart */}
           <div className="card-dark rounded-2xl p-6 mb-5 max-w-3xl mx-auto">
-            <h3 className="text-[#EEEFEE] font-bold mb-4 flex items-center gap-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-              <GitCompare size={16} className="neon-text" /> خريطة المهارات المقارنة
+            <h3 className="text-[#EEEFEE] font-bold mb-4 flex items-center gap-2" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+              <GitCompare size={16} className="neon-text" /> {lang === "ar" ? "خريطة المهارات المقارنة" : "Skills Comparison Map"}
             </h3>
             <div className="flex gap-4 mb-2">
               {[p1, p2].map((p, i) => (
@@ -220,8 +220,8 @@ export default function Compare() {
 
           {/* Bar comparison */}
           <div className="card-dark rounded-2xl p-6 mb-5 max-w-3xl mx-auto">
-            <h3 className="text-[#EEEFEE] font-bold mb-4 flex items-center gap-2" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-              <Target size={16} className="neon-text" /> مقارنة الإحصائيات
+            <h3 className="text-[#EEEFEE] font-bold mb-4 flex items-center gap-2" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+              <Target size={16} className="neon-text" /> {lang === "ar" ? "مقارنة الإحصائيات" : "Statistics Comparison"}
             </h3>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={barData} barGap={4}>
@@ -243,30 +243,30 @@ export default function Compare() {
               <div className="col-span-2 text-left">
                 <span className="text-[oklch(0.65_0.2_145)] text-xs font-bold" style={{ fontFamily: "'Tajawal', sans-serif" }}>{p1.name}</span>
               </div>
-              <div className="col-span-3 text-center text-[#EEEFEE]/30 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>الإحصائية</div>
+              <div className="col-span-3 text-center text-[#EEEFEE]/30 text-xs" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{t("compare.metrics")}</div>
               <div className="col-span-2 text-right">
                 <span className="text-[oklch(0.65_0.22_25)] text-xs font-bold" style={{ fontFamily: "'Tajawal', sans-serif" }}>{p2.name}</span>
               </div>
             </div>
-            <StatRow label="التقييم الكلي" v1={p1.score} v2={p2.score} />
-            <StatRow label="الإمكانية" v1={p1.potential} v2={p2.potential} />
-            <StatRow label="السرعة" v1={p1.speed} v2={p2.speed} />
-            <StatRow label="المهارة" v1={p1.skill} v2={p2.skill} />
-            <StatRow label="التكتيك" v1={p1.tactical} v2={p2.tactical} />
-            <StatRow label="اللياقة" v1={p1.fitness} v2={p2.fitness} />
-            <StatRow label="التمرير" v1={p1.passing} v2={p2.passing} />
-            <StatRow label="التسديد" v1={p1.shooting} v2={p2.shooting} />
-            <StatRow label="الأهداف" v1={p1.goals} v2={p2.goals} />
-            <StatRow label="التمريرات الحاسمة" v1={p1.assists} v2={p2.assists} />
-            <StatRow label="المباريات" v1={p1.matches} v2={p2.matches} />
+            <StatRow label={lang === "ar" ? "التقييم الكلي" : "Overall Score"} v1={p1.score} v2={p2.score} />
+            <StatRow label={lang === "ar" ? "الإمكانية" : "Potential"} v1={p1.potential} v2={p2.potential} />
+            <StatRow label={lang === "ar" ? "السرعة" : "Speed"} v1={p1.speed} v2={p2.speed} />
+            <StatRow label={lang === "ar" ? "المهارة" : "Skill"} v1={p1.skill} v2={p2.skill} />
+            <StatRow label={lang === "ar" ? "التكتيك" : "Tactics"} v1={p1.tactical} v2={p2.tactical} />
+            <StatRow label={lang === "ar" ? "اللياقة" : "Fitness"} v1={p1.fitness} v2={p2.fitness} />
+            <StatRow label={lang === "ar" ? "التمرير" : "Passing"} v1={p1.passing} v2={p2.passing} />
+            <StatRow label={lang === "ar" ? "التسديد" : "Shooting"} v1={p1.shooting} v2={p2.shooting} />
+            <StatRow label={lang === "ar" ? "الأهداف" : "Goals"} v1={p1.goals} v2={p2.goals} />
+            <StatRow label={lang === "ar" ? "التمريرات الحاسمة" : "Assists"} v1={p1.assists} v2={p2.assists} />
+            <StatRow label={lang === "ar" ? "المباريات" : "Matches"} v1={p1.matches} v2={p2.matches} />
           </div>
 
           {/* Strengths comparison */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-6">
             {[p1, p2].map((player, idx) => (
               <div key={player.id} className="card-dark rounded-xl p-5" style={{ borderRight: `3px solid ${idx === 0 ? "oklch(0.65 0.2 145)" : "oklch(0.65 0.22 25)"}` }}>
-                <h4 className="font-bold mb-3 text-sm" style={{ color: idx === 0 ? "oklch(0.65 0.2 145)" : "oklch(0.65 0.22 25)", fontFamily: "'Tajawal', sans-serif" }}>
-                  ✅ نقاط قوة {player.name}
+                <h4 className="font-bold mb-3 text-sm" style={{ color: idx === 0 ? "oklch(0.65 0.2 145)" : "oklch(0.65 0.22 25)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                  ✅ {lang === "ar" ? "نقاط قوة" : "Strengths of"} {player.name}
                 </h4>
                 <ul className="space-y-1.5">
                   {player.strengths.map((s, i) => (
@@ -283,8 +283,8 @@ export default function Compare() {
           {/* CTA */}
           <div className="max-w-3xl mx-auto text-center">
             <div className="card-dark rounded-2xl p-6" style={{ border: "1px solid oklch(0.65 0.2 145 / 0.2)" }}>
-              <p className="text-[#EEEFEE]/60 mb-4" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                هل تريد تقارير تفصيلية لكلا اللاعبين؟ تواصل معنا عبر واتساب
+              <p className="text-[#EEEFEE]/60 mb-4" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                {lang === "ar" ? "هل تريد تقارير تفصيلية لكلا اللاعبين؟ تواصل معنا عبر واتساب" : "Want detailed reports for both athletes? Contact us via WhatsApp"}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <a
@@ -294,14 +294,14 @@ export default function Compare() {
                   className="btn-primary px-6 py-2.5 flex items-center justify-center gap-2"
                   style={{ fontFamily: "'Tajawal', sans-serif" }}
                 >
-                  <MessageCircle size={16} /> احصل على التقارير
+                  <MessageCircle size={16} /> {lang === "ar" ? "احصل على التقارير" : "Get Reports"}
                 </a>
                 <button
                   onClick={() => navigate("/scouts")}
                   className="btn-outline-green px-6 py-2.5 flex items-center justify-center gap-2"
                   style={{ fontFamily: "'Tajawal', sans-serif" }}
                 >
-                  <Users size={16} /> لوحة الكشافين
+                  <Users size={16} /> {t("nav.scoutDashboard")}
                 </button>
               </div>
             </div>
