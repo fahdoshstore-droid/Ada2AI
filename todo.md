@@ -153,3 +153,12 @@
 - [ ] Rewrite TrainingHub.tsx as self-contained app with internal routing
 - [ ] Restore original Home page structure (all sections + Navbar)
 - [ ] Save checkpoint
+
+## CoachDashboard Feature Expansion (Mar 18, 2026)
+- [ ] Custom opponent team input form (name, formation, strengths, weaknesses)
+- [ ] Save/load formations to DB via tRPC
+- [ ] Real player assignment from /data/players.ts to pitch positions
+- [ ] Video analysis upload panel with API integration (POST /api/v1/football/analyze-football)
+- [ ] Possession bars display from analysis results
+- [ ] Voronoi field visualization from analysis results
+- [ ] JSON results display panel
