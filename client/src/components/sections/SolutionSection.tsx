@@ -93,7 +93,7 @@ export default function SolutionSection() {
               className="text-white/55 text-lg mb-8 leading-relaxed"
               style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
             >
-              Scout AI تجمع بين قوة الذكاء الاصطناعي ومعايير FIFA الدولية لتحليل اللاعبين وربطهم بالأندية مباشرة
+              Ada2ai تجمع بين قوة الذكاء الاصطناعي ومعايير FIFA الدولية لتحليل اللاعبين وربطهم بالأندية مباشرة
             </p>
 
             <div className="space-y-4">

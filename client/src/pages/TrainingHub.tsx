@@ -702,7 +702,7 @@ export default function TrainingHub() {
                 </div>
                 <div>
                   <div className="font-bold text-sm text-[#EEEFEE]" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                    مساعد Scout AI
+                    Ada2ai Assistant
                   </div>
                   <div className="text-xs" style={{ color: "#00DCC8", fontFamily: "'Cairo', sans-serif" }}>
                     Qwen AI • متصل
@@ -719,7 +719,7 @@ export default function TrainingHub() {
                   lineHeight: 1.8,
                 }}
               >
-                مرحباً! أنا Scout AI، مساعدك الذكي للتدريبات الرياضية. يمكنني مساعدتك في:
+                مرحباً! أنا Ada2ai، مساعدك الذكي للتدريبات الرياضية. يمكنني مساعدتك في:
                 <ul className="mt-2 space-y-1 text-xs" style={{ color: "rgba(238,239,238,0.6)" }}>
                   <li>• تحليل أداء اللاعبين</li>
                   <li>• اقتراح خطط تدريبية</li>
@@ -753,7 +753,7 @@ export default function TrainingHub() {
                   className="flex-1 text-sm"
                   style={{ color: "rgba(238,239,238,0.3)", fontFamily: "'Cairo', sans-serif" }}
                 >
-                  اسأل Scout AI عن التدريبات...
+                  اسأل Ada2ai عن التدريبات...
                 </span>
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center"

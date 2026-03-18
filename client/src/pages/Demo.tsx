@@ -161,7 +161,7 @@ export default function Demo() {
             className="text-4xl md:text-5xl font-black text-white mb-3 mt-4"
             style={{ fontFamily: "'Tajawal', sans-serif" }}
           >
-            شاهد Scout AI في العمل
+            شاهد Ada2ai في العمل
           </h1>
           <p
             className="text-white/50 text-lg max-w-xl mx-auto"

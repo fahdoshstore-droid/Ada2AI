@@ -27,7 +27,7 @@ export default function CompetitiveSection() {
             className="text-4xl md:text-5xl font-black text-white mb-4 mt-4"
             style={{ fontFamily: "'Tajawal', sans-serif" }}
           >
-            Scout AI مقابل
+            Ada2ai مقابل
             <span style={{ color: "oklch(0.65 0.22 25)" }}> الطريقة التقليدية</span>
           </h2>
         </div>
@@ -50,7 +50,7 @@ export default function CompetitiveSection() {
                 fontFamily: "'Space Grotesk', sans-serif",
               }}
             >
-              SCOUT AI
+              Ada2ai
             </div>
             <div
               className="rounded-xl py-3 text-center font-bold text-sm"
@@ -115,7 +115,7 @@ export default function CompetitiveSection() {
               className="text-white/80 text-lg"
               style={{ fontFamily: "'Tajawal', sans-serif" }}
             >
-              Scout AI أسرع بـ{" "}
+              Ada2ai أسرع بـ{" "}
               <span className="neon-text font-bold">100x</span>
               {" "}وأرخص بـ{" "}
               <span className="neon-text font-bold">50x</span>

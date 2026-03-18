@@ -6,7 +6,7 @@ const VIDEO_URL =
   "https://private-us-east-1.manuscdn.com/user_upload_by_module/session_file/115062705/fgWPNJSEdMZeRqbF.mp4?Expires=1804876422&Signature=KhA1M5QZFDYK1NaXDtIfPpbYEFNeP9DgjIB1QnEAJ1gx234uN9UhgfxDURf0Cyl17HUj-veP6ANpFgtZ4~WPfT2PWLIzR8X-f6iEeBVDUzRXcXtnhF~BYLK3J~j617ZBFzNdsBTKXhEU4n~DJRqXwKd2TBeNEbmIbU6f5A4CKqDZIlo37rp~h1R8OEOzFE0eqscaLT8jcPduds7NqWVqvgREuMt-feLr~fk-8A02zqO8Bm4ehnYBxXblEiJ7SxXhQLYzi-ij3~ah9Y6pbSa8XhDHVztBHTrUNLUv8yH~R2r43Ugu4inqRs~wahshK1CdEk-zxz68m2G~HQq16cD65g__&Key-Pair-Id=K2HSFNDJXOU9YS";
 
 // Design: Saudi Digital Noir — deep navy #0A1628 + teal #00C2A8 + neon green
-// Two pillars: Scout AI (talent discovery) + SportID (digital passport)
+// Two pillars: Ada2ai (talent discovery) + SportID (digital passport)
 
 const stats = [
   { value: "12+", label: "لاعب موثق" },
@@ -100,12 +100,12 @@ export default function HeroSection() {
         </h1>
 
         <p className="text-white/55 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif", opacity: 0, animation: "fade-up 0.8s ease 0.6s forwards" }}>
-          منصة <strong className="text-white">SportScout</strong> تجمع تحليل المواهب بالذكاء الاصطناعي مع جواز السفر الرياضي الرقمي الموثق بـ نفاذ
+          منصة <strong className="text-white">Ada2ai</strong> تجمع تحليل المواهب بالذكاء الاصطناعي مع جواز السفر الرياضي الرقمي الموثق بـ نفاذ
         </p>
 
         {/* Dual platform cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-10" style={{ opacity: 0, animation: "fade-up 0.8s ease 0.7s forwards" }}>
-          {/* Scout AI Card */}
+          {/* Ada2ai Card */}
           <div
             onClick={() => navigate("/demo")}
             className={`cursor-pointer rounded-2xl p-5 text-right transition-all duration-500 border ${activeCard === "scout" ? "border-[oklch(0.65_0.2_145/0.6)] bg-[oklch(0.65_0.2_145/0.08)] scale-[1.02]" : "border-white/10 bg-white/3 hover:border-[oklch(0.65_0.2_145/0.3)]"}`}
@@ -114,7 +114,7 @@ export default function HeroSection() {
               <div className="w-10 h-10 rounded-xl bg-[oklch(0.65_0.2_145/0.15)] flex items-center justify-center">
                 <Zap size={20} className="text-[oklch(0.65_0.2_145)]" />
               </div>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[oklch(0.65_0.2_145/0.15)] text-[oklch(0.65_0.2_145)]" style={{ fontFamily: "'Tajawal', sans-serif" }}>Scout AI</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[oklch(0.65_0.2_145/0.15)] text-[oklch(0.65_0.2_145)]" style={{ fontFamily: "'Tajawal', sans-serif" }}>Ada2ai</span>
             </div>
             <h3 className="text-white font-bold text-lg mb-1" style={{ fontFamily: "'Tajawal', sans-serif" }}>اكتشاف المواهب</h3>
             <p className="text-white/45 text-sm leading-relaxed" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>

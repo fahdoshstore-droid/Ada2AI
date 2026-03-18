@@ -1,5 +1,5 @@
 /**
- * VideoSection — SportScout Promo Video
+ * VideoSection — Ada2ai Promo Video
  * Design: Saudi Tech Noir — Dark cinematic video showcase
  * Placement: After HeroSection, before ProblemSection
  * Features: Autoplay muted loop, play/pause toggle, fullscreen, cinematic overlay
@@ -114,7 +114,7 @@ export default function VideoSection() {
           className="text-2xl md:text-3xl font-black text-white mb-2"
           style={{ fontFamily: "'Tajawal', sans-serif" }}
         >
-          شاهد SportScout في العمل
+          شاهد Ada2ai في العمل
         </h2>
         <p
           className="text-white/45 text-sm max-w-lg mx-auto"
@@ -233,7 +233,7 @@ export default function VideoSection() {
                   }
                 </button>
 
-                {/* SportScout badge */}
+                {/* Ada2ai badge */}
                 <div
                   className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"
                   style={{
@@ -244,7 +244,7 @@ export default function VideoSection() {
                   }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-[#00C2A8] animate-pulse" />
-                  SportScout
+                  Ada2ai
                 </div>
               </div>
 
@@ -269,7 +269,7 @@ export default function VideoSection() {
               backdropFilter: "blur(8px)",
             }}
           >
-            ⚽ SportScout Demo
+            ⚽ Ada2ai Demo
           </div>
         </div>
 

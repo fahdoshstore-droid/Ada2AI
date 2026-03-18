@@ -86,16 +86,16 @@ export default function Navbar() {
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
-          {/* Logo — SportScout brand */}
+          {/* Logo — Ada2ai brand */}
           <button onClick={() => handleNavClick("/")} className="flex items-center gap-3 flex-shrink-0">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: "rgba(0,194,168,0.12)", border: "1px solid rgba(0,194,168,0.35)" }}>
               <span className="text-lg">⚽</span>
             </div>
             <div className="flex flex-col items-start">
               <span className="font-black text-lg text-white leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif", direction: "ltr" }}>
-                Sport<span style={{ color: "#00C2A8" }}>Scout</span>
+                Ada<span style={{ color: "#00C2A8" }}>2ai</span>
               </span>
-              <span className="text-white/30 text-[9px] leading-none" style={{ fontFamily: "'Tajawal', sans-serif" }}>Scout AI · SportID</span>
+              <span className="text-white/30 text-[9px] leading-none" style={{ fontFamily: "'Tajawal', sans-serif" }}>Sports Intelligence Platform</span>
             </div>
           </button>
 
@@ -109,10 +109,10 @@ export default function Navbar() {
 
             <div className="w-px h-4 bg-white/15" />
 
-            {/* Scout AI dropdown */}
+            {/* Ada2ai dropdown */}
             <div className="relative" ref={scoutRef}>
               <button onClick={() => { setScoutOpen(!scoutOpen); setSportOpen(false); }} className={`flex items-center gap-1.5 text-sm transition-colors px-3 py-1.5 rounded-lg ${isScoutPage || scoutOpen ? "text-[oklch(0.65_0.2_145)] bg-[oklch(0.65_0.2_145/0.1)]" : "text-white/60 hover:text-white"}`} style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                <Zap size={13} /> Scout AI <ChevronDown size={12} className={`transition-transform ${scoutOpen ? "rotate-180" : ""}`} />
+                <Zap size={13} /> Ada2ai <ChevronDown size={12} className={`transition-transform ${scoutOpen ? "rotate-180" : ""}`} />
               </button>
               {scoutOpen && <DropdownMenu links={scoutLinks} color="oklch(0.65 0.2 145)" />}
             </div>
@@ -154,7 +154,7 @@ export default function Navbar() {
             ))}
 
             <div className="pt-2">
-              <p className="text-[oklch(0.65_0.2_145)] text-xs font-bold mb-1 pt-1 flex items-center gap-1" style={{ fontFamily: "'Tajawal', sans-serif" }}><Zap size={11} /> Scout AI</p>
+              <p className="text-[oklch(0.65_0.2_145)] text-xs font-bold mb-1 pt-1 flex items-center gap-1" style={{ fontFamily: "'Tajawal', sans-serif" }}><Zap size={11} /> Ada2ai</p>
               {scoutLinks.map((link) => (
                 <button key={link.href} onClick={() => handleNavClick(link.href)} className={`w-full text-right py-2.5 border-b border-white/5 transition-colors text-sm flex items-center gap-2 ${location === link.href ? "text-[oklch(0.65_0.2_145)]" : "text-white/70"}`} style={{ fontFamily: "'Tajawal', sans-serif" }}>
                   <span>{link.icon}</span>{link.label}

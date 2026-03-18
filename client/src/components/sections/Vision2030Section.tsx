@@ -49,7 +49,7 @@ export default function Vision2030Section() {
             className="text-white/50 text-lg max-w-2xl mx-auto"
             style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
           >
-            Scout AI ليس مجرد منصة تقنية — هو مشروع وطني يدعم أهداف المملكة في تطوير القطاع الرياضي
+            Ada2ai ليس مجرد منصة تقنية — هو مشروع وطني يدعم أهداف المملكة في تطوير القطاع الرياضي
           </p>
         </div>
 
@@ -102,7 +102,7 @@ export default function Vision2030Section() {
                 className="neon-text text-sm font-medium mt-1"
                 style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
               >
-                Scout AI — شريك في تحقيق الأهداف الوطنية
+                Ada2ai — شريك في تحقيق الأهداف الوطنية
               </div>
             </div>
           </div>

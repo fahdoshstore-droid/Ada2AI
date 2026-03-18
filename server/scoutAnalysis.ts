@@ -1,5 +1,5 @@
 /**
- * SCOUT AI — Player Visual Analysis Route
+ * Ada2ai — Player Visual Analysis Route
  * Uses Claude (via Forge API) to analyze player images
  * Standards: FIFA Quality Programme + Saudi Football Federation (SAFF)
  */
@@ -22,7 +22,7 @@ function getAIModel() {
 }
 
 // ── Compact FIFA/SAFF Scout Prompt ────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are an elite FIFA-certified football scout for SCOUT AI platform in Saudi Arabia's Eastern Province.
+const SYSTEM_PROMPT = `You are an elite FIFA-certified football scout for Ada2ai platform in Saudi Arabia's Eastern Province.
 Analyze player images using FIFA Quality Programme + Saudi Football Federation (SAFF) standards.
 Only infer what is visually reasonable. Respond ONLY with valid JSON, no markdown fences.`;
 

@@ -220,7 +220,7 @@ function PassportCard({ flipped, onFlip }: { flipped: boolean; onFlip: () => voi
         }}>
           <div className="text-[#EEEFEE]/50 text-xs font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>SPORTID · {PLAYER.id}</div>
           <div className="rounded-2xl overflow-hidden p-3" style={{ background: "#fff", boxShadow: "0 0 30px rgba(0,194,168,0.3)" }}>
-            <QRCanvas value={`https://sportscout.sa/athlete/${PLAYER.id}`} size={140} />
+            <QRCanvas value={`https://ada2ai.sa/athlete/${PLAYER.id}`} size={140} />
           </div>
           <div className="text-[#00C2A8] text-xs font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>امسح للتحقق من الهوية</div>
           <div className="text-[#EEEFEE]/20 text-[9px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>اضغط للرجوع</div>
@@ -313,12 +313,12 @@ export default function SportIDPage() {
   const progressPct = Math.round(((activePlayer.points - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100);
 
   function handleShare() {
-    const text = `مرحباً، أنا ${activePlayer.name} — لاعب ${activePlayer.sport} من ${activePlayer.city}.\nملفي الرياضي على SportScout: https://sportscout.sa/athlete/${activePlayer.id}`;
+    const text = `مرحباً، أنا ${activePlayer.name} — لاعب ${activePlayer.sport} من ${activePlayer.city}.\nملفي الرياضي على Ada2ai: https://ada2ai.sa/athlete/${activePlayer.id}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }
 
   function handleCopy() {
-    navigator.clipboard?.writeText(`https://sportscout.sa/athlete/${activePlayer.id}`).then(() => {
+    navigator.clipboard?.writeText(`https://ada2ai.sa/athlete/${activePlayer.id}`).then(() => {
       toast.success("تم نسخ الرابط!");
     });
   }

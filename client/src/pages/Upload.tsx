@@ -432,7 +432,7 @@ export default function UploadPage() {
       }
       throw new Error("No report in response");
     } catch (err: any) {
-      console.warn("[Scout AI] Real analysis failed, using simulation:", err?.message || err);
+      console.warn("[Ada2ai] Real analysis failed, using simulation:", err?.message || err);
       // Ensure we wait for at least the stage animation to complete
       const elapsedNow = Date.now() - startTime;
       const remaining = totalDuration - elapsedNow;
@@ -443,7 +443,7 @@ export default function UploadPage() {
   const sendWhatsApp = () => {
     if (!analysisResult) return;
     const r = analysisResult;
-    const text = `⚡ تقرير Scout AI\n\n👤 ${form.playerName} | ${form.position} | ${form.city}\n🎯 التقييم الكلي: ${r.overall}/100 (${getScoreLabel(r.overall)})\n\n📊 التقني: ${r.techAvg} | البدني: ${r.physAvg} | التكتيكي: ${r.tactAvg} | الذهني: ${r.mentAvg}\n\n🏆 المركز الأمثل: ${r.sportDNA[0].position}\n💬 ${r.recommendation}\n\n🔗 SportScout — المنصة الرياضية الأولى في المنطقة الشرقية`;
+    const text = `⚡ تقرير Ada2ai\n\n👤 ${form.playerName} | ${form.position} | ${form.city}\n🎯 التقييم الكلي: ${r.overall}/100 (${getScoreLabel(r.overall)})\n\n📊 التقني: ${r.techAvg} | البدني: ${r.physAvg} | التكتيكي: ${r.tactAvg} | الذهني: ${r.mentAvg}\n\n🏆 المركز الأمثل: ${r.sportDNA[0].position}\n💬 ${r.recommendation}\n\n🔗 Ada2ai — المنصة الرياضية الأولى في المنطقة الشرقية`;
     window.open(`https://wa.me/${form.guardianPhone}?text=${encodeURIComponent(text)}`, "_blank");
   };
 

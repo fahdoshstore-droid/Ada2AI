@@ -32,7 +32,7 @@ export default function Footer() {
               <div className="w-10 h-10 rounded-lg bg-[oklch(0.65_0.2_145/0.15)] border border-[oklch(0.65_0.2_145/0.4)] flex items-center justify-center">
                 <img
                   src="https://d2xsxph8kpxj0f.cloudfront.net/115062705/gJEX8KKv2DgTKGvafGwXZn/scout-ai-brain-logo-CtBLNrDPCVHeGSTYrQgYk9.webp"
-                  alt="Scout AI"
+                  alt="Ada2ai"
                   className="w-7 h-7 object-contain"
                 />
               </div>
@@ -41,9 +41,9 @@ export default function Footer() {
                   className="font-bold text-xl text-white block"
                   style={{ fontFamily: "'Space Grotesk', sans-serif", direction: "ltr" }}
                 >
-                  Sport<span style={{ color: "#00C2A8" }}>Scout</span>
+                  Ada<span style={{ color: "#00C2A8" }}>2ai</span>
                 </span>
-                <span className="text-white/30 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>Scout AI · SportID</span>
+                <span className="text-white/30 text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>Ada2ai · SportID</span>
               </div>
             </div>
             <p
@@ -160,7 +160,7 @@ export default function Footer() {
             className="text-white/30 text-sm"
             style={{ fontFamily: "'Tajawal', sans-serif" }}
           >
-            © 2026 Scout AI — جميع الحقوق محفوظة
+            © 2026 Ada2ai — جميع الحقوق محفوظة
           </p>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-[oklch(0.65_0.2_145)] animate-pulse" />
