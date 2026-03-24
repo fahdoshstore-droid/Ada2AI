@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import {
-  Brain, Zap, Users, BarChart3, MapPin,
+  Brain, Zap, Users, BarChart3,
   ChevronRight, ArrowRight, CheckCircle2,
-  Activity, Trophy, Target, Shield, Globe,
+  Activity, Trophy, Shield, Globe,
   TrendingUp, Database, Network,
   Building2, Award, Handshake,
   Search, UserX, Layers, Lock,
+  IdCard, Upload, BarChart2, Link2,
   Play, ChevronDown
 } from "lucide-react";
 import Ada2aiNavbar from "@/components/Ada2aiNavbar";
@@ -111,21 +112,21 @@ export default function Home() {
 
   const problems = [
     {
-      icon: <Search size={26} style={{ color: "#00DCC8" }} />,
+      icon: <IdCard size={26} style={{ color: "#00DCC8" }} />,
       bg: "rgba(0,220,200,0.08)",
       border: "rgba(0,220,200,0.2)",
       title: t("problem.1.title"),
       desc: t("problem.1.desc"),
     },
     {
-      icon: <Lock size={26} style={{ color: "#FFA500" }} />,
+      icon: <Search size={26} style={{ color: "#FFA500" }} />,
       bg: "rgba(255,165,0,0.08)",
       border: "rgba(255,165,0,0.2)",
       title: t("problem.2.title"),
       desc: t("problem.2.desc"),
     },
     {
-      icon: <UserX size={26} style={{ color: "#007ABA" }} />,
+      icon: <BarChart2 size={26} style={{ color: "#007ABA" }} />,
       bg: "rgba(0,122,186,0.08)",
       border: "rgba(0,122,186,0.2)",
       title: t("problem.3.title"),
@@ -192,11 +193,11 @@ export default function Home() {
   ];
 
   const steps = [
-    { num: "01", icon: <Activity size={20} />, title: t("how.1.title"), desc: t("how.1.desc"), color: "#00DCC8" },
-    { num: "02", icon: <Brain size={20} />, title: t("how.2.title"), desc: t("how.2.desc"), color: "#007ABA" },
-    { num: "03", icon: <Shield size={20} />, title: t("how.3.title"), desc: t("how.3.desc"), color: "#FFA500" },
+    { num: "01", icon: <IdCard size={20} />, title: t("how.1.title"), desc: t("how.1.desc"), color: "#00DCC8" },
+    { num: "02", icon: <Upload size={20} />, title: t("how.2.title"), desc: t("how.2.desc"), color: "#007ABA" },
+    { num: "03", icon: <Brain size={20} />, title: t("how.3.title"), desc: t("how.3.desc"), color: "#FFA500" },
     { num: "04", icon: <Search size={20} />, title: t("how.4.title"), desc: t("how.4.desc"), color: "#00DCC8" },
-    { num: "05", icon: <Handshake size={20} />, title: t("how.5.title"), desc: t("how.5.desc"), color: "#007ABA" },
+    { num: "05", icon: <Link2 size={20} />, title: t("how.5.title"), desc: t("how.5.desc"), color: "#007ABA" },
   ];
 
   return (
@@ -282,11 +283,6 @@ export default function Home() {
 
           {/* CTA Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-14">
-            <Link href="/upload">
-              <button className="btn-ada-primary text-sm px-8 py-4 flex items-center gap-2 text-base">
-                <Zap size={18} /> {t("hero.cta1")}
-              </button>
-            </Link>
             <Link href="/product">
               <button className="btn-ada-outline text-sm px-8 py-4 flex items-center gap-2 text-base">
                 <Play size={16} /> {t("hero.cta2")}
@@ -729,10 +725,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             {[
-              { val: "6", label: isRTL ? "رياضات مدعومة" : "Sports Supported", color: "#00DCC8" },
-              { val: "12+", label: isRTL ? "معيار أداء" : "Performance Metrics", color: "#007ABA" },
-              { val: "< 60s", label: isRTL ? "وقت التحليل" : "Analysis Time", color: "#FFA500" },
-              { val: "2026", label: isRTL ? "إطلاق المنصة" : "Platform Launch", color: "#00DCC8" },
+              { val: t("hero.stat1.val"), label: t("hero.stat1.label"), color: "#00DCC8" },
+              { val: t("hero.stat2.val"), label: t("hero.stat2.label"), color: "#007ABA" },
+              { val: t("hero.stat3.val"), label: t("hero.stat3.label"), color: "#FFA500" },
+              { val: t("hero.stat4.val"), label: t("hero.stat4.label"), color: "#00DCC8" },
             ].map((s, i) => (
               <div key={i} className="reveal text-center">
                 <AnimatedStat value={s.val} label={s.label} color={s.color} />
