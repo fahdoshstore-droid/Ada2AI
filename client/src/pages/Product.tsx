@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   Brain, Shield, Users, BarChart3, Building2, Trophy,
   ArrowRight, Zap, Globe, Cpu, Target,
@@ -27,7 +27,8 @@ function SysIcon({ type, size = 16 }: { type: string; size?: number }) {
 }
 
 export default function Product() {
-  const { t, lang, isRTL } = useLanguage();
+  const { isRTL, t } = useLanguage();
+  const [, navigate] = useLocation();
   const [showNafath, setShowNafath] = useState(false);
   const [nafathId, setNafathId] = useState('');
   const [verifying, setVerifying] = useState(false);
@@ -397,6 +398,7 @@ export default function Product() {
                     descEn: 'Every athlete gets an official digital passport linked to the national Nafath system.',
                     descAr: 'جواز رياضي رسمي مرتبط بمنظومة نفاذ الوطنية لكل رياضي.',
                     accent: '#007ABA',
+                    route: '/features/nafath',
                   },
                   {
                     num: '02',
@@ -406,6 +408,7 @@ export default function Product() {
                     descEn: 'Scan once to enter any facility — no paperwork, no delays, under 3 seconds.',
                     descAr: 'مسح واحد للدخول لأي منشأة — بدون أوراق، بدون تأخير، في أقل من 3 ثواني.',
                     accent: '#00DCC8',
+                    route: '/features/qr-checkin',
                   },
                   {
                     num: '03',
@@ -415,6 +418,7 @@ export default function Product() {
                     descEn: 'AI-powered scoring tracks 12+ performance metrics in real time across all sports.',
                     descAr: 'نظام تسجيل مدعوم بالذكاء الاصطناعي يتتبع أكثر من 12 مقياساً فورياً.',
                     accent: '#007ABA',
+                    route: '/features/sport-points',
                   },
                   {
                     num: '04',
@@ -424,14 +428,16 @@ export default function Product() {
                     descEn: 'Real-time dashboards give sports authorities instant visibility across all athletes.',
                     descAr: 'لوحات تحكم فورية تمنح الجهات الرسمية رؤية شاملة لجميع الرياضيين.',
                     accent: '#00DCC8',
+                    route: '/features/ministry-report',
                   },
                 ].map((f, idx) => (
                   <div key={f.num}
-                    className="group relative flex items-stretch gap-0 rounded-2xl overflow-hidden border transition-all duration-300 cursor-default"
+                    className="group relative flex items-stretch gap-0 rounded-2xl overflow-hidden border transition-all duration-300 cursor-pointer"
                     style={{
                       background: 'rgba(255,255,255,0.025)',
                       borderColor: 'rgba(255,255,255,0.06)',
                     }}
+                    onClick={() => navigate(f.route)}
                   >
                     {/* Left accent strip with number */}
                     <div

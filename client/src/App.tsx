@@ -22,6 +22,10 @@ import SubGovernance from "./pages/SubGovernance";
 import TeamMembers   from "./pages/TeamMembers";
 import NotFound      from "./pages/NotFound";
 import ModuleDetail  from "./pages/ModuleDetail";
+import NafathPage       from "./pages/features/NafathPage";
+import QrCheckinPage    from "./pages/features/QrCheckinPage";
+import SportPointsPage  from "./pages/features/SportPointsPage";
+import MinistryReportPage from "./pages/features/MinistryReportPage";
 
 // ── Router ────────────────────────────────────────────────
 function Router() {
@@ -52,6 +56,12 @@ function Router() {
 
       {/* ── Module Detail ── */}
       <Route path="/modules/:slug"  component={ModuleDetail} />
+
+      {/* ── SportID Features ── */}
+      <Route path="/features/nafath"          component={NafathPage} />
+      <Route path="/features/qr-checkin"      component={QrCheckinPage} />
+      <Route path="/features/sport-points"    component={SportPointsPage} />
+      <Route path="/features/ministry-report" component={MinistryReportPage} />
 
       {/* ── Fallback ── */}
       <Route path="/404"          component={NotFound} />
