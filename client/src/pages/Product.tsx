@@ -172,6 +172,7 @@ export default function Product() {
                 background: 'linear-gradient(155deg, #071828 0%, #050e18 50%, #000e10 100%)',
                 boxShadow: '0 0 80px rgba(0,122,186,0.18), 0 0 160px rgba(0,220,200,0.08)',
                 border: '1px solid rgba(0,220,200,0.12)',
+                animation: 'border-glow-pulse 3s ease-in-out infinite',
               }}
             >
               {/* Athlete photo */}
@@ -196,6 +197,24 @@ export default function Product() {
                 opacity: 0.05,
                 backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 47px,rgba(0,220,200,1) 47px,rgba(0,220,200,1) 48px),repeating-linear-gradient(90deg,transparent,transparent 47px,rgba(0,220,200,1) 47px,rgba(0,220,200,1) 48px)',
               }} />
+
+              {/* Animated scan line */}
+              <div className="absolute left-0 right-0 pointer-events-none z-20" style={{
+                height: '2px',
+                background: 'linear-gradient(90deg, transparent 0%, rgba(0,220,200,0.0) 10%, rgba(0,220,200,0.6) 50%, rgba(0,220,200,0.0) 90%, transparent 100%)',
+                animation: 'card-scan-line 4s ease-in-out infinite',
+                boxShadow: '0 0 12px rgba(0,220,200,0.5)',
+              }} />
+
+              {/* Data stream particles */}
+              {[{left:'15%',delay:'0s',dur:'3s'},{left:'35%',delay:'1.2s',dur:'2.5s'},{left:'60%',delay:'0.6s',dur:'3.5s'},{left:'80%',delay:'1.8s',dur:'2.8s'}].map((p,i)=>(
+                <div key={i} className="absolute bottom-0 pointer-events-none z-10" style={{
+                  left: p.left, width: '1px', height: '40px',
+                  background: 'linear-gradient(0deg, transparent, rgba(0,220,200,0.4), transparent)',
+                  animation: `data-stream ${p.dur} ease-in-out infinite`,
+                  animationDelay: p.delay,
+                }} />
+              ))}
 
               {/* Corner brackets */}
               {(['top-4 left-4 border-t-2 border-l-2','top-4 right-4 border-t-2 border-r-2','bottom-20 left-4 border-b-2 border-l-2','bottom-20 right-4 border-b-2 border-r-2'] as const).map((cls, i) => (
@@ -245,7 +264,7 @@ export default function Product() {
                     <div>
                       <div className="text-white font-black text-xl font-orbitron leading-tight">Ahmed Al-Shamri</div>
                       <div className="text-white/40 text-xs font-cairo mt-1">
-                        {isRTL ? 'مهاجم · كرة القدم' : 'Forward · Football'}
+                        {isRTL ? 'عداء · ألعاب القوى' : 'Sprinter · Athletics'}
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" style={{ background: 'rgba(34,197,94,0.1)', borderColor: 'rgba(34,197,94,0.25)' }}>
@@ -266,14 +285,61 @@ export default function Product() {
                     ))}
                   </div>
 
-                  {/* ID strip */}
-                  <div className="pt-3 border-t flex items-center gap-2.5" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-                    <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #007ABA, #00DCC8)' }}>
-                      <span className="text-white text-[10px] font-black font-orbitron">A</span>
+                  {/* ID strip + QR */}
+                  <div className="pt-3 border-t flex items-center justify-between gap-2.5" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #007ABA, #00DCC8)' }}>
+                        <span className="text-white text-[10px] font-black font-orbitron">A</span>
+                      </div>
+                      <span className="text-white/20 text-[9px] font-orbitron tracking-widest">
+                        ADA2AI · SPORT PASSPORT ID · ATH-9841
+                      </span>
                     </div>
-                    <span className="text-white/20 text-[9px] font-orbitron tracking-widest">
-                      ADA2AI · SPORT PASSPORT ID · ATH-9841
-                    </span>
+                    {/* QR Code SVG */}
+                    <div className="relative flex-shrink-0" style={{ width: 44, height: 44 }}>
+                      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {/* QR border glow */}
+                        <rect x="0.5" y="0.5" width="43" height="43" rx="3.5" stroke="#00DCC8" strokeOpacity="0.4" fill="rgba(0,10,15,0.85)"/>
+                        {/* Top-left finder */}
+                        <rect x="4" y="4" width="13" height="13" rx="1" fill="none" stroke="#00DCC8" strokeWidth="1.5"/>
+                        <rect x="6.5" y="6.5" width="8" height="8" rx="0.5" fill="#00DCC8" fillOpacity="0.9"/>
+                        {/* Top-right finder */}
+                        <rect x="27" y="4" width="13" height="13" rx="1" fill="none" stroke="#00DCC8" strokeWidth="1.5"/>
+                        <rect x="29.5" y="6.5" width="8" height="8" rx="0.5" fill="#00DCC8" fillOpacity="0.9"/>
+                        {/* Bottom-left finder */}
+                        <rect x="4" y="27" width="13" height="13" rx="1" fill="none" stroke="#00DCC8" strokeWidth="1.5"/>
+                        <rect x="6.5" y="29.5" width="8" height="8" rx="0.5" fill="#00DCC8" fillOpacity="0.9"/>
+                        {/* Data modules - row 1 */}
+                        <rect x="20" y="4" width="3" height="3" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        <rect x="24" y="4" width="3" height="3" rx="0.3" fill="#007ABA" fillOpacity="0.7"/>
+                        {/* Data modules - row 2 */}
+                        <rect x="20" y="8" width="3" height="3" rx="0.3" fill="#007ABA" fillOpacity="0.7"/>
+                        <rect x="24" y="8" width="3" height="3" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        {/* Data modules - row 3 */}
+                        <rect x="20" y="12" width="3" height="3" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        {/* Data modules - bottom right area */}
+                        <rect x="20" y="20" width="3" height="3" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        <rect x="24" y="20" width="3" height="3" rx="0.3" fill="#007ABA" fillOpacity="0.7"/>
+                        <rect x="28" y="20" width="3" height="3" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        <rect x="32" y="20" width="3" height="3" rx="0.3" fill="#007ABA" fillOpacity="0.7"/>
+                        <rect x="36" y="20" width="4" height="3" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        <rect x="20" y="24" width="3" height="3" rx="0.3" fill="#007ABA" fillOpacity="0.7"/>
+                        <rect x="28" y="24" width="3" height="3" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        <rect x="36" y="24" width="4" height="3" rx="0.3" fill="#007ABA" fillOpacity="0.7"/>
+                        <rect x="20" y="28" width="3" height="3" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        <rect x="24" y="28" width="3" height="3" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        <rect x="32" y="28" width="3" height="3" rx="0.3" fill="#007ABA" fillOpacity="0.7"/>
+                        <rect x="20" y="32" width="3" height="3" rx="0.3" fill="#007ABA" fillOpacity="0.7"/>
+                        <rect x="28" y="32" width="3" height="3" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        <rect x="36" y="32" width="4" height="3" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        <rect x="20" y="36" width="3" height="4" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        <rect x="24" y="36" width="3" height="4" rx="0.3" fill="#007ABA" fillOpacity="0.7"/>
+                        <rect x="32" y="36" width="3" height="4" rx="0.3" fill="#00DCC8" fillOpacity="0.7"/>
+                        {/* Scan line animation */}
+                        <rect x="2" y="22" width="40" height="1" rx="0.5" fill="#00DCC8" fillOpacity="0.35"
+                          style={{animation:'qr-scan 2s ease-in-out infinite'}} />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
