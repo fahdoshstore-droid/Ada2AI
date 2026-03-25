@@ -320,6 +320,214 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
+          INITIATIVE SECTION — اطلق قدراتك الخارقة
+      ══════════════════════════════════════════════════════════════ */}
+      <section
+        className="py-20 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, rgba(0,122,186,0.08) 0%, rgba(0,10,15,1) 40%, rgba(0,220,200,0.06) 100%)",
+          borderTop: "1px solid rgba(0,220,200,0.12)",
+          borderBottom: "1px solid rgba(0,122,186,0.12)",
+        }}
+      >
+        {/* Background glow orbs */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full" style={{ background: "radial-gradient(circle, rgba(0,122,186,0.08) 0%, transparent 70%)", transform: "translate(-50%, -50%)" }} />
+          <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full" style={{ background: "radial-gradient(circle, rgba(0,220,200,0.06) 0%, transparent 70%)", transform: "translate(50%, 50%)" }} />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Header */}
+          <div className="text-center mb-14 reveal">
+            {/* Partner logos row */}
+            <div className="flex items-center justify-center gap-6 mb-6">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full" style={{ background: "rgba(0,122,186,0.15)", border: "1px solid rgba(0,122,186,0.3)" }}>
+                <Trophy size={14} style={{ color: "#007ABA" }} />
+                <span className="text-xs font-semibold" style={{ color: "#007ABA", fontFamily: "'Cairo', sans-serif" }}>وزارة الرياضة</span>
+              </div>
+              <div className="w-1 h-1 rounded-full" style={{ background: "rgba(0,220,200,0.4)" }} />
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full" style={{ background: "rgba(0,220,200,0.1)", border: "1px solid rgba(0,220,200,0.25)" }}>
+                <Shield size={14} style={{ color: "#00DCC8" }} />
+                <span className="text-xs font-semibold" style={{ color: "#00DCC8", fontFamily: "'Cairo', sans-serif" }}>فريق السعودية</span>
+              </div>
+            </div>
+
+            {/* Hashtag badge */}
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-5" style={{ background: "linear-gradient(90deg, rgba(0,122,186,0.2), rgba(0,220,200,0.15))", border: "1px solid rgba(0,220,200,0.3)" }}>
+              <span className="text-sm font-bold" style={{ color: "#00DCC8", fontFamily: "'Cairo', sans-serif", letterSpacing: "0.02em" }}>#اطلق_قدراتك_الخارقة</span>
+            </div>
+
+            <h2
+              className="font-bold text-3xl lg:text-4xl mb-4"
+              style={{ color: "#EEEFEE", fontFamily: "'Cairo', sans-serif", lineHeight: 1.4 }}
+            >
+              مبادرة اكتشاف المواهب الرياضية
+            </h2>
+            <p
+              className="text-base max-w-2xl mx-auto"
+              style={{ color: "rgba(238,239,238,0.6)", fontFamily: "'Cairo', sans-serif", lineHeight: 2 }}
+            >
+              مبادرة وطنية لاكتشاف المواهب الرياضية من عمر 8 إلى 18 سنة — عبر منظومة متكاملة من الفعاليات والتقييمات الميدانية في مختلف مناطق المملكة
+            </p>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14 reveal">
+            {[
+              { value: "8–18", label: "الفئة العمرية", sublabel: "سنة", color: "#00DCC8", icon: "👦" },
+              { value: "14", label: "مدينة", sublabel: "في المملكة", color: "#007ABA", icon: "🏙️" },
+              { value: "35", label: "فعالية", sublabel: "ميدانية", color: "#00DCC8", icon: "⚡" },
+              { value: "9", label: "رياضات", sublabel: "مشمولة", color: "#FFA500", icon: "🏆" },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="text-center p-5 rounded-2xl"
+                style={{
+                  background: `linear-gradient(135deg, ${stat.color}10, rgba(0,10,15,0.8))`,
+                  border: `1px solid ${stat.color}25`,
+                  boxShadow: `0 4px 24px ${stat.color}08`,
+                }}
+              >
+                <div className="text-2xl mb-1">{stat.icon}</div>
+                <div
+                  className="font-bold text-3xl lg:text-4xl mb-1"
+                  style={{ color: stat.color, fontFamily: "'Orbitron', monospace" }}
+                >
+                  {stat.value}
+                </div>
+                <div className="text-sm font-semibold" style={{ color: "#EEEFEE", fontFamily: "'Cairo', sans-serif" }}>{stat.label}</div>
+                <div className="text-xs" style={{ color: "rgba(238,239,238,0.45)", fontFamily: "'Cairo', sans-serif" }}>{stat.sublabel}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Timeline */}
+          <div className="mb-14 reveal">
+            <div
+              className="flex flex-col md:flex-row items-center justify-between gap-4 p-6 rounded-2xl"
+              style={{ background: "rgba(0,122,186,0.08)", border: "1px solid rgba(0,122,186,0.2)" }}
+            >
+              <div className="text-center">
+                <div className="text-xs mb-1" style={{ color: "rgba(238,239,238,0.45)", fontFamily: "'Cairo', sans-serif" }}>تاريخ الانطلاق</div>
+                <div className="font-bold text-xl" style={{ color: "#00DCC8", fontFamily: "'Orbitron', monospace" }}>11 أبريل</div>
+                <div className="text-sm" style={{ color: "rgba(238,239,238,0.6)", fontFamily: "'Cairo', sans-serif" }}>2026</div>
+              </div>
+              <div className="flex-1 mx-4 hidden md:block">
+                <div className="relative h-2 rounded-full" style={{ background: "rgba(0,220,200,0.1)" }}>
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-full"
+                    style={{ width: "30%", background: "linear-gradient(90deg, #007ABA, #00DCC8)" }}
+                  />
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2"
+                    style={{ left: "30%", background: "#00DCC8", borderColor: "#000A0F", boxShadow: "0 0 12px #00DCC8" }}
+                  />
+                </div>
+                <div className="flex justify-between mt-2">
+                  <span className="text-xs" style={{ color: "rgba(238,239,238,0.35)", fontFamily: "'Cairo', sans-serif" }}>الانطلاق</span>
+                  <span className="text-xs" style={{ color: "#00DCC8", fontFamily: "'Cairo', sans-serif" }}>جارٍ الآن</span>
+                  <span className="text-xs" style={{ color: "rgba(238,239,238,0.35)", fontFamily: "'Cairo', sans-serif" }}>الختام</span>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs mb-1" style={{ color: "rgba(238,239,238,0.45)", fontFamily: "'Cairo', sans-serif" }}>تاريخ الختام</div>
+                <div className="font-bold text-xl" style={{ color: "#FFA500", fontFamily: "'Orbitron', monospace" }}>4 يوليو</div>
+                <div className="text-sm" style={{ color: "rgba(238,239,238,0.6)", fontFamily: "'Cairo', sans-serif" }}>2026</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sports Grid */}
+          <div className="mb-14 reveal">
+            <h3
+              className="text-center font-bold text-lg mb-6"
+              style={{ color: "rgba(238,239,238,0.8)", fontFamily: "'Cairo', sans-serif" }}
+            >
+              الرياضات المشمولة
+            </h3>
+            <div className="flex flex-wrap justify-center gap-3">
+              {[
+                { name: "كرة القدم", emoji: "⚽", color: "#00DCC8" },
+                { name: "كرة السلة", emoji: "🏀", color: "#FFA500" },
+                { name: "السباحة", emoji: "🏊", color: "#007ABA" },
+                { name: "ألعاب القوى", emoji: "🏃", color: "#00DCC8" },
+                { name: "الجودو", emoji: "🥋", color: "#FFA500" },
+                { name: "كرة الطائرة", emoji: "🏐", color: "#007ABA" },
+                { name: "التنس", emoji: "🎾", color: "#00DCC8" },
+                { name: "الجمناستيك", emoji: "🤸", color: "#FFA500" },
+                { name: "الرياضات القتالية", emoji: "🥊", color: "#007ABA" },
+              ].map((sport) => (
+                <div
+                  key={sport.name}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full"
+                  style={{
+                    background: `${sport.color}10`,
+                    border: `1px solid ${sport.color}25`,
+                  }}
+                >
+                  <span>{sport.emoji}</span>
+                  <span className="text-sm font-medium" style={{ color: sport.color, fontFamily: "'Cairo', sans-serif" }}>{sport.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Cities */}
+          <div className="mb-14 reveal">
+            <h3
+              className="text-center font-bold text-lg mb-6"
+              style={{ color: "rgba(238,239,238,0.8)", fontFamily: "'Cairo', sans-serif" }}
+            >
+              المدن المستهدفة (14 مدينة)
+            </h3>
+            <div className="flex flex-wrap justify-center gap-2">
+              {[
+                "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة",
+                "الدمام", "الخبر", "الطائف", "تبوك",
+                "أبها", "القصيم", "حائل", "نجران",
+                "جازان", "الجوف",
+              ].map((city, i) => (
+                <div
+                  key={city}
+                  className="px-3 py-1.5 rounded-lg text-sm"
+                  style={{
+                    background: i % 2 === 0 ? "rgba(0,220,200,0.08)" : "rgba(0,122,186,0.08)",
+                    border: `1px solid ${i % 2 === 0 ? "rgba(0,220,200,0.2)" : "rgba(0,122,186,0.2)"}`,
+                    color: i % 2 === 0 ? "rgba(0,220,200,0.9)" : "rgba(0,122,186,0.9)",
+                    fontFamily: "'Cairo', sans-serif",
+                  }}
+                >
+                  {city}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="text-center reveal">
+            <a
+              href="https://twitter.com/hashtag/اطلق_قدراتك_الخارقة"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-bold text-base transition-all duration-300 hover:scale-105"
+              style={{
+                background: "linear-gradient(90deg, #007ABA, #00DCC8)",
+                color: "#000A0F",
+                fontFamily: "'Cairo', sans-serif",
+                boxShadow: "0 0 30px rgba(0,220,200,0.3)",
+              }}
+            >
+              <span>#اطلق_قدراتك_الخارقة</span>
+              <ArrowRight size={18} />
+            </a>
+            <p className="mt-4 text-sm" style={{ color: "rgba(238,239,238,0.4)", fontFamily: "'Cairo', sans-serif" }}>
+              تابع المبادرة على منصات التواصل الاجتماعي
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
           SPORTS SECTION — 6 Sport Logos
       ══════════════════════════════════════════════════════════════ */}
       <section className="py-20" style={{ borderTop: "1px solid rgba(0,220,200,0.08)" }}>

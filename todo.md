@@ -169,3 +169,4 @@
 - [x] Create individual module detail pages for all 6 modules
 - [x] Register module routes in App.tsx
 - [x] Update module cards to link to their detail pages
+- [x] Add #اطلق_قدراتك_الخارقة initiative section after Hero in Home.tsx
