@@ -181,3 +181,13 @@
 - [x] Card level auto-assigned based on overallRating (Platinum/Gold/Silver/Bronze)
 - [x] SportID code auto-generated: SA-{birthYear}-{initials}-{rating}
 - [x] Player avatar uses uploaded image URL from S3
+
+## Upload Page & Card Redesign Sprint (Mar 26, 2026)
+- [x] Remove player data form from /upload — make upload direct (no name/age/position/city fields)
+- [x] Update scoutAnalysis.ts with exact SAFF+FIFA prompt (9 sections, Arabic output)
+- [x] Update AIScoutReport type to match new 9-section report structure
+- [x] Remove all "وضع المحاكاة" disclaimers from results page
+- [x] Remove simulated analysis section — show only real Claude AI report
+- [x] Redesign FifaCard to match gold hexagonal Ada2ai card (hexagon shape, gold border, glow, Ada2ai logo, QR code)
+- [x] Add QR code to FifaCard using qrcode.react or similar
+- [x] Parse Claude Arabic text report into structured scores for card stats

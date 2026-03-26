@@ -1,262 +1,330 @@
 /**
- * FifaCard — Ada2ai FIFA-UT style SportID card
- * Renders player data in the brand card design and supports download as PNG.
+ * FifaCard — Ada2ai SportID Card
+ * Matches the gold hexagonal Ada2ai card design from the reference image.
+ * Features: player photo, 6 stats grid, SportID code, real QR code, download as PNG.
  */
 import { useRef, useState } from "react";
 import { Download, Loader2 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 
 export interface FifaCardPlayer {
-  name: string;          // Arabic name
+  name: string;
   nameEn?: string;
   jerseyNumber: number;
-  position: string;      // Arabic position
-  sport: string;         // Arabic sport name
+  position: string;
+  sport: string;
   birthYear: number;
-  sportId: string;       // e.g. SA-2009-MB-0010
-  avatar?: string;       // URL or undefined → placeholder
+  sportId: string;
+  avatar?: string;
   stats: {
-    speed: number;       // السرعة
-    passing: number;     // التمرير
-    shooting: number;    // التسديد
-    defense: number;     // الدفاع
-    skill: number;       // المهارة
-    strength: number;    // القوة
+    speed: number;
+    passing: number;
+    shooting: number;
+    defense: number;
+    skill: number;
+    strength: number;
   };
   level?: "Bronze" | "Silver" | "Gold" | "Platinum";
 }
 
-const LEVEL_COLORS: Record<string, { border: string; glow: string; gradient: string; badge: string }> = {
+// ── Level color palettes ──────────────────────────────────────────────────────
+const LEVELS: Record<string, {
+  bg: string; border: string; glow: string;
+  accent: string; statBg: string; badge: string;
+  badgeText: string; label: string;
+}> = {
   Gold: {
+    bg: "linear-gradient(160deg, #1A0E00 0%, #3D2200 18%, #7A4800 35%, #C8860A 55%, #FFD700 72%, #FFE566 85%, #FFF5B0 100%)",
     border: "#FFD700",
-    glow: "#FFD70077",
-    gradient: "linear-gradient(155deg, #3D2800 0%, #7A5000 20%, #C89000 45%, #FFD700 65%, #FFE566 80%, #FFF0A0 100%)",
-    badge: "rgba(184,134,11,0.9)",
+    glow: "0 0 40px rgba(255,215,0,0.55), 0 0 80px rgba(255,215,0,0.2)",
+    accent: "#FFD700",
+    statBg: "rgba(0,0,0,0.5)",
+    badge: "#B8860B",
+    badgeText: "#FFD700",
+    label: "GOLD",
   },
   Silver: {
-    border: "#A0A0C0",
-    glow: "#A0A0C055",
-    gradient: "linear-gradient(155deg, #1A1A2A 0%, #2A2A3A 20%, #4A4A6A 45%, #8A8AAA 65%, #C0C0D8 80%, #E8E8F0 100%)",
-    badge: "rgba(80,80,112,0.9)",
+    bg: "linear-gradient(160deg, #0D0D1A 0%, #1A1A2E 18%, #2E2E50 35%, #6060A0 55%, #A0A0C8 72%, #D0D0E8 85%, #F0F0F8 100%)",
+    border: "#A0A0C8",
+    glow: "0 0 40px rgba(160,160,200,0.4), 0 0 80px rgba(160,160,200,0.15)",
+    accent: "#C0C0D8",
+    statBg: "rgba(0,0,0,0.5)",
+    badge: "#505080",
+    badgeText: "#C0C0D8",
+    label: "SILVER",
   },
   Bronze: {
+    bg: "linear-gradient(160deg, #150800 0%, #2A1200 18%, #5A2800 35%, #8B4513 55%, #CD7F32 72%, #E8A060 85%, #F5C888 100%)",
     border: "#CD7F32",
-    glow: "#CD7F3266",
-    gradient: "linear-gradient(155deg, #2A1000 0%, #5A2800 20%, #8B4513 45%, #CD7F32 65%, #E8A060 80%, #F5C080 100%)",
-    badge: "rgba(107,48,16,0.9)",
+    glow: "0 0 40px rgba(205,127,50,0.45), 0 0 80px rgba(205,127,50,0.15)",
+    accent: "#CD7F32",
+    statBg: "rgba(0,0,0,0.5)",
+    badge: "#7A3A10",
+    badgeText: "#E8A060",
+    label: "BRONZE",
   },
   Platinum: {
+    bg: "linear-gradient(160deg, #000A14 0%, #001828 18%, #002A50 35%, #004A80 55%, #007ABA 72%, #00A89C 85%, #00DCC8 100%)",
     border: "#00DCC8",
-    glow: "#00DCC855",
-    gradient: "linear-gradient(155deg, #0A1628 0%, #0D2040 20%, #0A3060 40%, #005A8A 65%, #007ABA 80%, #00A89C 92%, #00DCC8 100%)",
-    badge: "rgba(0,122,186,0.9)",
+    glow: "0 0 40px rgba(0,220,200,0.5), 0 0 80px rgba(0,220,200,0.2)",
+    accent: "#00DCC8",
+    statBg: "rgba(0,0,0,0.5)",
+    badge: "#005A8A",
+    badgeText: "#00DCC8",
+    label: "PLATINUM",
   },
 };
 
-const LEVEL_LABELS: Record<string, string> = {
-  Gold: "⭐ GOLD — نخبة",
-  Silver: "🥈 SILVER — متقدم",
-  Bronze: "🥉 BRONZE — ناشئ",
-  Platinum: "💎 PLATINUM — نجم",
+const STAT_LABELS: Record<keyof FifaCardPlayer["stats"], string> = {
+  speed: "السرعة",
+  passing: "التمرير",
+  shooting: "التسديد",
+  defense: "الدفاع",
+  skill: "المهارة",
+  strength: "القوة",
 };
 
 interface FifaCardProps {
   player: FifaCardPlayer;
-  /** If true, shows a shimmer loading overlay */
   loading?: boolean;
 }
 
 export default function FifaCard({ player, loading = false }: FifaCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
-
   const level = player.level ?? "Gold";
-  const colors = LEVEL_COLORS[level] ?? LEVEL_COLORS.Gold;
+  const c = LEVELS[level] ?? LEVELS.Gold;
 
-  async function handleDownload() {
+  const handleDownload = async () => {
     if (!cardRef.current) return;
     setDownloading(true);
     try {
-      // Dynamic import to keep bundle lean
       const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(cardRef.current, {
-        scale: 3,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        logging: false,
+        scale: 3, useCORS: true, allowTaint: true,
+        backgroundColor: null, logging: false,
       });
       const link = document.createElement("a");
-      link.download = `sportid-${player.sportId}.png`;
+      link.download = `SportID-${player.sportId}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
       toast.success("تم تحميل البطاقة بنجاح!");
     } catch (err) {
       console.error(err);
-      toast.error("فشل تحميل البطاقة، حاول مرة أخرى");
+      toast.error("فشل التحميل، حاول مرة أخرى");
     } finally {
       setDownloading(false);
     }
-  }
+  };
 
-  const stats = [
-    { num: player.stats.speed,    label: "السرعة" },
-    { num: player.stats.passing,  label: "التمرير" },
-    { num: player.stats.shooting, label: "التسديد" },
-    { num: player.stats.defense,  label: "الدفاع" },
-    { num: player.stats.skill,    label: "المهارة" },
-    { num: player.stats.strength, label: "القوة" },
-  ];
+  const statEntries = Object.entries(player.stats) as [keyof typeof player.stats, number][];
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
       {/* ── Card ── */}
       <div
         ref={cardRef}
-        dir="rtl"
         style={{
-          width: 280,
+          width: 300,
+          background: c.bg,
           borderRadius: 20,
+          border: `3px solid ${c.border}`,
+          boxShadow: c.glow,
           overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
           position: "relative",
-          background: colors.gradient,
-          border: `4px solid ${colors.border}`,
-          boxShadow: `0 0 30px ${colors.glow}, 0 0 60px ${colors.glow}55`,
-          fontFamily: "'Tajawal', 'Cairo', 'NotoAr', sans-serif",
+          fontFamily: "'Cairo', 'NotoSansArabic', sans-serif",
+          direction: "rtl",
         }}
       >
-        {/* Diagonal shine overlay */}
+        {/* Sparkle overlay */}
         <div style={{
-          position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10, borderRadius: 16,
-          background: "repeating-linear-gradient(135deg, transparent 0, transparent 38px, rgba(255,255,255,0.04) 38px, rgba(255,255,255,0.04) 40px)",
+          position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1,
+          background: "radial-gradient(ellipse at 35% 15%, rgba(255,255,255,0.14) 0%, transparent 55%)",
         }} />
 
         {/* Loading shimmer */}
         {loading && (
           <div style={{
-            position: "absolute", inset: 0, zIndex: 20, borderRadius: 16,
-            background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center",
+            position: "absolute", inset: 0, zIndex: 20,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <Loader2 size={32} className="animate-spin" style={{ color: colors.border }} />
+            <Loader2 size={32} className="animate-spin" style={{ color: c.border }} />
           </div>
         )}
 
-        {/* Top bar: jersey number + logo */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "12px 14px 0", position: "relative", zIndex: 2 }}>
-          {/* Left: jersey + position */}
+        {/* ── Top bar: rating (left) + Ada2ai logo (right) ── */}
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+          padding: "12px 14px 0", position: "relative", zIndex: 2,
+        }}>
+          {/* Rating + position (right side in RTL = left visually) */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1 }}>
-            <span style={{ fontSize: 64, fontWeight: 900, color: "#fff", lineHeight: 1, textShadow: `0 0 20px ${colors.border}88, 3px 3px 0 rgba(0,0,0,0.6)` }}>
+            <span style={{
+              fontSize: 56, fontWeight: 900, color: "#fff", lineHeight: 1,
+              textShadow: `0 0 20px ${c.accent}99, 2px 2px 0 rgba(0,0,0,0.7)`,
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}>
               {player.jerseyNumber}
             </span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(0,0,0,0.7)", marginTop: 1 }}>{player.position}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: c.accent, marginTop: 2 }}>
+              {player.position}
+            </span>
+            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 1, direction: "ltr", fontFamily: "'Space Grotesk', sans-serif" }}>
+              {player.sport === "كرة القدم" ? "⚽" : "🏅"} SA
+            </span>
           </div>
-          {/* Right: Ada2ai + sport + year */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
-            <span style={{ fontSize: 16, fontWeight: 900, color: "#fff", textShadow: "2px 2px 6px rgba(0,0,0,0.8)", letterSpacing: 1, direction: "ltr" }}>Ada2ai</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "rgba(0,0,0,0.65)" }}>{player.sport}</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(0,0,0,0.5)", direction: "ltr" }}>{player.birthYear}</span>
+
+          {/* Ada2ai logo + level badge */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+            <span style={{
+              fontSize: 15, fontWeight: 900, color: "#fff",
+              textShadow: "1px 1px 4px rgba(0,0,0,0.8)",
+              letterSpacing: 0.5, direction: "ltr",
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}>
+              Ada<span style={{ color: c.accent }}>2</span>ai
+            </span>
+            <span style={{
+              fontSize: 9, fontWeight: 800, padding: "2px 7px", borderRadius: 20,
+              background: c.badge, color: c.badgeText,
+              letterSpacing: 1, direction: "ltr",
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}>
+              {c.label}
+            </span>
           </div>
         </div>
 
-        {/* Level badge */}
-        <div style={{ padding: "4px 14px 0", position: "relative", zIndex: 2 }}>
-          <span style={{
-            fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 20,
-            background: colors.badge, color: colors.border, letterSpacing: 1,
-            textTransform: "uppercase", direction: "ltr",
-          }}>
-            {LEVEL_LABELS[level]}
-          </span>
-        </div>
-
-        {/* Player photo */}
+        {/* ── Player photo ── */}
         <div style={{
-          position: "relative", overflow: "hidden", margin: "8px 10px 0",
-          borderRadius: 8, height: 180,
-          border: `1px solid ${colors.border}55`,
-          boxShadow: `0 0 15px ${colors.glow}`,
+          position: "relative", overflow: "hidden",
+          margin: "6px 10px 0",
+          borderRadius: 10, height: 200,
+          border: `1px solid ${c.border}44`,
+          boxShadow: `0 0 20px ${c.accent}33`,
         }}>
           {player.avatar ? (
             <img
               src={player.avatar}
               alt={player.name}
               crossOrigin="anonymous"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%", display: "block" }}
+              style={{
+                width: "100%", height: "100%",
+                objectFit: "cover", objectPosition: "center 10%",
+                display: "block",
+              }}
             />
           ) : (
-            <div style={{ width: "100%", height: "100%", background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 48 }}>👤</span>
+            <div style={{
+              width: "100%", height: "100%",
+              background: "rgba(0,0,0,0.3)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 56, color: "rgba(255,255,255,0.2)",
+            }}>
+              👤
             </div>
           )}
-          {/* Bottom fade */}
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 50, background: "linear-gradient(transparent, rgba(0,0,0,0.5))" }} />
+          {/* Bottom gradient fade */}
+          <div style={{
+            position: "absolute", bottom: 0, left: 0, right: 0, height: 70,
+            background: "linear-gradient(transparent, rgba(0,0,0,0.7))",
+          }} />
         </div>
 
-        {/* Name band */}
+        {/* ── Player name ── */}
         <div style={{
-          padding: "8px 12px 6px", textAlign: "center",
-          background: "rgba(0,0,0,0.88)", borderTop: `2px solid ${colors.border}aa`,
-          position: "relative", zIndex: 2,
+          background: "rgba(0,0,0,0.7)",
+          padding: "8px 14px 6px",
+          textAlign: "center",
+          borderTop: `2px solid ${c.border}88`,
         }}>
           <div style={{
-            fontSize: 28, fontWeight: 900, color: "#fff",
-            textShadow: `0 0 15px ${colors.glow}, 3px 3px 0 rgba(0,0,0,0.7)`,
-            lineHeight: 1.1, letterSpacing: 1,
+            fontSize: 22, fontWeight: 900, color: "#FFFFFF",
+            letterSpacing: 0.5,
+            fontFamily: "'Cairo', sans-serif",
+            textShadow: `0 0 14px ${c.accent}66, 2px 2px 0 rgba(0,0,0,0.8)`,
           }}>
             {player.name}
           </div>
         </div>
 
-        {/* Divider */}
-        <div style={{ height: 2, margin: "0 16px", background: `linear-gradient(90deg, transparent, ${colors.border}, ${colors.border}cc, ${colors.border}, transparent)`, opacity: 0.8 }} />
-
-        {/* Stats grid */}
-        <div style={{ padding: "6px 8px 5px", background: "rgba(0,0,0,0.85)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
-            {stats.map((s, i) => (
-              <div key={s.label} style={{
-                display: "flex", flexDirection: "column", alignItems: "center", padding: "5px 2px",
-                borderLeft: (i % 3 !== 2) ? `1px solid ${colors.border}33` : "none",
-                borderBottom: i < 3 ? `1px solid ${colors.border}22` : "none",
-                paddingBottom: i < 3 ? 7 : 5,
-                paddingTop: i >= 3 ? 7 : 5,
+        {/* ── Stats grid 3×2 ── */}
+        <div style={{
+          display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
+          background: "rgba(0,0,0,0.8)",
+          borderTop: `1px solid ${c.border}33`,
+        }}>
+          {statEntries.map(([key, value], i) => (
+            <div key={key} style={{
+              background: c.statBg,
+              padding: "7px 4px",
+              textAlign: "center",
+              borderLeft: i % 3 !== 2 ? `1px solid ${c.border}22` : "none",
+              borderBottom: i < 3 ? `1px solid ${c.border}22` : "none",
+            }}>
+              <div style={{
+                fontSize: 24, fontWeight: 900, color: "#FFFFFF", lineHeight: 1,
+                fontFamily: "'Space Grotesk', sans-serif",
+                textShadow: `0 0 10px ${c.accent}55`,
               }}>
-                <span style={{ fontSize: 26, fontWeight: 900, color: "#fff", lineHeight: 1, textShadow: `0 0 12px ${colors.glow}, 2px 2px 6px rgba(0,0,0,0.9)` }}>
-                  {s.num}
-                </span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: colors.border, marginTop: 2 }}>{s.label}</span>
+                {value}
               </div>
-            ))}
-          </div>
+              <div style={{
+                fontSize: 9, color: c.accent, marginTop: 2,
+                fontFamily: "'Cairo', sans-serif", fontWeight: 700,
+              }}>
+                {STAT_LABELS[key]}
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* SportID footer */}
+        {/* ── SportID + QR footer ── */}
         <div style={{
-          padding: "6px 12px 8px", background: "rgba(0,0,0,0.92)",
-          borderTop: `1px solid ${colors.border}aa`,
-          display: "flex", alignItems: "center", gap: 8,
+          background: "rgba(0,0,0,0.85)",
+          borderTop: `1px solid ${c.border}44`,
+          padding: "8px 14px",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
         }}>
-          {/* Mini QR pattern */}
-          <div style={{
-            width: 36, height: 36, border: `1.5px solid ${colors.border}`, borderRadius: 4,
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-            boxShadow: `0 0 6px ${colors.glow}`,
-          }}>
+          <div>
             <div style={{
-              width: 26, height: 26, background: "#fff", borderRadius: 2,
-              display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 1, padding: 2,
+              fontSize: 8, color: "rgba(255,255,255,0.35)",
+              fontFamily: "'Space Grotesk', sans-serif",
+              letterSpacing: 1, marginBottom: 2,
             }}>
-              {[1,0,1,0,1, 0,1,0,1,0, 1,0,0,0,1, 0,1,0,1,0, 1,0,1,0,1].map((v, i) => (
-                <div key={i} style={{ background: v ? "#000" : "#fff", borderRadius: 0.5 }} />
-              ))}
+              SPORT ID
+            </div>
+            <div style={{
+              fontSize: 11, fontWeight: 900, color: c.accent,
+              fontFamily: "'Space Grotesk', sans-serif",
+              letterSpacing: 0.5,
+            }}>
+              {player.sportId}
+            </div>
+            <div style={{
+              fontSize: 9, color: "rgba(255,255,255,0.3)",
+              fontFamily: "'Cairo', sans-serif", marginTop: 2,
+            }}>
+              مواليد {player.birthYear} • {player.sport}
             </div>
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 9, fontWeight: 700, color: colors.border, letterSpacing: 1, direction: "ltr", textTransform: "uppercase" }}>SportID</div>
-            <div style={{ fontSize: 12, fontWeight: 900, color: "#fff", letterSpacing: 1.5, direction: "ltr", marginTop: 1 }}>{player.sportId}</div>
-            <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.4)", marginTop: 1 }}>هوية رياضية رقمية موحّدة</div>
+
+          {/* Real QR Code */}
+          <div style={{
+            background: "#FFFFFF",
+            borderRadius: 6, padding: 3,
+            border: `1.5px solid ${c.accent}55`,
+            flexShrink: 0,
+          }}>
+            <QRCodeSVG
+              value={`https://ada2ai.com/sportid/${player.sportId}`}
+              size={50}
+              bgColor="#FFFFFF"
+              fgColor="#000000"
+              level="M"
+            />
           </div>
         </div>
       </div>
@@ -267,13 +335,14 @@ export default function FifaCard({ player, loading = false }: FifaCardProps) {
         disabled={downloading || loading}
         style={{
           display: "flex", alignItems: "center", gap: 8,
-          padding: "10px 24px", borderRadius: 12, border: `1.5px solid ${colors.border}66`,
-          background: `${colors.badge}`, color: colors.border,
-          fontFamily: "'Tajawal', sans-serif", fontSize: 14, fontWeight: 700,
-          cursor: downloading ? "not-allowed" : "pointer",
+          padding: "10px 28px", borderRadius: 12,
+          background: "linear-gradient(135deg, #007ABA, #00DCC8)",
+          color: "#000A0F", fontWeight: 900, fontSize: 14,
+          border: "none", cursor: downloading ? "not-allowed" : "pointer",
           opacity: downloading ? 0.7 : 1,
-          transition: "all 0.2s",
-          boxShadow: `0 4px 16px ${colors.glow}`,
+          fontFamily: "'Cairo', sans-serif",
+          transition: "opacity 0.2s",
+          boxShadow: "0 4px 16px rgba(0,220,200,0.3)",
         }}
       >
         {downloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
