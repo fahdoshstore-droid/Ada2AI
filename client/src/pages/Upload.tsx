@@ -8,18 +8,32 @@ import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 import FifaCard, { FifaCardPlayer } from "@/components/FifaCard";
 import { useState, useRef, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Upload, FileImage, CheckCircle, Loader2,
+  Upload, FileImage, FileVideo, CheckCircle, Loader2,
   Zap, Target, Shield, Brain, Activity, Star, Award, BarChart2,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Legend,
+} from "recharts";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Step = "upload" | "analyzing" | "done";
 
+// معايير SAFF للمقارنة حسب الفئة العمرية
+const SAFF_BENCHMARKS: Record<string, Record<string, number>> = {
+  U15:    { التقنية: 65, البدنية: 60, السرعة: 62, التكتيك: 58, الذهنية: 60, التسديد: 55 },
+  U17:    { التقنية: 72, البدنية: 68, السرعة: 70, التكتيك: 65, الذهنية: 67, التسديد: 63 },
+  U20:    { التقنية: 78, البدنية: 75, السرعة: 77, التكتيك: 73, الذهنية: 74, التسديد: 70 },
+  Senior: { التقنية: 82, البدنية: 80, السرعة: 81, التكتيك: 79, الذهنية: 80, التسديد: 76 },
+};
+
 type SAFFReport = {
   reportId: string;
   analysisDate: string;
+  playerName: string;
+  jerseyNumber: number;
   ageCategory: { label: string; code: string; note: string };
   physicalProfile: {
     bodyType: string; heightCategory: string;
@@ -81,25 +95,33 @@ export default function UploadPage() {
   const [step, setStep] = useState<Step>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isVideo, setIsVideo] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [currentStage, setCurrentStage] = useState(0);
   const [report, setReport] = useState<SAFFReport | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [extractedFrames, setExtractedFrames] = useState<string[]>([]);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const stageTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
+  const ALLOWED_IMAGES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  const ALLOWED_VIDEOS = ["video/mp4", "video/quicktime", "video/webm"];
+
   const handleFile = useCallback((f: File) => {
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (!allowed.includes(f.type)) {
-      toast.error("يرجى رفع صورة (JPEG, PNG, WebP)");
+    const isImg = ALLOWED_IMAGES.includes(f.type);
+    const isVid = ALLOWED_VIDEOS.includes(f.type);
+    if (!isImg && !isVid) {
+      toast.error("يرجى رفع صورة (JPEG, PNG, WebP) أو فيديو (MP4, MOV, WebM)");
       return;
     }
-    if (f.size > 10 * 1024 * 1024) {
-      toast.error("حجم الصورة يجب أن يكون أقل من 10MB");
+    const maxSize = isVid ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (f.size > maxSize) {
+      toast.error(isVid ? "حجم الفيديو يجب أن يكون أقل من 50MB" : "حجم الصورة يجب أن يكون أقل من 10MB");
       return;
     }
     setFile(f);
+    setIsVideo(isVid);
     setPreviewUrl(URL.createObjectURL(f));
   }, []);
 
@@ -117,12 +139,14 @@ export default function UploadPage() {
     setCurrentStage(0);
 
     // Stage animation
-    const totalDuration = 12000;
-    const stageInterval = totalDuration / analysisStages.length;
-    analysisStages.forEach((_, i) => {
-      const t = setTimeout(() => setCurrentStage(i + 1), stageInterval * (i + 1));
-      stageTimers.current.push(t);
-    });
+      const totalDuration = isVideo ? 20000 : 12000;
+      const stageInterval = totalDuration / analysisStages.length;
+      stageTimers.current.forEach(clearTimeout);
+      stageTimers.current = [];
+      analysisStages.forEach((_, i) => {
+        const t = setTimeout(() => setCurrentStage(i + 1), stageInterval * (i + 1));
+        stageTimers.current.push(t);
+      });
 
     try {
       // Convert to base64
@@ -140,21 +164,32 @@ export default function UploadPage() {
       const uploadRes = await fetch("/api/scout/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ fileData, mimeType: file.type, fileName: file.name }),
       });
-      if (!uploadRes.ok) throw new Error(`Upload failed: ${uploadRes.status}`);
+      if (!uploadRes.ok) throw new Error(`فشل رفع الملف: ${uploadRes.status}`);
       const uploadData = await uploadRes.json();
-      if (!uploadData.url) throw new Error("No URL returned from upload");
+      if (!uploadData.url) throw new Error("لم يتم إرجاع رابط الملف");
       setUploadedImageUrl(uploadData.url);
+
+      // Handle video frames
+      let analyzeBody: Record<string, unknown>;
+      if (uploadData.isVideo && uploadData.frameUrls?.length > 0) {
+        setExtractedFrames(uploadData.frameUrls);
+        analyzeBody = { frameUrls: uploadData.frameUrls };
+      } else {
+        analyzeBody = { imageUrl: uploadData.url };
+      }
 
       // Analyze
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60000);
+      const timeout = setTimeout(() => controller.abort(), 80000);
       const analyzeRes = await fetch("/api/scout/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         signal: controller.signal,
-        body: JSON.stringify({ imageUrl: uploadData.url }),
+        body: JSON.stringify(analyzeBody),
       });
       clearTimeout(timeout);
       if (!analyzeRes.ok) throw new Error(`Analysis failed: ${analyzeRes.status}`);
@@ -181,11 +216,33 @@ export default function UploadPage() {
     setStep("upload");
     setFile(null);
     setPreviewUrl(null);
+    setIsVideo(false);
     setReport(null);
     setUploadedImageUrl(null);
+    setExtractedFrames([]);
     setAnalysisError(null);
     setCurrentStage(0);
     stageTimers.current.forEach(clearTimeout);
+  };
+
+  // Build Radar Chart data comparing player vs SAFF benchmark
+  const buildRadarData = (r: SAFFReport) => {
+    const bench = SAFF_BENCHMARKS[r.ageCategory.code] || SAFF_BENCHMARKS.U17;
+    const tech = r.technicalIndicators;
+    const ath = r.athleticIndicators;
+    const mental = r.mentalIndicators;
+    const avg = (...vals: (number | undefined)[]) => {
+      const valid = vals.filter((v): v is number => typeof v === "number");
+      return valid.length ? Math.round(valid.reduce((a, b) => a + b, 0) / valid.length) : 65;
+    };
+    return [
+      { subject: "التقنية",  اللاعب: avg(tech?.ballControl?.score, tech?.dribbling?.score, tech?.firstTouch?.score), "معيار SAFF": bench["التقنية"] },
+      { subject: "البدنية",  اللاعب: avg(ath?.speed?.score, ath?.agility?.score, ath?.explosiveness?.score), "معيار SAFF": bench["البدنية"] },
+      { subject: "السرعة",   اللاعب: ath?.speed?.score ?? 70, "معيار SAFF": bench["السرعة"] },
+      { subject: "التكتيك",  اللاعب: avg(tech?.vision?.score, mental?.footballIQ?.score), "معيار SAFF": bench["التكتيك"] },
+      { subject: "الذهنية",  اللاعب: avg(mental?.footballIQ?.score, mental?.decisionMaking?.score, mental?.resilience?.score), "معيار SAFF": bench["الذهنية"] },
+      { subject: "التسديد",  اللاعب: tech?.shooting?.score ?? 65, "معيار SAFF": bench["التسديد"] },
+    ];
   };
 
   // Build FIFA card from report
@@ -198,8 +255,8 @@ export default function UploadPage() {
     const birthYear = new Date().getFullYear() - (r.ageCategory.code === "U15" ? 14 : r.ageCategory.code === "U17" ? 16 : r.ageCategory.code === "U20" ? 19 : 22);
     const initials = r.recommendation.bestPositionCode.substring(0, 2);
     return {
-      name: "اللاعب",
-      jerseyNumber: overall,
+      name: r.playerName || "لاعب موهوب",
+      jerseyNumber: r.jerseyNumber || overall,
       position: r.recommendation.bestPosition,
       sport: "كرة القدم",
       birthYear,
@@ -218,28 +275,41 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#000A0F", color: "#EEEFEE" }} dir={isRTL ? "rtl" : "ltr"}>
+    <div className="min-h-screen" style={{ background: "#000A0F", color: "#EEEFEE" }} dir="rtl">
       <Ada2aiNavbar />
 
       <div className="max-w-3xl mx-auto px-4 pt-24 pb-16">
 
         {/* ── Header ── */}
-        <div className="text-center mb-10">
+        <motion.div
+          className="text-center mb-10"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4"
             style={{ background: "rgba(0,220,200,0.1)", border: "1px solid rgba(0,220,200,0.3)", color: "#00DCC8", fontFamily: "'Space Grotesk', sans-serif" }}>
-            <Shield size={12} /> SAFF + FIFA Standards
+            <Shield size={12} /> معايير SAFF + FIFA
           </div>
-          <h1 className="text-3xl font-black mb-2" style={{ fontFamily: "'Cairo', sans-serif" }}>
+          <h1 className="text-3xl font-black mb-2" style={{ fontFamily: "'Cairo', sans-serif", color: "#EEEFEE" }}>
             تحليل اللاعب بالذكاء الاصطناعي
           </h1>
           <p className="text-[#EEEFEE]/50 text-sm" style={{ fontFamily: "'Cairo', sans-serif" }}>
-            ارفع صورة اللاعب — يحللها Claude AI وفق معايير SAFF وFIFA
+            ارفع صورة أو فيديو للاعب — يحلل الذكاء الاصطناعي وفق معايير SAFF وFIFA
           </p>
-        </div>
+        </motion.div>
 
         {/* ── STEP: UPLOAD ── */}
+        <AnimatePresence mode="wait">
         {step === "upload" && (
-          <div className="space-y-6">
+          <motion.div
+            key="upload"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-6"
+          >
             {analysisError && (
               <div className="rounded-xl p-4 text-sm" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontFamily: "'Cairo', sans-serif" }}>
                 ⚠️ {analysisError}
@@ -262,38 +332,62 @@ export default function UploadPage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
+                accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm"
                 className="hidden"
                 onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
               />
 
               {previewUrl ? (
                 <div className="flex flex-col items-center justify-center p-6 gap-4">
-                  <img
-                    src={previewUrl}
-                    alt="preview"
-                    className="rounded-xl object-contain"
-                    style={{ maxHeight: 280, maxWidth: "100%" }}
-                  />
+                  {isVideo ? (
+                    <video
+                      src={previewUrl}
+                      className="rounded-xl object-contain"
+                      style={{ maxHeight: 280, maxWidth: "100%" }}
+                      controls
+                      muted
+                    />
+                  ) : (
+                    <img
+                      src={previewUrl}
+                      alt="معاينة اللاعب"
+                      className="rounded-xl object-contain"
+                      style={{ maxHeight: 280, maxWidth: "100%" }}
+                    />
+                  )}
                   <div className="text-[#EEEFEE]/50 text-xs" style={{ fontFamily: "'Cairo', sans-serif" }}>
                     {file?.name} — {((file?.size || 0) / 1024).toFixed(0)} KB
                   </div>
+                  {isVideo && (
+                    <div className="text-xs px-3 py-1.5 rounded-lg" style={{ background: "rgba(0,122,186,0.1)", color: "#007ABA", fontFamily: "'Cairo', sans-serif" }}>
+                      سيتم استخراج 3 إطارات تلقائياً وتحليلها معاً
+                    </div>
+                  )}
                   <div className="text-[#00DCC8] text-xs" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                    انقر لتغيير الصورة
+                    انقر لتغيير الملف
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center gap-4 p-12">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
-                    style={{ background: "rgba(0,220,200,0.1)", border: "1px solid rgba(0,220,200,0.2)" }}>
-                    <Upload size={28} style={{ color: "#00DCC8" }} />
+                  <div className="flex gap-3">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                      style={{ background: "rgba(0,220,200,0.1)", border: "1px solid rgba(0,220,200,0.2)" }}>
+                      <FileImage size={24} style={{ color: "#00DCC8" }} />
+                    </div>
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                      style={{ background: "rgba(0,122,186,0.1)", border: "1px solid rgba(0,122,186,0.2)" }}>
+                      <FileVideo size={24} style={{ color: "#007ABA" }} />
+                    </div>
                   </div>
                   <div className="text-center">
                     <div className="text-[#EEEFEE] font-bold mb-1" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                      اسحب صورة اللاعب هنا
+                      اسحب صورة أو فيديو اللاعب هنا
                     </div>
                     <div className="text-[#EEEFEE]/40 text-sm" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                      أو انقر للاختيار — JPEG, PNG, WebP (حتى 10MB)
+                      صور: JPEG, PNG, WebP (حتى 10MB)
+                    </div>
+                    <div className="text-[#EEEFEE]/30 text-xs mt-0.5" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                      فيديوهات: MP4, MOV, WebM (حتى 50MB)
                     </div>
                   </div>
                 </div>
@@ -315,11 +409,17 @@ export default function UploadPage() {
                 ابدأ التحليل — SAFF + FIFA
               </button>
             )}
-          </div>
+          </motion.div>
         )}
 
         {/* ── STEP: ANALYZING ── */}
         {step === "analyzing" && (
+          <motion.div
+            key="analyzing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
           <div className="rounded-2xl p-8 space-y-6"
             style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
             <div className="text-center">
@@ -363,11 +463,18 @@ export default function UploadPage() {
               />
             </div>
           </div>
+          </motion.div>
         )}
 
         {/* ── STEP: DONE ── */}
         {step === "done" && report && (
-          <div className="space-y-6">
+          <motion.div
+            key="done"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-6"
+          >
 
             {/* Report Header */}
             <div className="rounded-2xl overflow-hidden"
@@ -375,14 +482,17 @@ export default function UploadPage() {
               <div className="p-5" style={{ background: "linear-gradient(135deg, rgba(0,122,186,0.2), rgba(0,220,200,0.1))", borderBottom: "1px solid rgba(0,220,200,0.15)" }}>
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
-                    <div className="text-xs font-semibold mb-1" style={{ color: "#00DCC8", fontFamily: "'Space Groterc', sans-serif" }}>
+                    <div className="text-xs font-semibold mb-1" style={{ color: "#00DCC8", fontFamily: "'Space Grotesk', sans-serif" }}>
                       تقرير الكشافة الاحترافي — Ada2ai
                     </div>
-                    <div className="font-black text-lg" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                      معايير SAFF + FIFA
+                    <div className="font-black text-xl" style={{ fontFamily: "'Cairo', sans-serif", color: "#EEEFEE" }}>
+                      {report.playerName || "لاعب موهوب"}
                     </div>
-                    <div className="text-[#EEEFEE]/40 text-xs mt-0.5" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                      {report.reportId} • {report.analysisDate}
+                    <div className="text-[#EEEFEE]/50 text-sm mt-0.5" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                      {report.ageCategory.label} · {report.recommendation.bestPosition}
+                    </div>
+                    <div className="text-[#EEEFEE]/30 text-xs mt-0.5" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                      {report.reportId} · {report.analysisDate}
                     </div>
                   </div>
                   <div className="text-center">
@@ -450,10 +560,34 @@ export default function UploadPage() {
                   </div>
                 </div>
 
+                {/* Radar Chart — SAFF Benchmark */}
+                <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="text-xs font-semibold mb-1 flex items-center gap-2" style={{ color: "#00DCC8", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    <Activity size={12} /> مقارنة بمعيار SAFF — {report.ageCategory.label}
+                  </div>
+                  <p className="text-[#EEEFEE]/30 text-xs mb-3" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                    الخط الأخضر: اللاعب — الخط الرمادي: معيار SAFF للفئة العمرية
+                  </p>
+                  <div style={{ height: 260 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={buildRadarData(report)} cx="50%" cy="50%" outerRadius="70%">
+                        <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                        <PolarAngleAxis
+                          dataKey="subject"
+                          tick={{ fill: "#EEEFEE", fontSize: 11, fontFamily: "'Cairo', sans-serif" }}
+                        />
+                        <Radar name="اللاعب" dataKey="اللاعب" stroke="#00DCC8" fill="#00DCC8" fillOpacity={0.2} strokeWidth={2} />
+                        <Radar name="معيار SAFF" dataKey="معيار SAFF" stroke="#666" fill="#666" fillOpacity={0.08} strokeWidth={1.5} strokeDasharray="4 4" />
+                        <Legend wrapperStyle={{ fontFamily: "'Cairo', sans-serif", fontSize: 11, color: "#EEEFEE" }} />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
                 {/* Sport DNA */}
                 <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
                   <div className="text-xs font-semibold mb-3 flex items-center gap-2" style={{ color: "#00DCC8", fontFamily: "'Space Grotesk', sans-serif" }}>
-                    <BarChart2 size={12} /> ⑥ Sport DNA — تحليل المركز الأمثل
+                    <BarChart2 size={12} /> Sport DNA — تحليل المركز الأمثل
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {Object.entries(report.sportDNA)
@@ -578,8 +712,9 @@ export default function UploadPage() {
             <div className="text-center text-[#EEEFEE]/20 text-xs pt-2" style={{ fontFamily: "'Cairo', sans-serif" }}>
               Ada2ai — المنصة الرياضية الأولى بمعايير SAFF + FIFA
             </div>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
     </div>
   );

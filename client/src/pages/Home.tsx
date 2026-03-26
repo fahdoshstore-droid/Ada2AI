@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
+import { motion } from "framer-motion";
 import {
   Brain, Zap, Users, BarChart3,
   ChevronRight, ArrowRight, CheckCircle2,
@@ -812,9 +813,103 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════
+         {/* ════════════════════════════════════════════════════════════
+          ADA2AI VIDEO SHOWCASE
+      ════════════════════════════════════════════════════════════ */}
+      <section className="py-20 relative overflow-hidden" style={{ background: "#000A0F", borderTop: "1px solid rgba(0,220,200,0.08)" }}>
+        <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(0,122,186,0.06) 0%, transparent 70%)" }} />
+        <div className="relative container mx-auto px-4">
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-4" style={{ background: "rgba(0,220,200,0.06)", borderColor: "rgba(0,220,200,0.2)" }}>
+              <span className="w-2 h-2 rounded-full bg-[#00DCC8] animate-pulse" />
+              <span className="text-[#00DCC8] text-[10px] font-orbitron tracking-widest">ADA2AI PLATFORM</span>
+            </div>
+            <h2 className="font-orbitron font-black text-2xl lg:text-3xl text-[#EEEFEE] mb-3">
+              {lang === "ar" ? "شاهد كيف تعمل المنصة" : "See Ada2ai in Action"}
+            </h2>
+            <p className="text-sm max-w-lg mx-auto" style={{ color: "rgba(238,239,238,0.5)", fontFamily: "'Cairo', sans-serif", lineHeight: 1.9 }}>
+              {lang === "ar" ? "من الاكتشاف إلى بطاقة SportID إلى الاحتراف — منظومة متكاملة بالذكاء الاصطناعي" : "From discovery to SportID to Pro — one integrated AI platform"}
+            </p>
+          </motion.div>
+
+          {/* Main Featured Video */}
+          <motion.div
+            className="max-w-xs mx-auto mb-10"
+            initial={{ opacity: 0, scale: 0.97 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="relative rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,220,200,0.2)", boxShadow: "0 0 60px rgba(0,220,200,0.08), 0 0 120px rgba(0,122,186,0.06)" }}>
+              <div className="absolute top-3 right-3 z-10 px-2 py-1 rounded text-[10px] font-bold" style={{ background: "rgba(0,220,200,0.15)", border: "1px solid rgba(0,220,200,0.3)", color: "#00DCC8", fontFamily: "'Space Grotesk', sans-serif" }}>
+                Ada2ai
+              </div>
+              <video
+                src="https://d2xsxph8kpxj0f.cloudfront.net/115062705/gJEX8KKv2DgTKGvafGwXZn/ada2ai_v3_with_music_33ecafdd.mp4"
+                className="w-full"
+                style={{ aspectRatio: "9/16", objectFit: "cover", display: "block" }}
+                controls
+                playsInline
+                preload="metadata"
+              />
+            </div>
+          </motion.div>
+
+          {/* 3 Clip Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+            {[
+              {
+                src: "https://d2xsxph8kpxj0f.cloudfront.net/115062705/gJEX8KKv2DgTKGvafGwXZn/clip1_final_d6652735.mp4",
+                label: lang === "ar" ? "شعار Ada2ai" : "Ada2ai Opening",
+                color: "#00DCC8",
+              },
+              {
+                src: "https://d2xsxph8kpxj0f.cloudfront.net/115062705/gJEX8KKv2DgTKGvafGwXZn/clip2_final_2b5e6708.mp4",
+                label: lang === "ar" ? "تحليل اللاعب" : "AI Analysis",
+                color: "#007ABA",
+              },
+              {
+                src: "https://d2xsxph8kpxj0f.cloudfront.net/115062705/gJEX8KKv2DgTKGvafGwXZn/clip3_fifa_v4_4e9e0fe7.mp4",
+                label: lang === "ar" ? "بطاقة SportID" : "SportID Card",
+                color: "#FFD700",
+              },
+            ].map((clip, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15, duration: 0.5 }}
+                className="rounded-xl overflow-hidden"
+                style={{ border: `1px solid ${clip.color}25`, background: "rgba(255,255,255,0.02)" }}
+              >
+                <video
+                  src={clip.src}
+                  className="w-full"
+                  style={{ aspectRatio: "9/16", objectFit: "cover", display: "block" }}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  muted
+                />
+                <div className="px-3 py-2 text-xs font-semibold" style={{ color: clip.color, fontFamily: "'Cairo', sans-serif" }}>
+                  {clip.label}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════
           CTA SECTION
-      ══════════════════════════════════════════════════════════════ */}
+      ════════════════════════════════════════════════════════════ */}
       <section
         className="py-24 relative overflow-hidden"
         style={{ background: "rgba(0,5,10,0.8)", borderTop: "1px solid rgba(0,220,200,0.08)" }}

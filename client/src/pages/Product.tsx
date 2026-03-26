@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { motion } from "framer-motion";
 
 /* ── SVG System Icons (from SportID design) ── */
 function SysIcon({ type, size = 16 }: { type: string; size?: number }) {
@@ -858,10 +859,73 @@ export default function Product() {
               </Link>
             ))}
           </div>
+
+          {/* منظومة Ada2ai — Pipeline Flow */}
+          <motion.div
+            className="mt-16 max-w-5xl mx-auto"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="text-center mb-8">
+              <div className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: "#00DCC8", fontFamily: "'Space Grotesk', sans-serif" }}>
+                {isRTL ? "مسار الرياضي من الاكتشاف إلى الاحتراف" : "Athlete Journey: Discovery to Pro"}
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-0" dir="ltr">
+              {[
+                { label: isRTL ? "تحليل اللاعب" : "Scout AI",        color: "#00DCC8", num: "01" },
+                { label: isRTL ? "هوية رياضية" : "Sport ID",         color: "#007ABA", num: "02" },
+                { label: isRTL ? "لوحة المدرب" : "Coach Dashboard",  color: "#00DCC8", num: "03" },
+                { label: isRTL ? "مركز التدريب" : "Training Hub",     color: "#007ABA", num: "04" },
+                { label: isRTL ? "لوحة الكشاف" : "Scout Dashboard",  color: "#00DCC8", num: "05" },
+                { label: isRTL ? "الاحتراف" : "Pro Career",         color: "#FFD700", num: "★" },
+              ].map((step, i, arr) => (
+                <div key={i} className="flex items-center">
+                  <motion.div
+                    className="flex flex-col items-center gap-2"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1, duration: 0.4 }}
+                  >
+                    <div
+                      className="w-14 h-14 rounded-full flex items-center justify-center font-black text-sm"
+                      style={{
+                        background: `${step.color}15`,
+                        border: `2px solid ${step.color}50`,
+                        color: step.color,
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        boxShadow: `0 0 18px ${step.color}20`,
+                      }}
+                    >
+                      {step.num}
+                    </div>
+                    <div
+                      className="text-xs font-semibold text-center leading-tight"
+                      style={{ color: "rgba(238,239,238,0.75)", fontFamily: "'Cairo', sans-serif", maxWidth: 72 }}
+                    >
+                      {step.label}
+                    </div>
+                  </motion.div>
+                  {i < arr.length - 1 && (
+                    <div className="flex items-center mx-2 pb-5">
+                      <div style={{ width: 24, height: 2, background: `linear-gradient(90deg, ${step.color}50, ${arr[i+1].color}50)` }} />
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                        <path d="M2 5h6M5 2l3 3-3 3" stroke={arr[i+1].color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════
+      {/* ════════════════════════════════════════════════════════════
           WAITLIST SECTION
       ══════════════════════════════════════════════════════════════ */}
       <section className="py-20 px-4" style={{ borderBottom: '1px solid rgba(0,220,200,0.06)', background: 'linear-gradient(180deg, rgba(0,122,186,0.04) 0%, transparent 100%)' }}>

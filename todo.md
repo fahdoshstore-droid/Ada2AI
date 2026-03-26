@@ -191,3 +191,20 @@
 - [x] Redesign FifaCard to match gold hexagonal Ada2ai card (hexagon shape, gold border, glow, Ada2ai logo, QR code)
 - [x] Add QR code to FifaCard using qrcode.react or similar
 - [x] Parse Claude Arabic text report into structured scores for card stats
+
+## Major Platform Sprint (Mar 26, 2026)
+- [ ] Backend: video frame extraction endpoint (ffmpeg, 3 best frames)
+- [ ] Backend: update SAFF+FIFA prompt to extract playerName from image
+- [ ] Backend: multi-frame analysis (send 3 frames to Claude simultaneously)
+- [ ] Upload page: add video support (mp4, mov, webm)
+- [ ] Upload page: show extracted frames preview before analysis
+- [ ] Upload page: Radar Chart (player vs SAFF benchmark) using recharts
+- [ ] Upload page: fix player photo display in SportID card (no crop/distortion)
+- [ ] Upload page: use real player name from analysis in SportID card
+- [ ] Product page: 3x2 grid layout for modules
+- [x] Product page: pipeline flow (Scout AI ← Sport ID ← Coach ← Training ← Scout Dashboard ← الاحتراف)
+- [ ] Product page: add illustrative image for each of the 6 units
+- [x] Global: Framer Motion fade-up scroll animations on all cards/sections
+- [ ] Global: unify sport icons across all pages (same as Home)
+- [x] Landing page: Ada2ai branded video section with dark bg + brand colors
+- [x] Upload videos to CDN for landing page use
