@@ -1,5 +1,6 @@
 import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 import { useLanguage } from "@/contexts/LanguageContext";
+import FifaCard, { type FifaCardPlayer } from "@/components/FifaCard";
 /**
  * SportID Page — SportScout Platform
  * Design: Saudi Tech Noir + Saudi Ministry of Sports branding
@@ -306,6 +307,7 @@ export default function SportIDPage() {
   const [selectedPlayerIdx, setSelectedPlayerIdx] = useState(0);
   const [cardFlipped, setCardFlipped] = useState(false);
   const [activeTab, setActiveTab] = useState<"stats" | "certs" | "trials" | "sessions">("stats");
+  const [showFifaCard, setShowFifaCard] = useState(false);
 
   const activePlayer = DEMO_PLAYERS[selectedPlayerIdx];
 
@@ -410,6 +412,95 @@ export default function SportIDPage() {
         ) : (
           /* ── AUTHENTICATED STATE ── */
           <div className="flex flex-col gap-8">
+
+            {/* ── FIFA SportID Card Preview ── */}
+            <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(0,122,186,0.06)", border: "1px solid rgba(0,220,200,0.2)" }}>
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid rgba(0,220,200,0.1)" }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,#007ABA,#00DCC8)" }}>
+                    <Trophy size={18} className="text-white" />
+                  </div>
+                  <div>
+                    <div className="text-[#EEEFEE] font-black text-base" style={{ fontFamily: "'Tajawal',sans-serif" }}>بطاقة SportID — FIFA Edition</div>
+                    <div className="text-[#EEEFEE]/40 text-xs" style={{ fontFamily: "'Tajawal',sans-serif" }}>بطاقتك الرياضية الرقمية بتصميم FIFA Ultimate Team</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowFifaCard(!showFifaCard)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-105"
+                  style={{ background: showFifaCard ? "rgba(0,220,200,0.15)" : "rgba(0,122,186,0.2)", border: `1px solid ${showFifaCard ? "rgba(0,220,200,0.4)" : "rgba(0,122,186,0.4)"}`, color: showFifaCard ? "#00DCC8" : "#007ABA", fontFamily: "'Tajawal',sans-serif" }}
+                >
+                  {showFifaCard ? "إخفاء البطاقة" : "عرض البطاقة ▼"}
+                </button>
+              </div>
+
+              {/* Card Preview */}
+              {showFifaCard && (() => {
+                const fifaPlayer: FifaCardPlayer = {
+                  name: activePlayer.name,
+                  nameEn: activePlayer.nameEn,
+                  jerseyNumber: selectedPlayerIdx === 0 ? 10 : selectedPlayerIdx === 1 ? 7 : selectedPlayerIdx === 2 ? 11 : 1,
+                  position: activePlayer.position,
+                  sport: activePlayer.sport,
+                  birthYear: 2009 - selectedPlayerIdx,
+                  sportId: activePlayer.id,
+                  avatar: activePlayer.avatar,
+                  level: activePlayer.level,
+                  stats: {
+                    speed:    activePlayer.skills.find(s => s.skill === "السرعة")?.A ?? 75,
+                    passing:  activePlayer.skills.find(s => s.skill === "التمرير")?.A ?? 75,
+                    shooting: activePlayer.skills.find(s => s.skill === "التسديد")?.A ?? 75,
+                    defense:  activePlayer.skills.find(s => s.skill === "الرؤية")?.A ?? 70,
+                    skill:    activePlayer.skills.find(s => s.skill === "المراوغة")?.A ?? 75,
+                    strength: activePlayer.skills.find(s => s.skill === "التحمل")?.A ?? 75,
+                  },
+                };
+                return (
+                  <div className="flex flex-col md:flex-row items-center md:items-start gap-8 p-6">
+                    {/* Card */}
+                    <div className="flex-shrink-0">
+                      <FifaCard player={fifaPlayer} />
+                    </div>
+                    {/* Info panel */}
+                    <div className="flex-1 flex flex-col gap-4 min-w-0">
+                      <div className="rounded-xl p-4" style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div className="text-[#00DCC8] text-xs font-bold mb-2" style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: 1 }}>SPORTID</div>
+                        <div className="text-[#EEEFEE] font-black text-xl mb-1" style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: 2 }}>{activePlayer.id}</div>
+                        <div className="text-[#EEEFEE]/40 text-xs" style={{ fontFamily: "'Tajawal',sans-serif" }}>هوية رياضية رقمية موحّدة — معترف بها في جميع الأكاديميات</div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { label: "الاسم", value: activePlayer.name },
+                          { label: "الرياضة", value: activePlayer.sport },
+                          { label: "المركز", value: activePlayer.position },
+                          { label: "المدينة", value: activePlayer.city },
+                          { label: "الأكاديمية", value: activePlayer.academy },
+                          { label: "المستوى", value: activePlayer.level },
+                        ].map(({ label, value }) => (
+                          <div key={label} className="rounded-lg p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                            <div className="text-[#EEEFEE]/30 text-[10px] mb-0.5" style={{ fontFamily: "'Tajawal',sans-serif" }}>{label}</div>
+                            <div className="text-[#EEEFEE] font-bold text-sm truncate" style={{ fontFamily: "'Tajawal',sans-serif" }}>{value}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="rounded-xl p-4" style={{ background: "rgba(0,220,200,0.05)", border: "1px solid rgba(0,220,200,0.15)" }}>
+                        <div className="text-[#EEEFEE]/50 text-xs mb-3" style={{ fontFamily: "'Tajawal',sans-serif" }}>مقاييس الأداء</div>
+                        <div className="grid grid-cols-3 gap-2">
+                          {fifaPlayer.stats && Object.entries({ السرعة: fifaPlayer.stats.speed, التمرير: fifaPlayer.stats.passing, التسديد: fifaPlayer.stats.shooting, الدفاع: fifaPlayer.stats.defense, المهارة: fifaPlayer.stats.skill, القوة: fifaPlayer.stats.strength }).map(([label, val]) => (
+                            <div key={label} className="text-center">
+                              <div className="font-black text-2xl" style={{ color: val >= 85 ? "#00DCC8" : val >= 70 ? "#FFD700" : "#CD7F32", fontFamily: "'Space Grotesk',sans-serif" }}>{val}</div>
+                              <div className="text-[#EEEFEE]/40 text-[10px]" style={{ fontFamily: "'Tajawal',sans-serif" }}>{label}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
             {/* Passport + Level side by side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
               <div className="flex flex-col items-center gap-4">

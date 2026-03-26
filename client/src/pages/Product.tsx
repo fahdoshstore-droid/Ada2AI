@@ -582,7 +582,7 @@ export default function Product() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          ATHLETE SILHOUETTES — Animated SVG (from SportID design)
+          AI ANALYSIS ILLUSTRATION — Radar Chart
       ══════════════════════════════════════════════════════════════ */}
       <section className="py-14 px-4" style={{ borderBottom: '1px solid rgba(0,220,200,0.06)' }}>
         <div className="container mx-auto">
@@ -590,23 +590,25 @@ export default function Product() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-3"
               style={{ background: 'rgba(0,220,200,0.06)', borderColor: 'rgba(0,220,200,0.18)' }}>
               <span className="text-[#00DCC8] text-[10px] font-orbitron tracking-widest">
-                {isRTL ? 'رياضيون في حركة' : 'ATHLETES IN MOTION'}
+                {isRTL ? 'تحليل الأداء بالذكاء الاصطناعي' : 'AI PERFORMANCE ANALYSIS'}
               </span>
             </div>
             <h2 className="text-xl md:text-2xl font-black text-white font-orbitron">
-              {isRTL ? 'كل رياضة. كل لاعب. موثق.' : 'Every Sport. Every Athlete. Tracked.'}
+              {isRTL ? 'كل رياضة. كل لاعب. محلَّل.' : 'Every Sport. Every Athlete. Analyzed.'}
             </h2>
           </div>
 
           <div className="relative rounded-2xl overflow-hidden border"
             style={{ background: '#000A0F', borderColor: 'rgba(0,220,200,0.12)' }}>
             <style>{`
-              @keyframes ath-float  { 0%,100%{transform:translateY(0)}   50%{transform:translateY(-12px)} }
-              @keyframes glow-pulse { 0%,100%{opacity:0.06}              50%{opacity:0.22} }
-              @keyframes stat-pulse { 0%,100%{opacity:0.55}              50%{opacity:1} }
-              @keyframes scan-line  { 0%{transform:translateY(-5px);opacity:.4} 100%{transform:translateY(385px);opacity:0} }
-              @keyframes trail-fade { 0%,100%{opacity:0.04}              50%{opacity:0.14} }
-              @keyframes dot-drift  { 0%,100%{transform:translateY(0)}   50%{transform:translateY(-30px)} }
+              @keyframes radar-spin  { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+              @keyframes radar-pulse { 0%,100%{opacity:0.15;r:90} 50%{opacity:0.35;r:95} }
+              @keyframes node-pulse  { 0%,100%{opacity:0.7;transform:scale(1)} 50%{opacity:1;transform:scale(1.15)} }
+              @keyframes line-dash   { 0%{stroke-dashoffset:200} 100%{stroke-dashoffset:0} }
+              @keyframes float-card  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+              @keyframes scan-h      { 0%{transform:translateX(-600px);opacity:0.5} 100%{transform:translateX(600px);opacity:0} }
+              @keyframes glow-ring   { 0%,100%{opacity:0.08} 50%{opacity:0.22} }
+              @keyframes score-count { 0%{opacity:0.4} 100%{opacity:1} }
             `}</style>
             <svg viewBox="0 0 1100 380" xmlns="http://www.w3.org/2000/svg" className="w-full">
               <defs>
