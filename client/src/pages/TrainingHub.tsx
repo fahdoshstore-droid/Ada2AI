@@ -610,15 +610,17 @@ export default function TrainingHub() {
       <section className="py-20" style={{ borderTop: "1px solid rgba(0,220,200,0.06)" }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <span className="badge-pro mb-4 inline-block">Full Feature Set</span>
+            <span className="badge-pro mb-4 inline-block">{lang === "ar" ? "مجموعة الميزات الكاملة" : "Full Feature Set"}</span>
             <h2 className="font-orbitron font-bold text-2xl lg:text-3xl mb-4 text-[#EEEFEE]">
-              Everything a Coach Needs
+              {lang === "ar" ? "كل ما يحتاجه المدرب" : "Everything a Coach Needs"}
             </h2>
             <p
               className="text-base max-w-xl mx-auto"
               style={{ color: "rgba(238,239,238,0.55)", fontFamily: "'Cairo', sans-serif", lineHeight: 1.9 }}
             >
-              Six integrated modules covering every aspect of modern sports training management.
+              {lang === "ar" 
+                ? "ستة وحدات متكاملة تغطي كل جانب من جوانب إدارة التدريب الرياضي الحديث."
+                : "Six integrated modules covering every aspect of modern sports training management."}
             </p>
           </div>
 
@@ -658,16 +660,19 @@ export default function TrainingHub() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
             <div>
-              <span className="badge-verified mb-5 inline-block">AI Assistant</span>
+              <span className="badge-verified mb-5 inline-block">{lang === "ar" ? "المساعد الذكي" : "AI Assistant"}</span>
               <h2 className="font-orbitron font-bold text-2xl lg:text-3xl mb-4 text-[#EEEFEE]">
-                Your AI Coaching<br />
-                <span style={{ color: "#00DCC8" }}>Partner</span>
+                {lang === "ar" 
+                  ? <>شريكك في التدريب<br /><span style={{ color: "#00DCC8" }}>بالذكاء الاصطناعي</span></>
+                  : <>Your AI Coaching<br /><span style={{ color: "#00DCC8" }}>Partner</span></>}
               </h2>
               <p
                 className="text-base mb-6"
                 style={{ color: "rgba(238,239,238,0.6)", fontFamily: "'Cairo', sans-serif", lineHeight: 1.9 }}
               >
-                Ask the AI assistant anything about training plans, player performance analysis, tactical recommendations, or injury management — all in Arabic.
+                {lang === "ar"
+                  ? "اسأل المساعد الذكي عن أي شيء يتعلق بخطط التدريب وتحليل أداء اللاعبين والتوصيات التكتيكية وإدارة الإصابات — كل ذلك بالعربية."
+                  : "Ask the AI assistant anything about training plans, player performance analysis, tactical recommendations, or injury management — all in Arabic."}
               </p>
               <ul className="flex flex-col gap-3 mb-8">
                 {[
@@ -689,7 +694,7 @@ export default function TrainingHub() {
               </ul>
               <Link href="/dashboards">
                 <button className="btn-ada-outline text-sm px-6 py-2.5 flex items-center gap-2">
-                  Try AI Assistant <ArrowRight size={14} />
+                  {lang === "ar" ? "جرّب المساعد الذكي" : "Try AI Assistant"} <ArrowRight size={14} />
                 </button>
               </Link>
             </div>
