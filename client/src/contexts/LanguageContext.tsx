@@ -79,7 +79,7 @@ const translations: Record<Language, Record<string, string>> = {
 
     // Solution
     "solution.badge": "The Solution",
-    "solution.title": "Six Modules. One Mission.",
+    "solution.title": "6 Products. One Platform.",
     "solution.sub": "From discovery to professionalism — for athletes, scouts, and coaches.",
 
     // How It Works
@@ -356,7 +356,7 @@ const translations: Record<Language, Record<string, string>> = {
 
     // Solution
     "solution.badge": "الحل",
-    "solution.title": "ست وحدات. مهمة واحدة.",
+    "solution.title": "٦ منتجات، منصة واحدة",
     "solution.sub": "من الاكتشاف إلى الاحتراف — وللرياضيين والكشافة والمدربين.",
 
     // How It Works

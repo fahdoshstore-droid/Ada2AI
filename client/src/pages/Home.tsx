@@ -145,22 +145,6 @@ export default function Home() {
   const modules = [
     {
       num: "01",
-      icon: <Shield size={22} />,
-      title: t("module.sportId.title"),
-      desc: t("module.sportId.desc"),
-      color: "#00DCC8",
-      href: "/upload",
-    },
-    {
-      num: "02",
-      icon: <Brain size={22} />,
-      title: t("module.aiEngine.title"),
-      desc: t("module.aiEngine.desc"),
-      color: "#007ABA",
-      href: "/upload",
-    },
-    {
-      num: "03",
       icon: <Users size={22} />,
       title: t("module.scouts.title"),
       desc: t("module.scouts.desc"),
@@ -168,7 +152,31 @@ export default function Home() {
       href: "/scouts",
     },
     {
+      num: "02",
+      icon: <Shield size={22} />,
+      title: t("module.sportId.title"),
+      desc: t("module.sportId.desc"),
+      color: "#00DCC8",
+      href: "/sport-id",
+    },
+    {
+      num: "03",
+      icon: <Brain size={22} />,
+      title: t("module.aiEngine.title"),
+      desc: t("module.aiEngine.desc"),
+      color: "#007ABA",
+      href: "/demo",
+    },
+    {
       num: "04",
+      icon: <Trophy size={22} />,
+      title: t("module.training.title"),
+      desc: t("module.training.desc"),
+      color: "#FFA500",
+      href: "/training",
+    },
+    {
+      num: "05",
       icon: <BarChart3 size={22} />,
       title: t("module.compare.title"),
       desc: t("module.compare.desc"),
@@ -176,20 +184,12 @@ export default function Home() {
       href: "/compare",
     },
     {
-      num: "05",
+      num: "06",
       icon: <Building2 size={22} />,
       title: t("module.institutes.title"),
       desc: t("module.institutes.desc"),
       color: "#007ABA",
       href: "/academies",
-    },
-    {
-      num: "06",
-      icon: <Trophy size={22} />,
-      title: t("module.training.title"),
-      desc: t("module.training.desc"),
-      color: "#FFA500",
-      href: "/training",
     },
   ];
 
