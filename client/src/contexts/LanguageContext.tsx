@@ -24,7 +24,7 @@ const translations: Record<Language, Record<string, string>> = {
   en: {
     // Navbar
     "nav.product": "Products",
-    "nav.partnerships": "Partnerships",
+    "nav.partnerships": "Sports Institutes",
     "nav.governance": "Governance",
     "nav.dashboards": "Products",
     "nav.training": "Training Hub",
@@ -301,7 +301,7 @@ const translations: Record<Language, Record<string, string>> = {
   ar: {
     // Navbar
     "nav.product": "المنتجات",
-    "nav.partnerships": "الشراكات",
+    "nav.partnerships": "المعاهد الرياضية",
     "nav.governance": "الحوكمة",
     "nav.dashboards": "المنتجات",
     "nav.training": "مركز التدريب",

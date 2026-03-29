@@ -87,16 +87,16 @@ export default function Ada2aiNavbar() {
 
   const dashboardItems = [
     { label: t("nav.scoutDashboard"), href: "/scouts" },
-    { label: t("nav.compare"), href: "/compare" },
-    { label: t("nav.upload"), href: "/upload" },
     { label: t("nav.sportId"), href: "/sport-id" },
+    { label: t("nav.upload"), href: "/upload" },
     { label: t("nav.training"), href: "/training" },
+    { label: t("nav.compare"), href: "/compare" },
+    { label: t("nav.partnerships"), href: "/academies" },
   ];
 
   const navLinks = [
     { label: t("nav.dashboards"), href: null, dropdown: dashboardItems, key: "dashboards" },
     { label: t("nav.product"), href: "/product" },
-    { label: t("nav.partnerships"), href: "/academies" },
     { label: t("nav.governance"), href: null, dropdown: governanceItems, key: "governance" },
   ];
 
