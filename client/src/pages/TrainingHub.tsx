@@ -219,6 +219,11 @@ export default function TrainingHub() {
   const [hubOpen, setHubOpen] = useState(false);
   const { isRTL, lang } = useLanguage();
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]" dir={isRTL ? "rtl" : "ltr"}>
       {hubOpen && <TrainingHubApp onClose={() => setHubOpen(false)} lang={lang} isRTL={isRTL} />}
@@ -239,7 +244,7 @@ export default function TrainingHub() {
             className="badge-verified mb-6 inline-block"
             style={{ background: "rgba(0,122,186,0.15)", color: "#007ABA", border: "1px solid rgba(0,122,186,0.3)" }}
           >
-            MODULE 06 — TRAINING HUB
+            {lang === "ar" ? "وحدة 06 — مركز التدريب" : "MODULE 06 — TRAINING HUB"}
           </span>
           <h1 className="font-orbitron font-black text-4xl lg:text-6xl mb-5 leading-tight">
             <span
@@ -249,7 +254,7 @@ export default function TrainingHub() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Training Hub
+              {lang === "ar" ? "مركز التدريب" : "Training Hub"}
             </span>
           </h1>
           <p
@@ -262,7 +267,9 @@ export default function TrainingHub() {
             className="text-base max-w-2xl mx-auto mb-10"
             style={{ color: "rgba(238,239,238,0.6)", fontFamily: "'Cairo', sans-serif", lineHeight: 1.9 }}
           >
-            AI-powered training management platform for coaches and athletes. Generate personalized training plans, track progress, manage matches, and get real-time AI coaching — all in Arabic.
+            {lang === "ar" 
+              ? "منصة إدارة التدريب بالذكاء الاصطناعي للمدربين والرياضيين. أنشئ خطط تدريب مخصصة، تتبع التقدم، إدارة المباريات، واحصل على تدريب فوري بالذكاء الاصطناعي."
+              : "AI-powered training management platform for coaches and athletes. Generate personalized training plans, track progress, manage matches, and get real-time AI coaching — all in Arabic."}
           </p>
 
           {/* Stats row */}
@@ -296,7 +303,7 @@ export default function TrainingHub() {
               </button>
             <Link href="/upload">
               <button className="btn-ada-outline text-sm px-8 py-3.5 flex items-center gap-2">
-                <Activity size={16} /> Analyze Athlete
+                <Activity size={16} /> {lang === "ar" ? "تحليل اللاعب" : "Analyze Athlete"}
               </button>
             </Link>
           </div>
@@ -307,9 +314,9 @@ export default function TrainingHub() {
       <section className="py-16" style={{ borderTop: "1px solid rgba(0,220,200,0.06)" }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
-            <span className="badge-pro mb-4 inline-block">Live Preview</span>
+            <span className="badge-pro mb-4 inline-block">{lang === "ar" ? "معاينة مباشرة" : "Live Preview"}</span>
             <h2 className="font-orbitron font-bold text-2xl lg:text-3xl text-[#EEEFEE]">
-              Explore the Platform
+              {lang === "ar" ? "استكشف المنصة" : "Explore the Platform"}
             </h2>
           </div>
 
@@ -331,7 +338,7 @@ export default function TrainingHub() {
                     border: activeTab === tab ? "1px solid rgba(0,220,200,0.3)" : "1px solid transparent",
                   }}
                 >
-                  {tab === "overview" ? "Dashboard" : tab === "players" ? "Players" : "Training"}
+                  {tab === "overview" ? (lang === "ar" ? "لوحة التحكم" : "Dashboard") : tab === "players" ? (lang === "ar" ? "اللاعبون" : "Players") : (lang === "ar" ? "التدريب" : "Training")}
                 </button>
               ))}
             </div>
