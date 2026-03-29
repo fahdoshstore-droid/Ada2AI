@@ -5,6 +5,7 @@ import { useLocation } from "wouter";
 import {
   Search, Filter, Star, TrendingUp, MapPin, Users, Eye,
   GitCompare, ChevronUp, ChevronDown, Award, Zap, Target,
+  ArrowLeft,
 } from "lucide-react";
 
 // Bilingual player data
@@ -30,7 +31,7 @@ export default function Scouts() {
   const { t, isRTL, lang } = useLanguage();
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
-  const [sportFilter, setSportFilter] = useState("all");
+  const [sportFilter, setSportFilter] = useState("Football"); // Unified to Football
   const [cityFilter, setCityFilter] = useState("all");
   const [ageRange, setAgeRange] = useState("all");
   const [sortKey, setSortKey] = useState<SortKey>("score");
@@ -38,32 +39,33 @@ export default function Scouts() {
   const [showFilters, setShowFilters] = useState(false);
   const [compareList, setCompareList] = useState<number[]>([]);
 
-  const sports = ["all", "Football", "Basketball", "Boxing", "Swimming"];
+  // Sport unified to Football only
+  const sports = ["Football"];
   const cities = ["all", "Dammam", "Khobar", "Dhahran"];
   const ageRanges = ["all", "13-14", "15-16", "17-18"];
 
   const sportLabels: Record<string, string> = {
-    all: t("scouts.filter.all"),
     Football: t("sports.football"),
-    Basketball: t("sports.basketball"),
-    Boxing: t("sports.boxing"),
-    Swimming: t("sports.swimming"),
   };
 
+  // City labels with region (Eastern Province)
   const cityLabels: Record<string, string> = {
     all: t("scouts.filter.all"),
-    Dammam: lang === "ar" ? "الدمام" : "Dammam",
-    Khobar: lang === "ar" ? "الخبر" : "Khobar",
+    Dammam: lang === "ar" ? "الدمام، المنطقة الشرقية" : "Dammam",
+    Khobar: lang === "ar" ? "الخبر، الظهران" : "Khobar",
     Dhahran: lang === "ar" ? "الظهران" : "Dhahran",
   };
 
+  // Filter to Football only (unified sport)
+  const footballPlayers = useMemo(() => allPlayers.filter(p => p.sport === "Football"), []);
+
   const filtered = useMemo(() => {
-    return allPlayers
+    return footballPlayers
       .filter((p) => {
         const name = lang === "ar" ? p.nameAr : p.nameEn;
         const city = lang === "ar" ? p.cityAr : p.cityEn;
         const searchMatch = search === "" || name.toLowerCase().includes(search.toLowerCase()) || city.toLowerCase().includes(search.toLowerCase());
-        const sportMatch = sportFilter === "all" || p.sport === sportFilter;
+        const sportMatch = p.sport === "Football"; // Always Football
         const cityMatch = cityFilter === "all" || p.cityEn === cityFilter;
         const ageMatch =
           ageRange === "all" ||
@@ -107,6 +109,16 @@ export default function Scouts() {
 
         {/* Header */}
         <div className="mb-8">
+          {/* Back Button */}
+          <button
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-lg text-sm transition-colors hover:bg-white/10"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#00DCC8" }}
+          >
+            <ArrowLeft size={16} className={isRTL ? "rotate-180" : ""} />
+            {isRTL ? "العودة للرئيسية" : "Back to Home"}
+          </button>
+
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs mb-4"
             style={{ background: "rgba(0,220,200,0.08)", border: "1px solid rgba(0,220,200,0.2)", color: "#00DCC8" }}>
             <Users size={12} /> {t("scouts.title")}
@@ -167,7 +179,7 @@ export default function Scouts() {
         {showFilters && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
             {[
-              { label: t("scouts.filter.sport"), val: sportFilter, set: setSportFilter, opts: sports, labels: sportLabels },
+              // Sport filter hidden (unified to Football)
               { label: t("scouts.filter.region"), val: cityFilter, set: setCityFilter, opts: cities, labels: cityLabels },
               { label: t("scouts.filter.age"), val: ageRange, set: setAgeRange, opts: ageRanges, labels: Object.fromEntries(ageRanges.map(a => [a, a === "all" ? t("scouts.filter.all") : a])) },
             ].map((f, i) => (

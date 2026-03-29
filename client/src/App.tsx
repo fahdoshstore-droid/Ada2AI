@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ScrollToTop from "./components/ScrollToTop";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 
@@ -30,7 +31,9 @@ import MinistryReportPage from "./pages/features/MinistryReportPage";
 // ── Router ────────────────────────────────────────────────
 function Router() {
   return (
-    <Switch>
+    <>
+      <ScrollToTop />
+      <Switch>
       {/* ── Core ── */}
       <Route path="/"             component={Home} />
       <Route path="/product"      component={Product} />
@@ -67,6 +70,7 @@ function Router() {
       <Route path="/404"          component={NotFound} />
       <Route                      component={NotFound} />
     </Switch>
+    </>
   );
 }
 
