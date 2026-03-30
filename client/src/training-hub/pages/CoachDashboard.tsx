@@ -25,6 +25,7 @@ import {
   Tooltip, Legend, ResponsiveContainer, RadarChart,
   PolarGrid, PolarAngleAxis, Radar
 } from "recharts";
+import { Link } from "wouter";
 import { allPlayers, type Player as DataPlayer } from "@/data/players";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
