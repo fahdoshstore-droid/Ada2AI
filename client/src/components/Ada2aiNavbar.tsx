@@ -92,6 +92,7 @@ export default function Ada2aiNavbar() {
     { label: t("nav.training"), href: "/training" },
     { label: t("nav.compare"), href: "/compare" },
     { label: t("nav.partnerships"), href: "/academies" },
+    { label: isRTL ? "🏆 Demo نادي النهضة" : "🏆 Nahda FC Demo", href: "/demo/nahda" },
   ];
 
   const navLinks = [

@@ -23,8 +23,8 @@ function getAnthropicClient() {
 }
 
 // ── System Prompt (SAFF + FIFA v3) ────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are a professional football scout for Ada2ai platform using SAFF and FIFA standards.
-Analyze the football player in the uploaded image or video frames.
+const SYSTEM_PROMPT = `You are a professional football scout for Ada2ai using SAFF and FIFA standards.
+You analyze football players from real training session videos and images, including official footage from Saudi clubs like Nahda FC.
 Return ONLY a valid JSON object — no markdown, no explanation, no extra text.
 
 JSON structure:
@@ -209,9 +209,10 @@ router.post("/analyze", async (req, res) => {
   });
 
   try {
-    const { imageUrl, frameUrls } = req.body as {
+    const { imageUrl, frameUrls, context } = req.body as {
       imageUrl?: string;
       frameUrls?: string[];
+      context?: string;
     };
 
     const urls = frameUrls && frameUrls.length > 0 ? frameUrls : imageUrl ? [imageUrl] : [];
@@ -239,9 +240,12 @@ router.post("/analyze", async (req, res) => {
     });
     const reportId = `ADA-${nanoid(6).toUpperCase()}`;
 
+    const nahdaCtx = context && context.includes("النهضة")
+      ? `\nالسياق: فيديو تدريبي رسمي من نادي النهضة السعودي — حلل بدقة عالية وأعط توصيات مناسبة للدوري السعودي.`
+      : "";
     const userText = urls.length > 1
-      ? `حلل هذا اللاعب من ${urls.length} إطارات فيديو وفق معايير SAFF وFIFA.\nرقم التقرير: ${reportId}\nتاريخ التحليل: ${today}\nأعد JSON فقط.`
-      : `حلل هذا اللاعب وفق معايير SAFF وFIFA.\nرقم التقرير: ${reportId}\nتاريخ التحليل: ${today}\nأعد JSON فقط.`;
+      ? `حلل هذا اللاعب من ${urls.length} إطارات فيديو وفق معايير SAFF وFIFA.${nahdaCtx}\nرقم التقرير: ${reportId}\nتاريخ التحليل: ${today}\nأعد JSON فقط.`
+      : `حلل هذا اللاعب وفق معايير SAFF وFIFA.${nahdaCtx}\nرقم التقرير: ${reportId}\nتاريخ التحليل: ${today}\nأعد JSON فقط.`;
 
     const claudeResponse = await anthropic.messages.create({
       model: "claude-opus-4-5",

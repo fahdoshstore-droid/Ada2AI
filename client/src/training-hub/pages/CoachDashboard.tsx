@@ -18,8 +18,9 @@ import {
   TrendingUp, Shield, Swords, Eye, Target,
   AlertTriangle, CheckCircle, Activity, Save,
   FolderOpen, Plus, Upload, Video, X, Loader2,
-  Users, UserCheck
+  Users, UserCheck, BarChart3
 } from "lucide-react";
+import TeamAnalysisTab from "../components/TeamAnalysisTab";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, RadarChart,
@@ -283,6 +284,7 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
 
   // ── Video Analysis ───────────────────────────────────────────────────────────
   const [showVideoPanel, setShowVideoPanel] = useState(false);
+  const [showTeamAnalysis, setShowTeamAnalysis] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [teamAName, setTeamAName] = useState(isRTL ? "فريقنا" : "Our Team");
   const [teamBName, setTeamBName] = useState(isRTL ? "الخصم" : "Opponent");
@@ -1306,7 +1308,40 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
 
       </div>
 
-      {/* ── Save Formation Modal ──────────────────────────────────────────────── */}
+      {/* ── Team Analysis Panel (نادي النهضة) ───────────────────────────────────────── */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#0D1220", border: "1px solid rgba(0,194,168,0.15)" }}>
+        <button
+          className="w-full flex items-center justify-between p-5"
+          onClick={() => setShowTeamAnalysis(!showTeamAnalysis)}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(0,194,168,0.12)" }}>
+              <BarChart3 size={16} style={{ color: "#00C2A8" }} />
+            </div>
+            <div className="text-start">
+              <h2 className="font-bold text-white text-base" style={{ fontFamily: font }}>
+                {isRTL ? "تحليل الفريق — نادي النهضة" : "Team Analysis — Nahda FC"}
+              </h2>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)", fontFamily: font }}>
+                {isRTL ? "بالتعاون مع Ada2ai · معايير SAFF + FIFA · Radar Chart + تصدير PDF" : "In partnership with Ada2ai · SAFF + FIFA standards · Radar Chart + PDF export"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: "rgba(0,194,168,0.1)", color: "#00C2A8", fontFamily: "'Space Grotesk', sans-serif" }}>
+              نادي النهضة
+            </div>
+            {showTeamAnalysis ? <ChevronUp size={18} style={{ color: "rgba(255,255,255,0.4)" }} /> : <ChevronDown size={18} style={{ color: "rgba(255,255,255,0.4)" }} />}
+          </div>
+        </button>
+        {showTeamAnalysis && (
+          <div className="px-5 pb-5">
+            <TeamAnalysisTab lang={lang} />
+          </div>
+        )}
+      </div>
+
+      {/* ── Save Formation Modal ────────────────────────────────────────────────────── */}
       {showSaveModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
           <div className="rounded-2xl p-6 w-full max-w-sm" style={{ background: "#0D1220", border: "1px solid rgba(255,255,255,0.1)" }}>
