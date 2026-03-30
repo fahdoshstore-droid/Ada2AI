@@ -6,28 +6,57 @@ import {
 import { Link } from "wouter";
 
 const demoResult = {
-  playerName: "لاعب فريق U14",
-  ageGroup: "14 سنة",
-  date: "30 مارس 2026",
-  overallRating: 82,
-  metrics: {
-    technical: { score: 85, label: "التقنية" },
-    speed: { score: 78, label: "السرعة" },
-    agility: { score: 88, label: "المرونة" },
-    tactical: { score: 75, label: "الوعي التكتيكي" },
-    strength: { score: 72, label: "القوة" },
-    endurance: { score: 80, label: "التحمل" },
+  sessionInfo: {
+    title: "حصة تدريبية - الفئة U14",
+    date: "30 مارس 2026",
+    duration: "45 دقيقة",
+    playersDetected: 12,
+    drillType: "تمارين تقنية + تكتيكية",
   },
-  strengths: [
-    "التحكم الممتاز بالكرة في المسافات الضيقة",
-    "السرعة في تغيير الاتجاه",
-    "التنسيق مع زملاء الفريق",
+  teamOverview: {
+    teamName: "فريق U14",
+    overallRating: 79,
+    attendance: "12/15 لاعب",
+    avgAge: "14.2 سنة",
+  },
+  players: [
+    {
+      id: 1,
+      name: "أحمد محمد",
+      number: 8,
+      position: "جناح أيسر",
+      rating: 85,
+      metrics: { technical: 88, speed: 82, agility: 90, tactical: 78, strength: 75, endurance: 82 },
+      highlights: ["مراوغة ممتازة", "سرعة في التغيير", "تمريرات دقيقة"],
+      improvement: ["يحتاج تطوير التسديد", "القوة الجسدية"],
+    },
+    {
+      id: 2,
+      name: "خالد سعود",
+      number: 6,
+      position: "لاعب وسط",
+      rating: 82,
+      metrics: { technical: 85, speed: 78, agility: 80, tactical: 85, strength: 80, endurance: 85 },
+      highlights: ["وعي تكتيكي عالي", "تنظيم اللعب", "تحكم بالكرة"],
+      improvement: ["القدم الضعيفة", "سرعة الاستحواذ"],
+    },
+    {
+      id: 3,
+      name: "عبدالله",
+      number: 10,
+      position: "مهاجم",
+      rating: 80,
+      metrics: { technical: 82, speed: 85, agility: 78, tactical: 75, strength: 78, endurance: 80 },
+      highlights: ["سرعة عالية", "تسديد قوي", "حركة بدون كرة"],
+      improvement: ["التسديد من زاوية", "الصبر في الهجوم"],
+    },
   ],
-  areasForImprovement: [
-    "تقوية القدم الضعيفة",
-    "زيادة القوة الجسدية",
+  drillAnalysis: [
+    { name: "المراوغة بين الأقماع", quality: 88, duration: "15 دقيقة" },
+    { name: "التمرير الموجز", quality: 75, duration: "10 دقائق" },
+    { name: "القتال 1v1", quality: 72, duration: "12 دقيقة" },
+    { name: "السيطرة على الكرة", quality: 85, duration: "8 دقائق" },
   ],
-  recommendation: "مستوى جيد جداً للفئة العمرية."
 };
 
 export default function DemoVideo() {
@@ -118,62 +147,79 @@ export default function DemoVideo() {
                 <CheckCircle2 size={18} />
                 اكتمل التحليل
               </div>
-              <h2 className="text-3xl font-bold mb-2">تقرير اللاعب</h2>
-              <p className="text-gray-500">{demoResult.playerName} • {demoResult.ageGroup}</p>
+              <h2 className="text-3xl font-bold mb-2">{demoResult.sessionInfo.title}</h2>
+              <p className="text-gray-500">{demoResult.sessionInfo.drillType} • {demoResult.sessionInfo.playersDetected} لاعب</p>
             </div>
 
-            {/* Rating */}
-            <div className="bg-[#0A1520] rounded-2xl p-8 text-center mb-8 border border-[#00DCC8]/10">
-              <div className="text-gray-500 text-sm mb-2">التقييم العام</div>
-              <div className="text-7xl font-black text-[#00DCC8] font-mono">{demoResult.overallRating}</div>
-              <div className="text-gray-500 text-sm">SAFF + FIFA Standard</div>
+            {/* Team Overview */}
+            <div className="bg-[#0A1520] rounded-2xl p-6 mb-8 border border-[#00DCC8]/10">
+              <h3 className="font-bold mb-4 text-center">ملخص الفريق</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                  <div className="text-3xl font-black text-[#00DCC8]">{demoResult.teamOverview.overallRating}</div>
+                  <div className="text-gray-500 text-sm">التقييم العام</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-black text-[#007ABA]">{demoResult.teamOverview.attendance}</div>
+                  <div className="text-gray-500 text-sm">الحضور</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-black text-[#FFA500]">{demoResult.sessionInfo.duration}</div>
+                  <div className="text-gray-500 text-sm">مدة الحصة</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-black text-white">{demoResult.sessionInfo.playersDetected}</div>
+                  <div className="text-gray-500 text-sm">لاعب تم اكتشافه</div>
+                </div>
+              </div>
             </div>
 
-            {/* Metrics */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-              {Object.values(demoResult.metrics).map((m: any, i: number) => (
-                <div key={i} className="bg-[#0A1520] rounded-xl p-5 border border-white/5">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-400 text-sm">{m.label}</span>
-                    <span className="font-bold text-xl text-[#00DCC8]">{m.score}</span>
+            {/* Players Grid */}
+            <h3 className="text-xl font-bold mb-4">ابطال اللاعبين</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {demoResult.players.map((player) => (
+                <div key={player.id} className="bg-[#0A1520] rounded-xl border border-white/5 overflow-hidden">
+                  <div className="p-4 border-b border-white/5 bg-[#007ABA]/10">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-bold">{player.name}</div>
+                        <div className="text-sm text-gray-400">#{player.number} - {player.position}</div>
+                      </div>
+                      <div className="text-3xl font-black text-[#00DCC8]">{player.rating}</div>
+                    </div>
                   </div>
-                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#00DCC8] rounded-full" style={{ width: `${m.score}%` }} />
+                  <div className="p-4">
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      {Object.entries(player.metrics).slice(0, 4).map(([key, val]) => (
+                        <div key={key} className="text-center">
+                          <div className="text-lg font-bold text-[#00DCC8]">{val}</div>
+                          <div className="text-xs text-gray-500 capitalize">{key}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mb-3">
+                      <div className="text-xs text-[#00DCC8] mb-1">نقاط القوة:</div>
+                      {player.highlights.slice(0, 2).map((h, i) => (
+                        <div key={i} className="text-xs text-gray-400 flex items-center gap-1">
+                          <CheckCircle2 size={10} className="text-[#00DCC8]" /> {h}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Strengths */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-[#0A1520] rounded-xl p-6 border border-[#00DCC8]/10">
-                <h3 className="font-bold mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 bg-[#00DCC8]/15 rounded-lg flex items-center justify-center text-[#00DCC8]">↑</span>
-                  نقاط القوة
-                </h3>
-                <ul className="space-y-2">
-                  {demoResult.strengths.map((s: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
-                      <CheckCircle2 size={14} className="mt-0.5 text-[#00DCC8]" />
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="bg-[#0A1520] rounded-xl p-6 border border-[#FFA500]/10">
-                <h3 className="font-bold mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 bg-[#FFA500]/15 rounded-lg flex items-center justify-center text-[#FFA500]">◎</span>
-                  نقاط التحسين
-                </h3>
-                <ul className="space-y-2">
-                  {demoResult.areasForImprovement.map((a: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
-                      <div className="w-1.5 h-1.5 bg-[#FFA500] rounded-full mt-1.5" />
-                      {a}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            {/* Drill Analysis */}
+            <h3 className="text-xl font-bold mb-4">تحليل التمارين</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {demoResult.drillAnalysis.map((drill, i) => (
+                <div key={i} className="bg-[#0A1520] rounded-xl p-4 border border-white/5 text-center">
+                  <div className="text-2xl font-black text-[#00DCC8] mb-1">{drill.quality}%</div>
+                  <div className="text-sm font-medium mb-1">{drill.name}</div>
+                  <div className="text-xs text-gray-500">{drill.duration}</div>
+                </div>
+              ))}
             </div>
 
             {/* CTA */}
