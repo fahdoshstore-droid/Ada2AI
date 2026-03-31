@@ -527,6 +527,15 @@ export default function SportIDPage() {
                   >
                     <Copy size={13} /> نسخ الرابط
                   </button>
+                  <a
+                    href={`https://sportid.ada2ai.com/athlete/${activePlayer.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-105"
+                    style={{ background: "rgba(0,194,168,0.15)", border: "1px solid rgba(0,194,168,0.35)", color: "#00DCC8", fontFamily: "'Space Grotesk', sans-serif" }}
+                  >
+                    <Shield size={13} /> عرض البروفايل الكامل
+                  </a>
                 </div>
               </div>
 
