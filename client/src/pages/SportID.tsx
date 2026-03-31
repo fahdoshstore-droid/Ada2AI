@@ -528,7 +528,7 @@ export default function SportIDPage() {
                     <Copy size={13} /> نسخ الرابط
                   </button>
                   <a
-                    href={`https://sportid.ada2ai.com/athlete/${activePlayer.id}`}
+                    href={`https://sportid-passport.vercel.app/athlete?id=${activePlayer.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-105"
