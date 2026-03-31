@@ -370,30 +370,6 @@ export default function SportIDPage() {
               </div>
             </div>
 
-            {/* Auth CTA */}
-            <div className="w-full max-w-md rounded-2xl p-6 text-center" style={{ background: "rgba(0,194,168,0.05)", border: "1px solid rgba(0,194,168,0.2)" }}>
-              <div className="flex justify-center gap-4 mb-4">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{ background: "rgba(0,194,168,0.1)", border: "1px solid rgba(0,194,168,0.25)" }}>
-                  <Fingerprint size={16} style={{ color: "#00C2A8" }} />
-                  <span className="text-[#EEEFEE]/80 text-sm font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>نفاذ</span>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)" }}>
-                  <BarChart2 size={16} style={{ color: "#22c55e" }} />
-                  <span className="text-[#EEEFEE]/80 text-sm font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>أبشر</span>
-                </div>
-              </div>
-              <p className="text-[#EEEFEE]/50 text-sm mb-5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
-                سجّل دخولك بهويتك الوطنية للحصول على جواز سفرك الرياضي الرقمي
-              </p>
-              <button
-                onClick={() => setShowOnboarding(true)}
-                className="w-full py-3.5 rounded-xl font-bold text-[#EEEFEE] text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
-                style={{ background: "linear-gradient(135deg, #00A896, #007A6E)", boxShadow: "0 8px 24px rgba(0,194,168,0.25)", fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                <Fingerprint size={16} /> تسجيل الدخول عبر نفاذ
-              </button>
-            </div>
-
             {/* Feature pills */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
               {[
