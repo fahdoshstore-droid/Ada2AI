@@ -23,20 +23,32 @@
 ### Real Estate of Opportunity
 
 **By 2030:**
-- 🇸🇦 Saudi sports market: **$64 billion**
-- ⚽ 50 million sports participants target
-- 🏟️ 300+ new sports facilities
+- 🇸🇦 Saudi sports market: **SAR 65+ billion** ($17B+)
+- ⚽ 50 million sports participants target (from 13% to 48% participation)
+- 🏟️ 300+ new sports facilities planned
 - 🎯 Vision 2030: World-class sports ecosystem
+- 🏆 2034 FIFA World Cup Hosting
 
 ### Why Sports Tech Now?
 
 ```
 📈 Youth Demographics: 60% under 30
-⚽ Football: #1 sport in Saudi Arabia
-💰 Private Investment: $3B+ into sports
-🏛️ Government: Ministry of Sports Initiative
-🎪 Events: 2034 FIFA World Cup Hosting
+⚽ Football: #1 sport in Saudi Arabia (23% sports market)
+💰 Private Investment: SAR 15B+ into sports
+🏛️ Government: SAR 2.6B allocated to federations
+🎪 Events: F1, Spanish/Italian Super Cups, WWE
+🏟️ Academy investments: Juventus, PadelX, MotorSports
 ```
+
+### Key Stats from MISA Report
+
+| Metric | Value |
+|--------|-------|
+| **Sports Market 2023** | SAR 65B |
+| **2030 Target** | SAR 97B |
+| **Youth Participation** | 48% (from 13% in 2015) |
+| **Investment Licenses** | +264% since 2015 |
+| **Priority Areas** | Academies, Facilities, Events, Data |
 
 ### The Gold Rush
 > "Saudi Arabia is building the world's most ambitious sports ecosystem"
@@ -301,6 +313,12 @@ Ada2AI Positioned as:
 • Talent ID platform for initiative
 • Data collection infrastructure
 • Academy pipeline system
+
+📊 MISA Priority Areas:
+• Academy build-out operations
+• Programs and camps
+• Data analytics
+• Event management
 ```
 
 ---
