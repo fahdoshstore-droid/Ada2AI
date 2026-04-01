@@ -5,9 +5,9 @@ import FifaCard, { type FifaCardPlayer } from "@/components/FifaCard";
  * SportID Page — SportScout Platform
  * Design: Saudi Tech Noir + Saudi Ministry of Sports branding
  * Features:
- *   - Onboarding with Naftath authentication flow
- *   - Passport Card (flip 3D, QR, Naftath/Absher badges)
- *   - Performance Stats, Certifications, Upcoming Trials, Sessions tabs
+ *   - QR Attendance (تسجيل حضور QR فوري)
+ *   - Sports Points & Performance Tracking (نقاط رياضية وتتبع الأداء)
+ *   - Ministry Reports & Analytics (تقارير وتحليلات مباشرة للوزارة)
  *   - Points & Levels (Bronze → Silver → Gold → Platinum)
  *   - Radar Chart for skills
  */
@@ -197,15 +197,15 @@ function PassportCard({ flipped, onFlip }: { flipped: boolean; onFlip: () => voi
               <span className="text-[9px] text-[#EEEFEE]/30 font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>SPORTID</span>
             </div>
           </div>
-          {/* Naftath + Absher */}
+          {/* Features badges */}
           <div className="flex gap-2 px-5 pb-4">
             <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <Fingerprint size={13} style={{ color: "#00C2A8" }} />
-              <span className="text-[#EEEFEE]/70 text-[11px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Naftath</span>
+              <QrCode size={13} style={{ color: "#00C2A8" }} />
+              <span className="text-[#EEEFEE]/70 text-[11px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>QR الحضور</span>
             </div>
             <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
               <BarChart2 size={13} style={{ color: "#22c55e" }} />
-              <span className="text-[#EEEFEE]/70 text-[11px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Absher</span>
+              <span className="text-[#EEEFEE]/70 text-[11px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>التقارير</span>
             </div>
           </div>
           <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 text-[#EEEFEE]/20 text-[9px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>اضغط لعرض QR الكامل</div>
@@ -292,7 +292,7 @@ function OnboardingModal({ onComplete, onSelectPlayer }: { onComplete: () => voi
               <><CheckCircle size={16} /> دخول فوري — بدون OTP</>
             )}
           </button>
-          <p className="text-[#EEEFEE]/25 text-center text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>وضع تجريبي — في الإنتاج يُستخدم نفاذ + أبشر</p>
+          <p className="text-[#EEEFEE]/25 text-center text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>وضع تجريبي — التسجيل عبر Ministry API</p>
         </div>
       </div>
     </div>
@@ -346,7 +346,7 @@ export default function SportIDPage() {
             Sport<span style={{ color: "#00C2A8" }}>ID</span>
           </h1>
           <p className="text-[#EEEFEE]/50 max-w-lg mx-auto text-sm leading-relaxed">
-            {lang === "ar" ? "جواز سفرك الرياضي الرقمي — موثّق بنفاذ، معترف به في جميع الأكاديميات والمنشآت الرياضية" : "Your digital sports passport — verified with Nafath, recognized across all academies and sports facilities"}
+            {lang === "ar" ? "جواز سفرك الرياضي الرقمي — معترف به في جميع الأكاديميات والمنشآت الرياضية" : "Your digital sports passport — recognized across all academies and sports facilities"}
           </p>
         </div>
       </div>
@@ -365,7 +365,7 @@ export default function SportIDPage() {
                 <div className="px-8 py-4 rounded-2xl text-center" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", border: "1px solid rgba(0,194,168,0.3)" }}>
                   <Shield size={28} style={{ color: "#00C2A8" }} className="mx-auto mb-2" />
                   <p className="text-[#EEEFEE] font-bold mb-1" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "سجّل دخولك للوصول" : "Sign in to access"}</p>
-                  <p className="text-[#EEEFEE]/50 text-xs" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "التحقق عبر نفاذ مطلوب" : "Nafath verification required"}</p>
+                  <p className="text-[#EEEFEE]/50 text-xs" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "تسجيل حضور فوري" : "Instant QR Check-in"}</p>
                 </div>
               </div>
             </div>
