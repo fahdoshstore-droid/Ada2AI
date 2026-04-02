@@ -160,12 +160,12 @@ export default function UploadPage() {
         reader.readAsDataURL(file);
       });
 
-      // Upload
-      const uploadRes = await fetch("/api/analyze", {
+      // Upload to scout analysis
+      const uploadRes = await fetch("/api/scout/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ imageData: fileData, mimeType: file.type }),
+        body: JSON.stringify({ fileData, mimeType: file.type, fileName: file.name }),
       });
       if (!uploadRes.ok) throw new Error(`فشل رفع الملف: ${uploadRes.status}`);
       const uploadData = await uploadRes.json();
@@ -181,10 +181,10 @@ export default function UploadPage() {
         analyzeBody = { imageUrl: uploadData.url };
       }
 
-      // Analyze
+      // Analyze with scout AI
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 80000);
-      const analyzeRes = await fetch("/api/analyze", {
+      const timeout = setTimeout(() => controller.abort(), 90000);
+      const analyzeRes = await fetch("/api/scout/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -194,6 +194,10 @@ export default function UploadPage() {
       clearTimeout(timeout);
       if (!analyzeRes.ok) throw new Error(`Analysis failed: ${analyzeRes.status}`);
       const analyzeData = await analyzeRes.json();
+
+      if (!analyzeData.success) {
+        throw new Error(analyzeData.error || "فشل التحليل");
+      }
 
       if (analyzeData.report) {
         stageTimers.current.forEach(clearTimeout);

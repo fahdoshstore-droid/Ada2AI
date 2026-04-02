@@ -29,6 +29,7 @@ import NafathPage       from "./pages/features/NafathPage";
 import QrCheckinPage    from "./pages/features/QrCheckinPage";
 import SportPointsPage  from "./pages/features/SportPointsPage";
 import MinistryReportPage from "./pages/features/MinistryReportPage";
+import YOLOAnalysis   from "./pages/YOLOAnalysis";
 
 // ── Router ────────────────────────────────────────────────
 function Router() {
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/demo"         component={Demo} />
       <Route path="/demo-video"   component={DemoVideo} />
       <Route path="/demo/nahda"   component={NahdaDemo} />
+      <Route path="/yolo"        component={YOLOAnalysis} />
 
       {/* ── Platform Tools ── */}
       <Route path="/dashboards"   component={Dashboards} />

@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ada2AI - Ministry Pitch Deck</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Space+Grotesk:wght@400;600;700&family=Bebas+Neue&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #000A0F;
+  --bg2: #001520;
+  --primary: #00DCC8;
+  --secondary: #007ABA;
+  --accent: #FFA500;
+  --white: #FFFFFF;
+  --gray: #8899AA;
+  --green: #00E676;
+  --red: #FF3D00;
+  --card-bg: rgba(0, 212, 200, 0.05);
+  --border: rgba(0, 220, 200, 0.15);
+}
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Tajawal', 'Space Grotesk', sans-serif;
+  overflow: hidden;
+  height: 100vh;
+}
+
+.deck {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 60px;
+  pointer-events: none;
+}
+
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+}
+
+.slide-content {
+  max-width: 1200px;
+  width: 100%;
+}
+
+/* Grid background */
+.slide::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.3;
+  z-index: 0;
+}
+
+.slide > * { position: relative; z-index: 1; }
+
+/* Typography */
+h1 {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+
+h2 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--primary);
+}
+
+h3 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+p, li {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: var(--gray);
+}
+
+ul { list-style: none; padding: 0; }
+ul li::before { content: '◆ '; color: var(--primary); }
+
+/* Cards */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  backdrop-filter: blur(10px);
+}
+
+.stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3.5rem;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.95rem;
+  color: var(--gray);
+  margin-top: 6px;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 4px;
+}
+
+.badge-primary { background: rgba(0,220,200,0.15); color: var(--primary); border: 1px solid var(--primary); }
+.badge-accent { background: rgba(255,165,0,0.15); color: var(--accent); border: 1px solid var(--accent); }
+.badge-green { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid var(--green); }
+.badge-red { background: rgba(255,61,0,0.15); color: var(--red); border: 1px solid var(--red); }
+
+/* Timeline */
+.timeline {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  margin-top: 30px;
+}
+
+.timeline-item {
+  flex: 1;
+  text-align: center;
+  padding: 20px;
+  position: relative;
+  border-top: 3px solid var(--border);
+}
+
+.timeline-item.active-step { border-top-color: var(--primary); }
+.timeline-item::after {
+  content: '';
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 3px solid var(--border);
+}
+
+.timeline-item.active-step::after { border-color: var(--primary); background: var(--primary); }
+
+.timeline-label {
+  font-size: 0.85rem;
+  color: var(--gray);
+  margin-top: 12px;
+}
+
+.timeline-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+/* Progress bar */
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, var(--secondary), var(--primary));
+  transition: width 1s ease;
+}
+
+/* Table */
+table { width: 100%; border-collapse: collapse; }
+th { text-align: right; padding: 12px; color: var(--primary); border-bottom: 2px solid var(--border); font-size: 0.95rem; }
+td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.95rem; color: var(--gray); }
+
+/* Navigation */
+.nav {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 100;
+  background: rgba(0,10,15,0.9);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 10px 24px;
+  backdrop-filter: blur(20px);
+}
+
+.nav-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--white);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.nav-btn:hover { background: var(--primary); color: var(--bg); border-color: var(--primary); }
+
+.slide-counter {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  color: var(--gray);
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Accent line */
+.accent-line {
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 100px;
+  margin-bottom: 24px;
+}
+
+/* Quote */
+.quote {
+  border-right: 4px solid var(--primary);
+  padding: 20px 30px;
+  margin: 20px 0;
+  font-style: italic;
+  color: var(--gray);
+  font-size: 1.1rem;
+}
+
+/* Highlight */
+.highlight { color: var(--primary); }
+.highlight-accent { color: var(--accent); }
+.highlight-green { color: var(--green); }
+
+/* Logo area */
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.logo-mark {
+  width: 60px; height: 60px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 900;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .slide { padding: 30px; }
+  h1 { font-size: 2.4rem; }
+  h2 { font-size: 1.8rem; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .timeline { flex-direction: column; }
+  .stat-num { font-size: 2.5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- SLIDE 1: Cover -->
+<div class="slide active" data-slide="0">
+<div class="slide-content" style="text-align:center;">
+  <div class="logo-area" style="justify-content:center; margin-bottom:30px;">
+    <div class="logo-mark">A2</div>
+  </div>
+  <h1 style="font-size:5rem; margin-bottom:10px;">Ada2AI</h1>
+  <h2 style="color:var(--white); font-size:2rem; font-weight:400;">من الاكتشاف إلى الاحتراف</h2>
+  <div class="accent-line" style="margin:30px auto;"></div>
+  <p style="font-size:1.4rem; color:var(--gray); max-width:700px; margin:0 auto 30px;">
+    منصة الذكاء الاصطناعي لاكتشاف المواهب الرياضية في المملكة العربية السعودية
+  </p>
+  <div>
+    <span class="badge badge-primary">🇸🇦 صُنع في السعودية</span>
+    <span class="badge badge-accent">⚽ كرة القدم أولاً</span>
+    <span class="badge badge-green">🤖 YOLO + ML</span>
+  </div>
+  <p style="margin-top:50px; font-size:0.9rem; color:var(--gray);">عرض مقدم لوزارة الرياضة — رؤية 2030</p>
+</div>
+</div>
+
+<!-- SLIDE 2: Problem -->
+<div class="slide" data-slide="1">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>❌ التحديات الحالية</h2>
+  <h1 style="font-size:3rem;">أزمة اكتشاف المواهب في المملكة</h1>
+  <div class="grid-3" style="margin-top:30px;">
+    <div class="card">
+      <div class="stat-num">90%</div>
+      <div class="stat-label">من المواهب الرياضية غير مكتشفة</div>
+      <ul style="margin-top:16px;">
+        <li>اعتماد الكشافين على الحدس</li>
+        <li>لا توجد بيانات موحدة</li>
+        <li>تحليل فيديو يدوي 20+ ساعة</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="stat-num">67%</div>
+      <div class="stat-label">من اللاعبين الواعدين ينسحبون قبل 15 سنة</div>
+      <ul style="margin-top:16px;">
+        <li>لا يوجد نظام تتبع للاعبين</li>
+        <li>بيانات مشتتة بين الأكاديميات</li>
+        <li>فقدان سجل الإنجازات</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="stat-num">$890M</div>
+      <div class="stat-label">خسارة سنوية بسبب عدم كفاءة الكشافة</div>
+      <ul style="margin-top:16px;">
+        <li>تحيز جغرافي (مدن vs قرى)</li>
+        <li>لا شفافية في عملية الاكتشاف</li>
+        <li>فجوة بين الأكاديميات والمواهب</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 3: Solution -->
+<div class="slide" data-slide="2">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>✅ الحل: Ada2AI</h2>
+  <h1 style="font-size:3rem;">منصة ذكاء اصطناعي شاملة لاكتشاف المواهب</h1>
+  <div class="grid-2" style="margin-top:30px;">
+    <div>
+      <div class="card" style="margin-bottom:20px;">
+        <h3>🤖 تحليل فيديو بالذكاء الاصطناعي</h3>
+        <ul>
+          <li>YOLO object detection لتتبع اللاعبين</li>
+          <li>تحليل 18 معيار FIFA + الاتحاد السعودي</li>
+          <li>Claude AI Vision لتحليل الصور</li>
+          <li>تقرير شامل في دقائق بدل ساعات</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>🪪 SportID — جواز السفر الرياضي</h3>
+        <ul>
+          <li>ملف لاعب رقمي موحد</li>
+          <li>QR Code للتسجيل في الأكاديميات</li>
+          <li>تتبع الإنجازات والتطور</li>
+          <li>متوافق مع جميع المنصات</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:20px;">
+        <h3>📊 لوحة تحكم الكشافة</h3>
+        <ul>
+          <li>بحث متقدم وقاعدة بيانات لاعبين</li>
+          <li>مقارنة لاعبين بـ Radar Chart</li>
+          <li>تقييمات AI مع إمكانية المراجعة البشرية</li>
+          <li>تقارير PDF قابلة للتصدير</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>🏫 دليل الأكاديميات</h3>
+        <ul>
+          <li>قاعدة بيانات شاملة لجميع الأكاديميات</li>
+          <li>فلاتر (مدينة، رياضة، عمر)</li>
+          <li>ربط المواهب بالأكاديميات المناسبة</li>
+          <li>نظام تقييم ومراجعات</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 4: How It Works -->
+<div class="slide" data-slide="3">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>⚙️ كيف يعمل</h2>
+  <h1 style="font-size:3rem;">خطوات بسيطة من الفيديو إلى التقييم</h1>
+  <div class="grid-4" style="margin-top:40px;">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:12px;">📹</div>
+      <div class="stat-num" style="font-size:2rem;">01</div>
+      <h3>رفع الفيديو</h3>
+      <p>رفع مقطع فيديو للمباراة أو التمرين من الجوال أو الكمبيوتر</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:12px;">🧠</div>
+      <div class="stat-num" style="font-size:2rem;">02</div>
+      <h3>تحليل AI</h3>
+      <p>YOLO + Claude Vision يحلل الفيديو ويتتبع اللاعبين تلقائياً</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:12px;">📊</div>
+      <div class="stat-num" style="font-size:2rem;">03</div>
+      <h3>تقرير شامل</h3>
+      <p>تقرير مفصل بـ 18 معيار FIFA + SAFF مع تقييم لكل مهارة</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:12px;">🎯</div>
+      <div class="stat-num" style="font-size:2rem;">04</div>
+      <h3>قرار ذكي</h3>
+      <p>الكشاف يتخذ قراراً مبنياً على بيانات وليس حدساً</p>
+    </div>
+  </div>
+  <div class="quote" style="margin-top:30px;">
+    "تحويل عملية تستغرق 20 ساعة يدوياً إلى تقرير احترافي في أقل من 10 دقائق"
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 5: Ministry Fit -->
+<div class="slide" data-slide="4">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>🏛️ التوافق مع وزارة الرياضة</h2>
+  <h1 style="font-size:3rem;">Ada2AI × رؤية 2030 الرياضية</h1>
+  <div class="grid-2" style="margin-top:30px;">
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3>🎯 برنامج جودة الحياة</h3>
+        <p>رفع نسبة المشاركة الرياضية من 13% إلى 48% — Ada2AI يوسع قاعدة الاكتشاف لتشمل كل مناطق المملكة</p>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3>🏟️ كأس العالم 2034</h3>
+        <p>بناء جيل من اللاعبين السعوديين القادرين على المنافسة عالمياً — الكشف المبكر هو المفتاح</p>
+      </div>
+      <div class="card">
+        <h3>📊 رقمنة القطاع الرياضي</h3>
+        <p>تحويل العملية اليدوية إلى منصة رقمية شاملة — بيانات موحدة وقابلة للتحليل</p>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3>🌍 توطين الصناعات</h3>
+        <p>تقنية سعودية 100% — تقليل الاعتماد على الخبرات الأجنبية في الكشافة</p>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3>👥 الشباب السعودي</h3>
+        <p>60% من السكان تحت 30 سنة — Ada2AI يوظف هذه الطاقة ويحولها إلى قوة رياضية</p>
+      </div>
+      <div class="card">
+        <h3>💡 ابتكار وريادة أعمال</h3>
+        <p>دعم الشركات السعودية الناشئة في مجال التكنولوجيا الرياضية — صناعة جديدة واعدة</p>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 6: Market -->
+<div class="slide" data-slide="5">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>📈 السوق السعودي الرياضي</h2>
+  <h1 style="font-size:3rem;">فرصة استثمارية ضخمة</h1>
+  <div class="grid-4" style="margin-top:30px;">
+    <div class="card" style="text-align:center;">
+      <div class="stat-num">65B</div>
+      <div class="stat-label">ريال سعودي — حجم السوق 2023</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="stat-num">97B</div>
+      <div class="stat-label">ريال سعودي — هدف 2030</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="stat-num">264%</div>
+      <div class="stat-label">نمو تراخيص الاستثمار</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="stat-num">2.6B</div>
+      <div class="stat-label">ريال مخصص للاتحادات</div>
+    </div>
+  </div>
+  <div class="grid-2" style="margin-top:30px;">
+    <div class="card">
+      <h3>المجالات ذات الأولوية (تقرير MISA)</h3>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+        <span class="badge badge-primary">الأكاديميات</span>
+        <span class="badge badge-accent">المرافق</span>
+        <span class="badge badge-green">الفعاليات</span>
+        <span class="badge badge-primary">البيانات</span>
+        <span class="badge badge-accent">التقنية</span>
+      </div>
+      <p style="margin-top:16px;">Ada2AI يغطي <span class="highlight">4 من 5</span> مجالات أولوية</p>
+    </div>
+    <div class="card">
+      <h3>المنافسة العالمية</h3>
+      <table>
+        <tr><th>المنصة</th><th>السوق</th><th>اللغة</th></tr>
+        <tr><td>Wyscout</td><td>أوروبا</td><td>إنجليزي فقط</td></tr>
+        <tr><td>Sportradar</td><td>عالمي</td><td>إنجليزي فقط</td></tr>
+        <tr><td>InStat</td><td>شرق أوروبا</td><td>إنجليزي/روسي</td></tr>
+        <tr style="color:var(--primary);"><td><strong>Ada2AI</strong></td><td><strong>السعودية</strong></td><td><strong>عربي + إنجليزي</strong></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 7: Technical -->
+<div class="slide" data-slide="6">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>🔧 البنية التقنية</h2>
+  <h1 style="font-size:3rem;">تقنية متطورة وموثوقة</h1>
+  <div class="grid-3" style="margin-top:30px;">
+    <div class="card">
+      <h3>🧠 محرك الذكاء الاصطناعي</h3>
+      <div style="margin-top:12px;">
+        <div style="margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>YOLO Detection</span><span class="highlight">96%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:96%;"></div></div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>Claude Vision Analysis</span><span class="highlight">92%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:92%;"></div></div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>ML Pipeline Accuracy</span><span class="highlight">89%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:89%;"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🏗️ Tech Stack</h3>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:12px;">
+        <span class="badge badge-primary">React</span>
+        <span class="badge badge-primary">Node.js</span>
+        <span class="badge badge-accent">Python</span>
+        <span class="badge badge-accent">YOLOv8</span>
+        <span class="badge badge-green">Claude AI</span>
+        <span class="badge badge-green">AWS S3</span>
+        <span class="badge badge-primary">TypeScript</span>
+        <span class="badge badge-accent">Flask</span>
+        <span class="badge badge-green">Vercel</span>
+      </div>
+      <ul style="margin-top:16px;">
+        <li>Backend API سريع وآمن</li>
+        <li>معالجة فيديو غير متزامنة</li>
+        <li>تخزين سحابي قابل للتوسع</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🛡️ الأمان والخصوصية</h3>
+      <ul style="margin-top:12px;">
+        <li>تشفير البيانات end-to-end</li>
+        <li>توافق مع GDPR وPDPL السعودي</li>
+        <li>استضافة محلية (خوادم سعودية)</li>
+        <li>صلاحيات مفصلة لكل دور</li>
+        <li>نسخ احتياطي تلقائي</li>
+        <li>تدقيق أمني دوري</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 8: Features Demo -->
+<div class="slide" data-slide="7">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>🎯 الميزات الرئيسية</h2>
+  <h1 style="font-size:3rem;">ما يميز Ada2AI عن المنافسين</h1>
+  <table style="margin-top:30px;">
+    <tr>
+      <th>الميزة</th>
+      <th>الوضع الحالي</th>
+      <th>Ada2AI</th>
+    </tr>
+    <tr>
+      <td>تحليل الفيديو</td>
+      <td><span class="badge badge-red">يدوي 20+ ساعة</span></td>
+      <td><span class="badge badge-green">آلي 10 دقائق</span></td>
+    </tr>
+    <tr>
+      <td>تتبع اللاعبين</td>
+      <td><span class="badge badge-red">لا يوجد</span></td>
+      <td><span class="badge badge-green">SportID موحد</span></td>
+    </tr>
+    <tr>
+      <td>معايير التقييم</td>
+      <td><span class="badge badge-accent">غير موحدة</span></td>
+      <td><span class="badge badge-green">18 معيار FIFA+SAFF</span></td>
+    </tr>
+    <tr>
+      <td>اللغة</td>
+      <td><span class="badge badge-red">إنجليزي فقط</span></td>
+      <td><span class="badge badge-green">عربي + إنجليزي</span></td>
+    </tr>
+    <tr>
+      <td>التواصل مع الأكاديميات</td>
+      <td><span class="badge badge-red">شخصي</span></td>
+      <td><span class="badge badge-green">رقمي + آلي</span></td>
+    </tr>
+    <tr>
+      <td>التكلفة</td>
+      <td><span class="badge badge-red">مرتفعة</span></td>
+      <td><span class="badge badge-green">تخطط من 299 ريال</span></td>
+    </tr>
+  </table>
+</div>
+</div>
+
+<!-- SLIDE 9: Pilot -->
+<div class="slide" data-slide="8">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>🚀 خطة المشروع التجريبي</h2>
+  <h1 style="font-size:3rem;">3 أشهر — من الاتفاق إلى النتائج</h1>
+  <div class="timeline" style="margin-top:40px;">
+    <div class="timeline-item active-step">
+      <div class="timeline-label">الشهر 1</div>
+      <div class="timeline-title">🔍 الإعداد والتكامل</div>
+      <ul style="text-align:right; margin-top:12px; font-size:0.9rem;">
+        <li>ربط مع قواعد بيانات الوزارة</li>
+        <li>تكامل مع 5 أكاديميات</li>
+        <li>تدريب الفريق التقني</li>
+      </ul>
+    </div>
+    <div class="timeline-item active-step">
+      <div class="timeline-label">الشهر 2</div>
+      <div class="timeline-title">⚡ الإطلاق والاختبار</div>
+      <ul style="text-align:right; margin-top:12px; font-size:0.9rem;">
+        <li>إطلاق المنصة للكشافة</li>
+        <li>تحليل 200+ مباراة</li>
+        <li>جمع الملاحظات</li>
+      </ul>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-label">الشهر 3</div>
+      <div class="timeline-title">📊 النتائج والتوسع</div>
+      <ul style="text-align:right; margin-top:12px; font-size:0.9rem;">
+        <li>تقرير الأداء للوزارة</li>
+        <li>اكتشاف 50+ موهبة</li>
+        <li>خطة التوسع الوطني</li>
+      </ul>
+    </div>
+  </div>
+  <div class="grid-3" style="margin-top:30px;">
+    <div class="card" style="text-align:center;">
+      <div class="stat-num">5</div>
+      <div class="stat-label">أكاديميات في المرحلة الأولى</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="stat-num">200+</div>
+      <div class="stat-label">مباراة محللة</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="stat-num">50+</div>
+      <div class="stat-label">موهبة مكتشفة</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 10: ROI -->
+<div class="slide" data-slide="9">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>💰 العائد على الاستثمار</h2>
+  <h1 style="font-size:3rem;">أرقام تتحدث</h1>
+  <div class="grid-2" style="margin-top:30px;">
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3> before vs after</h3>
+        <table>
+          <tr><th>المعيار</th><th>قبل Ada2AI</th><th>بعد Ada2AI</th></tr>
+          <tr><td>وقت التحليل</td><td>20 ساعة</td><td style="color:var(--green);">10 دقائق</td></tr>
+          <tr><td>معدل الاكتشاف</td><td>10%</td><td style="color:var(--green);">65%</td></tr>
+          <tr><td>التكلفة/لاعب</td><td>2,000 ريال</td><td style="color:var(--green);">200 ريال</td></tr>
+          <tr><td>التغطية الجغرافية</td><td>3 مدن</td><td style="color:var(--green);">13 منطقة</td></tr>
+          <tr><td>دقة التقييم</td><td>ذاتية</td><td style="color:var(--green);">موضوعية + AI</td></tr>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3>التوفير المتوقع (سنوي)</h3>
+        <div class="stat-num" style="color:var(--green);">75%</div>
+        <div class="stat-label">توفير في تكاليف الكشافة</div>
+        <div style="margin-top:20px;">
+          <div class="stat-num" style="color:var(--accent);">5.5x</div>
+          <div class="stat-label">زيادة في عدد المواهب المكتشفة</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>الأثر طويل المدى</h3>
+        <ul>
+          <li>بناء قاعدة بيانات وطنية للاعبين</li>
+          <li>تقليل هجرة المواهب</li>
+          <li>رفع جودة المنتخبات الوطنية</li>
+          <li>جذب استثمارات رياضية عالمية</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 11: Competition -->
+<div class="slide" data-slide="10">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>🏆 الميزة التنافسية</h2>
+  <h1 style="font-size:3rem;">لماذا Ada2AI وليس غيرها؟</h1>
+  <div class="grid-2" style="margin-top:30px;">
+    <div class="card">
+      <h3>ما يميزنا</h3>
+      <ul>
+        <li><span class="highlight">عربي أصلي</span> — أول منصة كشافة بالعربية</li>
+        <li><span class="highlight">سعودي 100%</span> — فريق محلي ودعم فوري</li>
+        <li><span class="highlight">FIFA + SAFF</span> — معايير محلية ودولية معاً</li>
+        <li><span class="highlight">SportID</span> — أول جواز رياضي رقمي سعودي</li>
+        <li><span class="highlight">YOLO مخصص</span> — مدرب على بيانات سعودية</li>
+        <li><span class="highlight">تكلفة تنافسية</span> — من 299 ريال/شهر</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>المنافسون (ولكن...)</h3>
+      <table>
+        <tr><th>المنصة</th><th>المشكلة</th></tr>
+        <tr><td>Wyscout</td><td>لا يدعم العربية — مكلف</td></tr>
+        <tr><td>InStat</td><td>تركيز على المحترفين فقط</td></tr>
+        <tr><td>Sportradar</td><td>بيانات جماعية — لا كشافة فردية</td></tr>
+        <tr><td>SofaScore</td><td>إحصائيات — لا تحليل فيديو</td></tr>
+      </table>
+      <p style="margin-top:16px;">Ada2AI = <span class="highlight">المنصة الوحيدة</span> المصممة خصيصاً للسوق السعودي</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 12: Team -->
+<div class="slide" data-slide="11">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>👥 الفريق</h2>
+  <h1 style="font-size:3rem;">فريق سعودي شاب ومتحمس</h1>
+  <div class="grid-3" style="margin-top:30px;">
+    <div class="card" style="text-align:center;">
+      <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--secondary)); margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:2rem;">👨‍💻</div>
+      <h3>المؤسس والرئيس التنفيذي</h3>
+      <p style="margin-top:8px;">خبرة في AI/ML و Full-stack Development</p>
+      <div style="margin-top:12px;">
+        <span class="badge badge-primary">AI/ML</span>
+        <span class="badge badge-accent">React</span>
+      </div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--red)); margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:2rem;">⚽</div>
+      <h3>المستشار الرياضي</h3>
+      <p style="margin-top:8px;">خبرة في الكشافة والتدريب المحلي</p>
+      <div style="margin-top:12px;">
+        <span class="badge badge-green">كشافة</span>
+        <span class="badge badge-accent">تدريب</span>
+      </div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--green), var(--primary)); margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:2rem;">🎨</div>
+      <h3>المصمم التقني</h3>
+      <p style="margin-top:8px;">تصميم UX/UI متخصص في المنصات الرياضية</p>
+      <div style="margin-top:12px;">
+        <span class="badge badge-primary">UI/UX</span>
+        <span class="badge badge-green">Mobile</span>
+      </div>
+    </div>
+  </div>
+  <div class="quote" style="margin-top:30px;">
+    "فريق شاب سعودي يفهم السوق المحلي ويمتلك الأدوات التقنية لتغيير صناعة الكشافة"
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 13: Pricing -->
+<div class="slide" data-slide="12">
+<div class="slide-content">
+  <div class="accent-line"></div>
+  <h2>💳 خطط التسعير</h2>
+  <h1 style="font-size:3rem;">مرونة تناسب الجميع</h1>
+  <div class="grid-4" style="margin-top:30px;">
+    <div class="card" style="text-align:center;">
+      <h3>Starter</h3>
+      <div class="stat-num" style="font-size:2rem; margin-top:12px;">299</div>
+      <div class="stat-label">ريال/شهر</div>
+      <ul style="text-align:right; margin-top:16px; font-size:0.85rem;">
+        <li>5 تحليلات فيديو/شهر</li>
+        <li>SportID أساسي</li>
+        <li>دليل الأكاديميات</li>
+      </ul>
+    </div>
+    <div class="card" style="text-align:center; border-color:var(--primary);">
+      <span class="badge badge-primary" style="margin-bottom:12px;">الأكثر طلباً</span>
+      <h3>Pro</h3>
+      <div class="stat-num" style="font-size:2rem; margin-top:12px;">799</div>
+      <div class="stat-label">ريال/شهر</div>
+      <ul style="text-align:right; margin-top:16px; font-size:0.85rem;">
+        <li>25 تحليل فيديو/شهر</li>
+        <li>SportID متقدم</li>
+        <li>مقارنة لاعبين</li>
+        <li>Radar Charts</li>
+      </ul>
+    </div>
+    <div class="card" style="text-align:center;">
+      <h3>Academy</h3>
+      <div class="stat-num" style="font-size:2rem; margin-top:12px;">2,499</div>
+      <div class="stat-label">ريال/شهر</div>
+      <ul style="text-align:right; margin-top:16px; font-size:0.85rem;">
+        <li>100 تحليل فيديو/شهر</li>
+        <li>لوحة تحكم كاملة</li>
+        <li>إدارة فرق</li>
+        <li>API access</li>
+      </ul>
+    </div>
+    <div class="card" style="text-align:center; border-color:var(--accent);">
+      <span class="badge badge-accent" style="margin-bottom:12px;">الوزارة</span>
+      <h3>Enterprise</h3>
+      <div class="stat-num" style="font-size:2rem; margin-top:12px;">مخصص</div>
+      <div class="stat-label">حسب الاحتياج</div>
+      <ul style="text-align:right; margin-top:16px; font-size:0.85rem;">
+        <li>تحليلات غير محدودة</li>
+        <li>تكامل مع أنظمة الوزارة</li>
+        <li>استضافة محلية</li>
+        <li>دعم 24/7</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 14: Ask -->
+<div class="slide" data-slide="13">
+<div class="slide-content" style="text-align:center;">
+  <div class="accent-line" style="margin:0 auto 24px;"></div>
+  <h2>🤝 ما نطلبه</h2>
+  <h1 style="font-size:3.5rem;">شراكة استراتيجية مع وزارة الرياضة</h1>
+  <div class="grid-3" style="margin-top:40px;">
+    <div class="card">
+      <div style="font-size:3rem;">📋</div>
+      <h3 style="margin-top:12px;">مشروع تجريبي</h3>
+      <p>3 أشهر مع 5 أكاديميات</p>
+    </div>
+    <div class="card">
+      <div style="font-size:3rem;">🔗</div>
+      <h3 style="margin-top:12px;">تكامل البيانات</h3>
+      <p>ربط مع أنظمة الوزارة والاتحادات</p>
+    </div>
+    <div class="card">
+      <div style="font-size:3rem;">📢</div>
+      <h3 style="margin-top:12px;">دعم مؤسسي</h3>
+      <p>توصية رسمية للأكاديميات والنوادي</p>
+    </div>
+  </div>
+  <div class="quote" style="text-align:right; margin-top:40px; max-width:700px; margin-left:auto; margin-right:auto;">
+    "نريد أن نجعل Ada2AI هي المنصة الوطنية لاكتشاف المواهب الرياضية — ونحتاج شريك يشاركنا هذه الرؤية"
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 15: CTA -->
+<div class="slide" data-slide="14">
+<div class="slide-content" style="text-align:center;">
+  <div class="logo-area" style="justify-content:center; margin-bottom:30px;">
+    <div class="logo-mark">A2</div>
+  </div>
+  <h1 style="font-size:4rem;">شكراً لوقتكم</h1>
+  <div class="accent-line" style="margin:20px auto;"></div>
+  <h2 style="color:var(--white);">Ada2AI — من الاكتشاف إلى الاحتراف</h2>
+  <div class="grid-3" style="margin-top:50px; max-width:800px; margin-left:auto; margin-right:auto;">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:2rem;">📧</div>
+      <p style="color:var(--white); margin-top:8px;">info@ada2ai.com</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:2rem;">🌐</div>
+      <p style="color:var(--white); margin-top:8px;">ada2ai.com</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:2rem;">📱</div>
+      <p style="color:var(--white); margin-top:8px;">+966 56 511 1696</p>
+    </div>
+  </div>
+  <p style="margin-top:40px; font-size:0.9rem; color:var(--gray);">🇸🇦 صُنع في السعودية — لخدمة الرياضة السعودية</p>
+</div>
+</div>
+
+</div>
+
+<!-- Navigation -->
+<div class="nav">
+  <button class="nav-btn" onclick="prevSlide()">→</button>
+  <div class="slide-counter"><span id="current">1</span> / <span id="total">15</span></div>
+  <button class="nav-btn" onclick="nextSlide()">←</button>
+</div>
+
+<script>
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slide');
+const totalSlides = slides.length;
+document.getElementById('total').textContent = totalSlides;
+
+function goToSlide(n) {
+  slides[currentSlide].classList.remove('active');
+  currentSlide = Math.max(0, Math.min(n, totalSlides - 1));
+  slides[currentSlide].classList.add('active');
+  document.getElementById('current').textContent = currentSlide + 1;
+}
+
+function nextSlide() { goToSlide(currentSlide + 1); }
+function prevSlide() { goToSlide(currentSlide - 1); }
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') nextSlide();
+  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') prevSlide();
+});
+
+// Touch support
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', (e) => {
+  const diff = touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); }
+});
+</script>
+</body>
+</html>

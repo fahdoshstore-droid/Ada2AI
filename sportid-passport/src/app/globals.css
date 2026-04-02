@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+/* ── ada2ai Brand Design Tokens ── */
+:root {
+  --brand-navy:  #000A0F;   /* Navy Abyss     — Background & Depth     */
+  --brand-ocean: #007ABA;   /* Deep Ocean      — Stability & Pro        */
+  --brand-teal:  #00DCC8;   /* Primary Teal    — Motion & Tech Pulse    */
+  --brand-white: #EEEFEE;   /* Pure Tech White — Text & High Contrast   */
+
+  /* Legacy aliases */
+  --sport-green:  #00DCC8;
+  --sport-dark:   #000A0F;
+  --sport-blue:   #007ABA;
+  --sport-accent: #00DCC8;
+}
+
+body {
+  background-color: #000A0F;
+  color: #EEEFEE;
+  font-family: 'Cairo', 'Inter', system-ui, sans-serif;
+}
+
+/* Orbitron for display headings */
+h1, h2, h3 {
+  font-family: 'Orbitron', 'Inter', system-ui, sans-serif;
+}
+
+.font-orbitron {
+  font-family: 'Orbitron', monospace;
+}
+
+.font-cairo {
+  font-family: 'Cairo', sans-serif;
+}
+
+/* keep .font-sora as alias so existing JSX still compiles */
+.font-sora {
+  font-family: 'Orbitron', monospace;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sport-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.sport-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(0, 220, 200, 0.35);
+  transform: translateY(-2px);
+}
+
+/* Nafath badge — ada2ai ocean/teal gradient */
+.nafath-badge {
+  background: linear-gradient(135deg, #005a8a, #007ABA);
+  border: 1px solid rgba(0, 220, 200, 0.3);
+}
+
+.qr-pulse {
+  animation: qr-pulse 2s ease-in-out infinite;
+}
+
+@keyframes qr-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 220, 200, 0.4); }
+  50%       { box-shadow: 0 0 0 20px rgba(0, 220, 200, 0); }
+}
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Passport holographic shimmer ── */
+.holographic {
+  background: linear-gradient(
+    105deg,
+    transparent 25%,
+    rgba(0, 220, 200, 0.04) 45%,
+    rgba(0, 220, 200, 0.08) 50%,
+    rgba(0, 220, 200, 0.04) 55%,
+    transparent 75%
+  );
+  background-size: 200% auto;
+  animation: holographic-shimmer 5s linear infinite;
+  pointer-events: none;
+}
+@keyframes holographic-shimmer {
+  0%   { background-position: -100% center; }
+  100% { background-position: 300% center; }
+}
+
+/* ── Achievement card glow ── */
+.achievement-card:hover {
+  box-shadow: 0 8px 32px rgba(0, 220, 200, 0.12);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   iOS SAFARI & PWA COMPATIBILITY
+   ══════════════════════════════════════════════════════════════ */
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.full-height {
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+}
+
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
+
+.scroll-smooth {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+input, select, textarea {
+  font-size: 16px;
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+
+.safe-top    { padding-top:    env(safe-area-inset-top);    }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-left   { padding-left:   env(safe-area-inset-left);   }
+.safe-right  { padding-right:  env(safe-area-inset-right);  }
+
+@media all and (display-mode: standalone) {
+  body {
+    padding-top:    env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+.ios-scroll-fix {
+  position: relative;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
+
+.gpu-layer {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+.sport-card, .achievement-card, img {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── QR Scanner scan-line animation ── */
+@keyframes scanLineMove {
+  0%   { top: 10%; opacity: 1; }
+  50%  { top: 82%; opacity: 1; }
+  100% { top: 10%; opacity: 1; }
+}
+.scan-line {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00DCC8, transparent);
+  animation: scanLineMove 2s ease-in-out infinite;
+}
+
+/* ── Smooth sport-switcher tab transitions ── */
+button[data-sport-tab] {
+  will-change: transform, background-color;
+}
+
+/* ── ada2ai teal glow utility ── */
+.teal-glow {
+  box-shadow: 0 0 40px rgba(0, 220, 200, 0.15);
+}

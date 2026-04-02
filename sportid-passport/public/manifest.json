@@ -1,0 +1,54 @@
+{
+  "name": "SportID Digital Passport",
+  "short_name": "SportID",
+  "description": "Saudi Vision 2030 sports digital identity — Nafath verified, QR check-in, AI career pathway.",
+  "id": "sportid-passport",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#0A1628",
+  "theme_color": "#00A651",
+  "lang": "ar",
+  "dir": "auto",
+  "categories": ["sports", "health", "government"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "label": "Athlete Digital Passport",
+      "platform": "ios",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Passport",
+      "short_name": "Passport",
+      "description": "View your digital sports passport",
+      "url": "/athlete",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Sport Points",
+      "short_name": "Points",
+      "description": "Check your sport points and rewards",
+      "url": "/athlete/points",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    }
+  ]
+}

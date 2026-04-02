@@ -16,4 +16,17 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:5001",
+        changeOrigin: true,
+      },
+      "/yolo": {
+        target: "http://localhost:5001",
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/yolo/, ""),
+      },
+    },
+  },
 });

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="hexFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#000A0F"/>
+      <stop offset="100%" stop-color="#0B2A35"/>
+    </linearGradient>
+    <linearGradient id="tealGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00DCC8"/>
+      <stop offset="100%" stop-color="#4DFFF0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Hex background -->
+  <polygon
+    points="256,20 460,132 460,380 256,492 52,380 52,132"
+    fill="url(#hexFill)"
+    stroke="#00DCC8"
+    stroke-width="12"
+    stroke-opacity="0.7"
+  />
+
+  <!-- Soccer ball circle -->
+  <circle cx="256" cy="290" r="110" fill="none" stroke="#00DCC8" stroke-width="12" stroke-opacity="0.6"/>
+
+  <!-- Soccer ball pentagon pattern -->
+  <polygon
+    points="256,180 295,240 378,240 315,295 340,380 256,330 172,380 197,295 134,240 217,240"
+    fill="none" stroke="#00DCC8" stroke-width="8" stroke-opacity="0.35"
+  />
+
+  <!-- Arrow overlay — top right -->
+  <polyline points="340,60 420,60 420,140"
+    fill="none" stroke="url(#tealGrad)" stroke-width="28"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="370,20 420,60 380,110"
+    fill="none" stroke="url(#tealGrad)" stroke-width="28"
+    stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

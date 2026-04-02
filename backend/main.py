@@ -11,18 +11,31 @@ import json
 
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from video_processor import VideoProcessor
 from yolo_analyzer import YOLOAnalyzer
 from player_tracker import PlayerTracker, generate_formation_map
+from sportid_routes import router as sportid_router
 
 
 app = FastAPI(
     title="Ada2AI YOLO Video Analysis API",
-    description="Football video analysis with YOLO object detection",
-    version="1.0.0"
+    description="Football video analysis with YOLO object detection + SportID System",
+    version="2.0.0"
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include SportID routes
+app.include_router(sportid_router)
 
 
 # Initialize models (lazy loading)
