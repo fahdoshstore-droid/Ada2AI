@@ -8,7 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
-      "@shared": path.resolve(import.meta.dirname, "../shared"),
+      "@shared": path.resolve(import.meta.dirname, "src/shared"),
     },
   },
   root: ".",
@@ -16,18 +16,5 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
-  },
-  server: {
-    proxy: {
-      "/api": {
-        target: "http://localhost:5001",
-        changeOrigin: true,
-      },
-      "/yolo": {
-        target: "http://localhost:5001",
-        changeOrigin: true,
-        rewrite: (p) => p.replace(/^\/yolo/, ""),
-      },
-    },
   },
 });

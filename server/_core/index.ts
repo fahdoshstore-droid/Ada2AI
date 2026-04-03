@@ -6,7 +6,6 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerChatRoutes } from "./chat";
 import { registerScoutAnalysisRoutes } from "../scoutAnalysis";
-import { setupStorageStatic } from "../storage";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -41,24 +40,6 @@ async function startServer() {
   // Chat API with streaming and tool calling
   registerChatRoutes(app);
   registerScoutAnalysisRoutes(app);
-  setupStorageStatic(app);
-
-  // ── YOLO Backend Proxy ──────────────────────────────────────────────────────
-  const YOLO_BACKEND = process.env.YOLO_BACKEND_URL || "http://localhost:5001";
-  app.use("/yolo", async (req, res) => {
-    const targetUrl = `${YOLO_BACKEND}${req.originalUrl.replace(/^\/yolo/, "")}`;
-    try {
-      const resp = await fetch(targetUrl, {
-        method: req.method,
-        headers: { "Content-Type": req.headers["content-type"] || "application/json" },
-        body: req.method !== "GET" ? JSON.stringify(req.body) : undefined,
-      });
-      const data = await resp.json();
-      res.status(resp.status).json(data);
-    } catch (err: any) {
-      res.status(502).json({ error: "YOLO backend unavailable", detail: err?.message });
-    }
-  });
   
   // ── Football Video Analysis API ─────────────────────────────────────────────
   // This endpoint is called by CoachDashboard to analyze match videos

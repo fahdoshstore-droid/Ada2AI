@@ -117,16 +117,10 @@ export default function NafathPage() {
 
         {/* CTA */}
         <section style={{ textAlign: "center", padding: "48px 0" }}>
-          <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={() => navigate("/product")} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "linear-gradient(135deg, #007ABA, #00DCC8)", borderRadius: "12px", padding: "16px 40px", color: "white", border: "none", cursor: "pointer", fontFamily: "'Orbitron', monospace", fontWeight: 700, fontSize: "15px", letterSpacing: "0.05em" }}>
-              <ArrowRight size={18} />
-              ابدأ التحقق
-            </button>
-            <button onClick={() => navigate("/passport")} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(0,220,200,0.1)", border: "2px solid #00DCC8", borderRadius: "12px", padding: "16px 40px", color: "#00DCC8", border: "none", cursor: "pointer", fontFamily: "'Orbitron', monospace", fontWeight: 700, fontSize: "15px", letterSpacing: "0.05em" }}>
-              <Shield size={18} />
-              دخول Sport ID
-            </button>
-          </div>
+          <button onClick={() => navigate("/product")} style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "linear-gradient(135deg, #007ABA, #00DCC8)", borderRadius: "12px", padding: "16px 40px", color: "white", border: "none", cursor: "pointer", fontFamily: "'Orbitron', monospace", fontWeight: 700, fontSize: "15px", letterSpacing: "0.05em" }}>
+            <ArrowRight size={18} />
+            ابدأ التحقق
+          </button>
           <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px", marginTop: "16px" }}>
             مؤمَّن بنفاذ · ISO 27001 · متوافق مع نظام PDPL
           </p>

@@ -5,9 +5,9 @@ import FifaCard, { type FifaCardPlayer } from "@/components/FifaCard";
  * SportID Page — SportScout Platform
  * Design: Saudi Tech Noir + Saudi Ministry of Sports branding
  * Features:
- *   - QR Attendance (تسجيل حضور QR فوري)
- *   - Sports Points & Performance Tracking (نقاط رياضية وتتبع الأداء)
- *   - Ministry Reports & Analytics (تقارير وتحليلات مباشرة للوزارة)
+ *   - Onboarding with Naftath authentication flow
+ *   - Passport Card (flip 3D, QR, Naftath/Absher badges)
+ *   - Performance Stats, Certifications, Upcoming Trials, Sessions tabs
  *   - Points & Levels (Bronze → Silver → Gold → Platinum)
  *   - Radar Chart for skills
  */
@@ -197,15 +197,15 @@ function PassportCard({ flipped, onFlip }: { flipped: boolean; onFlip: () => voi
               <span className="text-[9px] text-[#EEEFEE]/30 font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>SPORTID</span>
             </div>
           </div>
-          {/* Features badges */}
+          {/* Naftath + Absher */}
           <div className="flex gap-2 px-5 pb-4">
             <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <QrCode size={13} style={{ color: "#00C2A8" }} />
-              <span className="text-[#EEEFEE]/70 text-[11px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>QR الحضور</span>
+              <Fingerprint size={13} style={{ color: "#00C2A8" }} />
+              <span className="text-[#EEEFEE]/70 text-[11px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Naftath</span>
             </div>
             <div className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
               <BarChart2 size={13} style={{ color: "#22c55e" }} />
-              <span className="text-[#EEEFEE]/70 text-[11px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>التقارير</span>
+              <span className="text-[#EEEFEE]/70 text-[11px] font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Absher</span>
             </div>
           </div>
           <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 text-[#EEEFEE]/20 text-[9px]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>اضغط لعرض QR الكامل</div>
@@ -292,7 +292,7 @@ function OnboardingModal({ onComplete, onSelectPlayer }: { onComplete: () => voi
               <><CheckCircle size={16} /> دخول فوري — بدون OTP</>
             )}
           </button>
-          <p className="text-[#EEEFEE]/25 text-center text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>وضع تجريبي — التسجيل عبر Ministry API</p>
+          <p className="text-[#EEEFEE]/25 text-center text-xs" style={{ fontFamily: "'Tajawal', sans-serif" }}>وضع تجريبي — في الإنتاج يُستخدم نفاذ + أبشر</p>
         </div>
       </div>
     </div>
@@ -346,7 +346,7 @@ export default function SportIDPage() {
             Sport<span style={{ color: "#00C2A8" }}>ID</span>
           </h1>
           <p className="text-[#EEEFEE]/50 max-w-lg mx-auto text-sm leading-relaxed">
-            {lang === "ar" ? "جواز سفرك الرياضي الرقمي — معترف به في جميع الأكاديميات والمنشآت الرياضية" : "Your digital sports passport — recognized across all academies and sports facilities"}
+            {lang === "ar" ? "جواز سفرك الرياضي الرقمي — موثّق بنفاذ، معترف به في جميع الأكاديميات والمنشآت الرياضية" : "Your digital sports passport — verified with Nafath, recognized across all academies and sports facilities"}
           </p>
         </div>
       </div>
@@ -365,9 +365,33 @@ export default function SportIDPage() {
                 <div className="px-8 py-4 rounded-2xl text-center" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", border: "1px solid rgba(0,194,168,0.3)" }}>
                   <Shield size={28} style={{ color: "#00C2A8" }} className="mx-auto mb-2" />
                   <p className="text-[#EEEFEE] font-bold mb-1" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "سجّل دخولك للوصول" : "Sign in to access"}</p>
-                  <p className="text-[#EEEFEE]/50 text-xs" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "تسجيل حضور فوري" : "Instant QR Check-in"}</p>
+                  <p className="text-[#EEEFEE]/50 text-xs" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>{lang === "ar" ? "التحقق عبر نفاذ مطلوب" : "Nafath verification required"}</p>
                 </div>
               </div>
+            </div>
+
+            {/* Auth CTA */}
+            <div className="w-full max-w-md rounded-2xl p-6 text-center" style={{ background: "rgba(0,194,168,0.05)", border: "1px solid rgba(0,194,168,0.2)" }}>
+              <div className="flex justify-center gap-4 mb-4">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{ background: "rgba(0,194,168,0.1)", border: "1px solid rgba(0,194,168,0.25)" }}>
+                  <Fingerprint size={16} style={{ color: "#00C2A8" }} />
+                  <span className="text-[#EEEFEE]/80 text-sm font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>نفاذ</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)" }}>
+                  <BarChart2 size={16} style={{ color: "#22c55e" }} />
+                  <span className="text-[#EEEFEE]/80 text-sm font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>أبشر</span>
+                </div>
+              </div>
+              <p className="text-[#EEEFEE]/50 text-sm mb-5" style={{ fontFamily: "'Tajawal', sans-serif" }}>
+                سجّل دخولك بهويتك الوطنية للحصول على جواز سفرك الرياضي الرقمي
+              </p>
+              <button
+                onClick={() => setShowOnboarding(true)}
+                className="w-full py-3.5 rounded-xl font-bold text-[#EEEFEE] text-sm flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                style={{ background: "linear-gradient(135deg, #00A896, #007A6E)", boxShadow: "0 8px 24px rgba(0,194,168,0.25)", fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                <Fingerprint size={16} /> تسجيل الدخول عبر نفاذ
+              </button>
             </div>
 
             {/* Feature pills */}
@@ -503,15 +527,6 @@ export default function SportIDPage() {
                   >
                     <Copy size={13} /> نسخ الرابط
                   </button>
-                  <a
-                    href={`https://sportid-passport.vercel.app`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-105"
-                    style={{ background: "rgba(0,194,168,0.15)", border: "1px solid rgba(0,194,168,0.35)", color: "#00DCC8", fontFamily: "'Space Grotesk', sans-serif" }}
-                  >
-                    <Shield size={13} /> عرض البروفايل الكامل
-                  </a>
                 </div>
               </div>
 
