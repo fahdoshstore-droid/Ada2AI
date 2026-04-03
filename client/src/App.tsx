@@ -19,6 +19,18 @@ import NahdaDemo     from "./pages/NahdaDemo";
 import Players       from "./pages/Players";
 import Dashboards    from "./pages/Dashboards";
 import SportID       from "./pages/SportID";
+import SportIDPassport from "./pages/SportIDPassport";
+import AthleteProfile   from "./pages/passport/AthleteProfile";
+import AthleteCareer    from "./pages/passport/AthleteCareer";
+import AthleteHistory   from "./pages/passport/AthleteHistory";
+import AthletePoints    from "./pages/passport/AthletePoints";
+import Facility         from "./pages/passport/Facility";
+import FacilityCheckin  from "./pages/passport/FacilityCheckin";
+import FacilityAnalytics from "./pages/passport/FacilityAnalytics";
+import MinistryPassport from "./pages/passport/Ministry";
+import Hub              from "./pages/passport/Hub";
+import GovernancePassport from "./pages/passport/Governance";
+import Partnerships     from "./pages/passport/Partnerships";
 import TrainingHub   from "./pages/TrainingHub";
 import Governance    from "./pages/Governance";
 import SubGovernance from "./pages/SubGovernance";
@@ -54,8 +66,20 @@ function Router() {
       {/* ── Platform Tools ── */}
       <Route path="/dashboards"   component={Dashboards} />
       <Route path="/academies"    component={Academies} />
-      <Route path="/sport-id"     component={SportID} />
-      <Route path="/sportid"      component={SportID} />
+      <Route path="/sport-id"     component={SportIDPassport} />
+      <Route path="/sportid"      component={SportIDPassport} />
+      <Route path="/passport"     component={SportIDPassport} />
+      <Route path="/passport/athlete"      component={AthleteProfile} />
+      <Route path="/passport/athlete/career" component={AthleteCareer} />
+      <Route path="/passport/athlete/history" component={AthleteHistory} />
+      <Route path="/passport/athlete/points" component={AthletePoints} />
+      <Route path="/passport/facility"      component={Facility} />
+      <Route path="/passport/facility/checkin" component={FacilityCheckin} />
+      <Route path="/passport/facility/analytics" component={FacilityAnalytics} />
+      <Route path="/passport/ministry"      component={MinistryPassport} />
+      <Route path="/passport/hub"           component={Hub} />
+      <Route path="/passport/governance"    component={GovernancePassport} />
+      <Route path="/passport/partnerships"  component={Partnerships} />
       <Route path="/training"     component={TrainingHub} />
 
       {/* ── Governance ── */}
