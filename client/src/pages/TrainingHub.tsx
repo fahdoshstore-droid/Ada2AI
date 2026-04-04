@@ -29,6 +29,7 @@ const features = [
     title: "AI Training Assistant",
     titleAr: "مساعد التدريب الذكي",
     desc: "Conversational AI coach that generates personalized training plans, analyzes performance data, and provides real-time tactical recommendations for every athlete.",
+    descAr: "مدرب ذكي محادثي يولّد خطط تدريب مخصصة، يحلل بيانات الأداء، ويقدم توصيات تكتيكية فورية لكل رياضي.",
     color: "#00DCC8",
   },
   {
@@ -36,6 +37,7 @@ const features = [
     title: "Coach Dashboard",
     titleAr: "لوحة المدرب",
     desc: "Interactive tactical pitch map with live player positioning, injury alerts, formation management, and team statistics across the last 5 matches.",
+    descAr: "خريطة تكتيكية تفاعلية مع تحديد موقع اللاعبين مباشرة، تنبيهات الإصابات، إدارة التشكيلات، وإحصائيات الفريق آخر 5 مباريات.",
     color: "#007ABA",
   },
   {
@@ -43,6 +45,7 @@ const features = [
     title: "Player Profiles",
     titleAr: "ملفات اللاعبين",
     desc: "Detailed athlete cards showing speed, strength, technique, endurance, and teamwork metrics with progress tracking over time.",
+    descAr: "بطاقات رياضية مفصلة تعرض السرعة، القوة، التقنية، التحمل، ومؤشرات العمل الجماعي مع تتبع التقدم عبر الزمن.",
     color: "#00DCC8",
   },
   {
@@ -50,6 +53,7 @@ const features = [
     title: "Training Sessions",
     titleAr: "جلسات التدريب",
     desc: "AI-generated training plans tailored to each athlete's position and performance gaps. 8 training types: speed, technical, strength, tactical, fitness, reaction, passing, shooting.",
+    descAr: "خطط تدريب مولّدة بالذكاء الاصطناعي مصممة حسب مركز كل رياضي وفجوات أدائه. 8 أنواع: سرعة، تقنية، قوة، تكتيك، لياقة، ردود فعل، تمرير، تسديد.",
     color: "#FFA500",
   },
   {
@@ -57,6 +61,7 @@ const features = [
     title: "Progress Tracking",
     titleAr: "تتبع التقدم",
     desc: "6-month team performance trend charts, individual player progress over 4 weeks, and goal achievement tracking with visual analytics.",
+    descAr: "رسوم بيانية لتقدم الفريق على 6 أشهر، تقدم كل لاعب على 4 أسابيع، وتتبع تحقيق الأهداف بتحليلات بصرية.",
     color: "#007ABA",
   },
   {
@@ -64,6 +69,7 @@ const features = [
     title: "Match Management",
     titleAr: "إدارة المباريات",
     desc: "Complete match log with AI season analysis, performance comparison across last 5 matches, and AI-powered preparation plans for upcoming fixtures.",
+    descAr: "سجل مباريات كامل مع تحليل الموسم بالذكاء الاصطناعي، مقارنة الأداء آخر 5 مباريات، وخطط إعداد للمباريات القادمة.",
     color: "#FFA500",
   },
 ];
@@ -633,18 +639,18 @@ export default function TrainingHub() {
                 >
                   {f.icon}
                 </div>
-                <h3 className="font-orbitron font-bold text-base mb-1 text-[#EEEFEE]">{f.title}</h3>
+                <h3 className="font-orbitron font-bold text-base mb-1 text-[#EEEFEE]">{lang === "ar" ? f.titleAr : f.title}</h3>
                 <p
                   className="text-xs mb-2"
                   style={{ color: f.color, fontFamily: "'Cairo', sans-serif", fontWeight: 600 }}
                 >
-                  {f.titleAr}
+                  {lang === "ar" ? f.title : f.titleAr}
                 </p>
                 <p
                   className="text-sm"
                   style={{ color: "rgba(238,239,238,0.55)", fontFamily: "'Cairo', sans-serif", lineHeight: 1.8 }}
                 >
-                  {f.desc}
+                  {lang === "ar" ? f.descAr : f.desc}
                 </p>
               </div>
             ))}
