@@ -178,28 +178,10 @@ function LandingPageInner() {
               </span>
             </div>
 
-            {/* Headline */}
-            <h1 className="text-4xl md:text-[52px] font-black text-white leading-[1.05] font-orbitron">
-              {lang === 'ar' ? (
-                <>
-                  كل رياضي
-                  <br />يستحق
-                  <br />
-                  <span className="bg-gradient-to-r from-[#007ABA] to-[#00DCC8] bg-clip-text text-transparent">
-                    هوية رقمية
-                  </span>
-                </>
-              ) : (
-                <>
-                  Every Athlete
-                  <br />Deserves a
-                  <br />
-                  <span className="bg-gradient-to-r from-[#007ABA] to-[#00DCC8] bg-clip-text text-transparent">
-                    Digital Identity
-                  </span>
-                </>
-              )}
-            </h1>
+            {/* Hero Card Image */}
+            <div className="w-full max-w-[360px]">
+              <img src="/player-photo.jpg" alt="Sport Digital ID" className="w-full rounded-2xl shadow-2xl" />
+            </div>
 
             {/* Description */}
             <p className="text-white/45 text-base leading-relaxed font-cairo max-w-[440px]">

@@ -6,10 +6,10 @@ interface LanguageContextType {
   toggleLang: () => void;
 }
 
-const LanguageContext = createContext<LanguageContextType>({ lang: 'en', toggleLang: () => {} });
+const LanguageContext = createContext<LanguageContextType>({ lang: 'ar', toggleLang: () => {} });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>('en');
+  const [lang, setLang] = useState<Lang>('ar');
 
   useEffect(() => {
     const saved = localStorage.getItem('sportid-lang') as Lang | null;
