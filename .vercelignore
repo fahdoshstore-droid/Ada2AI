@@ -1,0 +1,29 @@
+# Dependencies
+node_modules
+venv
+.env
+
+# Large directories
+backend
+scout-ai
+sportid-passport
+website
+client
+
+# Docs
+docs
+
+# Deployment files
+deployment
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+
+# Misc
+*.log
+*.md
