@@ -1,9 +1,9 @@
 /**
  * LoginPage - User authentication page
  */
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'wouter'
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -13,7 +13,15 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
-  const { signIn, signUp } = useAuth()
+  const { user, signIn, signUp } = useAuth()
+  const [, navigate] = useLocation()
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/')
+    }
+  }, [user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +37,8 @@ const LoginPage: React.FC = () => {
       } else {
         const { error } = await signIn(email, password)
         if (error) throw error
-        // Redirect will happen automatically via AuthContext
+        // Redirect to home after successful login
+        navigate('/')
       }
     } catch (err: any) {
       setError(err.message || 'Authentication failed')

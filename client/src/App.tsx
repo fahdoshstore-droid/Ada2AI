@@ -5,6 +5,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { AuthProvider } from "./contexts/AuthContext";
 
 // ── Pages ─────────────────────────────────────────────────
 import Home          from "./pages/Home";
@@ -42,6 +43,7 @@ import QrCheckinPage    from "./pages/features/QrCheckinPage";
 import SportPointsPage  from "./pages/features/SportPointsPage";
 import MinistryReportPage from "./pages/features/MinistryReportPage";
 import YOLOAnalysis   from "./pages/YOLOAnalysis";
+import LoginPage     from "./pages/LoginPage";
 
 // ── Router ────────────────────────────────────────────────
 function Router() {
@@ -51,6 +53,7 @@ function Router() {
       <Switch>
       {/* ── Core ── */}
       <Route path="/"             component={Home} />
+      <Route path="/login"        component={LoginPage} />
       <Route path="/product"      component={Product} />
 
       {/* ── Scouting ── */}
@@ -108,14 +111,16 @@ function Router() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="dark">
-        <LanguageProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </LanguageProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider defaultTheme="dark">
+          <LanguageProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }
