@@ -12,6 +12,7 @@ import HubProgress from "@/training-hub/pages/Progress";
 import HubMatches from "@/training-hub/pages/Matches";
 import HubCoachDashboard from "@/training-hub/pages/CoachDashboard";
 import HubSettings from "@/training-hub/pages/Settings";
+import HubPlayerAnalysis from "@/training-hub/pages/player-analysis";
 import { X } from "lucide-react";
 import {
   Brain, Dumbbell, Users, TrendingUp, Trophy, MessageCircle,
@@ -158,7 +159,7 @@ function RadarHex({ data, color }: { data: number[]; color: string }) {
 
 // ─── Hub App (full-screen overlay) ─────────────────────────────────────────────
 
-type HubPage = "dashboard" | "ai-chat" | "coach" | "players" | "training" | "progress" | "matches" | "settings";
+type HubPage = "dashboard" | "ai-chat" | "coach" | "players" | "training" | "progress" | "matches" | "settings" | "player-analysis";
 interface HubNavContext { prompt?: string; }
 
 function TrainingHubApp({ onClose, lang, isRTL }: { onClose: () => void; lang: "ar" | "en"; isRTL: boolean }) {
@@ -186,6 +187,7 @@ function TrainingHubApp({ onClose, lang, isRTL }: { onClose: () => void; lang: "
       case "progress": return <HubProgress lang={lang} />;
       case "matches": return <HubMatches onNavigate={handleNavigate} lang={lang} />;
       case "settings": return <HubSettings lang={lang} />;
+      case "player-analysis": return <HubPlayerAnalysis lang={lang} />;
       default: return <HubDashboard onNavigate={handleNavigate} lang={lang} />;
     }
   };

@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import FifaCard, { type FifaCardPlayer } from "@/components/FifaCard";

@@ -1,6 +1,6 @@
-import { Brain, LayoutDashboard, Users, Dumbbell, TrendingUp, Trophy, Settings, Sword, ChevronLeft, ChevronRight } from "lucide-react";
+import { Brain, LayoutDashboard, Users, Dumbbell, TrendingUp, Trophy, Settings, Sword, ChevronLeft, ChevronRight, BarChart3 } from "lucide-react";
 
-type Page = "dashboard" | "ai-chat" | "coach" | "players" | "training" | "progress" | "matches" | "settings";
+type Page = "dashboard" | "ai-chat" | "coach" | "players" | "training" | "progress" | "matches" | "settings" | "player-analysis";
 
 interface SidebarProps {
   activePage: Page;
@@ -13,6 +13,7 @@ const navItems = [
   { id: "ai-chat", labelAr: "مساعد AI", labelEn: "AI Assistant", icon: <Brain size={20} /> },
   { id: "coach", labelAr: "لوحة المدرب", labelEn: "Coach Board", icon: <Sword size={20} /> },
   { id: "players", labelAr: "اللاعبون", labelEn: "Players", icon: <Users size={20} /> },
+  { id: "player-analysis", labelAr: "تحليل الأداء", labelEn: "Player Analysis", icon: <BarChart3 size={20} /> },
   { id: "training", labelAr: "التدريبات", labelEn: "Training", icon: <Dumbbell size={20} /> },
   { id: "progress", labelAr: "التقدم", labelEn: "Progress", icon: <TrendingUp size={20} /> },
   { id: "matches", labelAr: "المباريات", labelEn: "Matches", icon: <Trophy size={20} /> },
