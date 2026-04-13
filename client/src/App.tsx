@@ -45,6 +45,7 @@ import MinistryReportPage from "./pages/features/MinistryReportPage";
 import YOLOAnalysis   from "./pages/YOLOAnalysis";
 import LoginPage     from "./pages/LoginPage";
 import DashboardHome from "./pages/dashboard/DashboardHome";
+import PlayerProfile from "./pages/dashboard/PlayerProfile";
 
 // ── Router ────────────────────────────────────────────────
 function Router() {
@@ -102,7 +103,7 @@ function Router() {
 
       {/* ── Dashboard ── */}
       <Route path="/dashboard"         component={DashboardHome} />
-      <Route path="/dashboard/profile"  component={DashboardHome} />
+      <Route path="/dashboard/profile"  component={PlayerProfile} />
       <Route path="/dashboard/settings" component={DashboardHome} />
       <Route path="/dashboard/stats"   component={DashboardHome} />
       <Route path="/dashboard/videos"   component={DashboardHome} />
