@@ -10,6 +10,7 @@ import {
   ChevronRight, Shield, Building2, UserCheck, Search, Heart
 } from 'lucide-react'
 import type { UserType } from '@/types/profiles'
+import NotificationBell from '@/components/NotificationBell'
 
 const userTypeIcons: Record<UserType, React.ReactNode> = {
   player: <Users size={20} />,
@@ -139,6 +140,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {userTypeLabels[userType][isRTL ? 'ar' : 'en']}
             </p>
           </div>
+        </div>
+
+        {/* Notifications Bell */}
+        <div style={{ marginBottom: '24px' }}>
+          <NotificationBell />
         </div>
 
         {/* Navigation */}

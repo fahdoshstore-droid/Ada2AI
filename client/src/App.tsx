@@ -6,6 +6,8 @@ import ScrollToTop from "./components/ScrollToTop";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { DemoAuthProvider } from "./contexts/DemoAuthContext";
+import { NotificationProvider } from "./contexts/NotificationContext";
+import ToastContainer from "./components/ToastContainer";
 
 // ── Pages ─────────────────────────────────────────────────
 import Home          from "./pages/Home";
@@ -134,10 +136,13 @@ export default function App() {
       <DemoAuthProvider>
         <ThemeProvider defaultTheme="dark">
           <LanguageProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-            </TooltipProvider>
+            <NotificationProvider>
+              <TooltipProvider>
+                <Toaster />
+                <ToastContainer />
+                <Router />
+              </TooltipProvider>
+            </NotificationProvider>
           </LanguageProvider>
         </ThemeProvider>
       </DemoAuthProvider>
