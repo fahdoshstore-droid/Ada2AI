@@ -302,25 +302,11 @@ export default function Ada2aiNavbar() {
                   </button>
                 </div>
               ) : (
-                <>
-                  <Link href="/login">
-                    <a
-                      className="text-sm px-3 py-1.5 rounded-md transition-all"
-                      style={{
-                        fontFamily: "'Cairo', sans-serif",
-                        fontSize: "14px",
-                        color: "rgba(238,239,238,0.75)",
-                      }}
-                    >
-                      {t("nav.login")}
-                    </a>
-                  </Link>
-                  <Link href="/upload">
-                    <button className="btn-ada-primary text-sm px-4 py-2">
-                      {t("nav.getStarted")}
-                    </button>
-                  </Link>
-                </>
+                <Link href="/upload">
+                  <button className="btn-ada-primary text-sm px-4 py-2">
+                    {t("nav.getStarted")}
+                  </button>
+                </Link>
               )}
             </div>
 
@@ -458,20 +444,11 @@ export default function Ada2aiNavbar() {
                     {t("nav.logout")}
                   </button>
                 ) : (
-                  <>
-                    <a
-                      href={getLoginUrl()}
-                      className="flex-1 py-2.5 text-sm rounded-md text-center"
-                      style={{ fontFamily: "'Cairo', sans-serif", color: "rgba(238,239,238,0.75)", border: "1px solid rgba(255,255,255,0.1)" }}
-                    >
-                      {t("nav.login")}
-                    </a>
-                    <Link href="/upload" className="flex-1">
-                      <button className="btn-ada-primary w-full text-sm py-2.5">
-                        {t("nav.getStarted")}
-                      </button>
-                    </Link>
-                  </>
+                  <Link href="/upload" className="flex-1">
+                    <button className="btn-ada-primary w-full text-sm py-2.5">
+                      {t("nav.getStarted")}
+                    </button>
+                  </Link>
                 )}
               </div>
             </div>
