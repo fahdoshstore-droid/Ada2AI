@@ -61,9 +61,9 @@ function Router() {
       <Route path="/compare"      component={Compare} />
       <Route path="/players"      component={Players} />
       <Route path="/upload"       component={Upload} />
+      <Route path="/demo/nahda"   component={NahdaDemo} />
       <Route path="/demo"         component={Demo} />
       <Route path="/demo-video"   component={DemoVideo} />
-      <Route path="/demo/nahda"   component={NahdaDemo} />
       <Route path="/yolo"        component={YOLOAnalysis} />
 
       {/* ── Platform Tools ── */}

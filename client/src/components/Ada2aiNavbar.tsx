@@ -303,17 +303,18 @@ export default function Ada2aiNavbar() {
                 </div>
               ) : (
                 <>
-                  <a
-                    href={getLoginUrl()}
-                    className="text-sm px-3 py-1.5 rounded-md transition-all"
-                    style={{
-                      fontFamily: "'Cairo', sans-serif",
-                      fontSize: "14px",
-                      color: "rgba(238,239,238,0.75)",
-                    }}
-                  >
-                    {t("nav.login")}
-                  </a>
+                  <Link href="/login">
+                    <a
+                      className="text-sm px-3 py-1.5 rounded-md transition-all"
+                      style={{
+                        fontFamily: "'Cairo', sans-serif",
+                        fontSize: "14px",
+                        color: "rgba(238,239,238,0.75)",
+                      }}
+                    >
+                      {t("nav.login")}
+                    </a>
+                  </Link>
                   <Link href="/upload">
                     <button className="btn-ada-primary text-sm px-4 py-2">
                       {t("nav.getStarted")}
