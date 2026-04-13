@@ -96,7 +96,7 @@ export default function LoginPage() {
         </p>
 
         {/* User Type Tabs */}
-        {mode === 'register' && (
+        {(
           <div style={{
             display: 'flex',
             gap: '8px',
