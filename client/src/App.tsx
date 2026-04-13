@@ -47,6 +47,11 @@ import LoginPage     from "./pages/LoginPage";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import PlayerProfile from "./pages/dashboard/PlayerProfile";
 import VideoUpload from "./pages/dashboard/VideoUpload";
+import TeamAnalysis from "./pages/dashboard/TeamAnalysis";
+import CoachDashboard from "./pages/dashboard/CoachDashboard";
+import ScoutDashboard from "./pages/dashboard/ScoutDashboard";
+import ClubDashboard from "./pages/dashboard/ClubDashboard";
+import ParentDashboard from "./pages/dashboard/ParentDashboard";
 
 // ── Router ────────────────────────────────────────────────
 function Router() {
@@ -107,7 +112,12 @@ function Router() {
       <Route path="/dashboard/profile"  component={PlayerProfile} />
       <Route path="/dashboard/settings" component={DashboardHome} />
       <Route path="/dashboard/stats"   component={DashboardHome} />
-      <Route path="/dashboard/videos"   component={VideoUpload} />
+      <Route path="/dashboard/videos"     component={VideoUpload} />
+      <Route path="/dashboard/team"      component={TeamAnalysis} />
+      <Route path="/dashboard/coach"     component={CoachDashboard} />
+      <Route path="/dashboard/scout"     component={ScoutDashboard} />
+      <Route path="/dashboard/club"      component={ClubDashboard} />
+      <Route path="/dashboard/parent"    component={ParentDashboard} />
 
       {/* ── Fallback ── */}
       <Route path="/404"          component={NotFound} />
