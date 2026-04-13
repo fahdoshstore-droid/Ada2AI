@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Link, useLocation } from 'wouter'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { supabase } from '@/lib/supabase'
 import { Users, Building2, UserCheck, Heart, Search, ChevronRight } from 'lucide-react'
 
 type UserType = 'player' | 'club' | 'coach' | 'parent' | 'scout'
@@ -39,10 +40,18 @@ export default function LoginPage() {
 
     try {
       if (mode === 'register') {
-        const { error } = await signUp(email, password)
+        const { data, error } = await signUp(email, password)
         if (error) throw error
+        // Save user_type to profiles table
+        if (data.user) {
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            email: data.user.email,
+            user_type: userType,
+            full_name: name || null,
+          })
+        }
         setSuccess(isRTL ? '✅ تم إنشاء الحساب! تحقق من بريدك الإلكتروني.' : '✅ Account created! Check your email.')
-        // TODO: Save user type to profiles table
         setTimeout(() => navigate('/login'), 3000)
       } else {
         const { error } = await signIn(email, password)
