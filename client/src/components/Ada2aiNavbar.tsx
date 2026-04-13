@@ -302,7 +302,7 @@ export default function Ada2aiNavbar() {
                   </button>
                 </div>
               ) : (
-                <Link href="/upload">
+                <Link href="/login">
                   <button className="btn-ada-primary text-sm px-4 py-2">
                     {t("nav.getStarted")}
                   </button>
@@ -444,7 +444,7 @@ export default function Ada2aiNavbar() {
                     {t("nav.logout")}
                   </button>
                 ) : (
-                  <Link href="/upload" className="flex-1">
+                  <Link href="/login" className="flex-1">
                     <button className="btn-ada-primary w-full text-sm py-2.5">
                       {t("nav.getStarted")}
                     </button>
