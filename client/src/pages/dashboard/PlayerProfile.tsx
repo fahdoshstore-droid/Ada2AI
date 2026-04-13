@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DashboardLayout from '@/components/DashboardLayout'
+import { supabase } from '@/lib/supabase'
 import { User, Save, Camera, Trophy, Target, TrendingUp } from 'lucide-react'
 
 export default function PlayerProfile() {
@@ -31,13 +32,35 @@ export default function PlayerProfile() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user) return
     setSaving(true)
-    // TODO: Save to Supabase
-    setTimeout(() => {
-      setSaving(false)
+    try {
+      const { error } = await supabase
+        .from('player_profiles')
+        .upsert({
+          id: user.id,
+          full_name: profile.full_name,
+          phone: profile.phone,
+          sport: profile.sport,
+          position: profile.position,
+          age: profile.age ? parseInt(profile.age) : null,
+          height_cm: profile.height_cm ? parseInt(profile.height_cm) : null,
+          weight_kg: profile.weight_kg ? parseInt(profile.weight_kg) : null,
+          dominant_foot: profile.dominant_foot,
+          jersey_number: profile.jersey_number ? parseInt(profile.jersey_number) : null,
+          achievements: profile.achievements,
+          region: profile.region,
+          city: profile.city,
+          updated_at: new Date().toISOString(),
+        })
+      if (error) throw error
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
-    }, 1000)
+    } catch (err) {
+      console.error('Error saving profile:', err)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const inputStyle = {

@@ -43,11 +43,11 @@ export default function LoginPage() {
         if (error) throw error
         setSuccess(isRTL ? '✅ تم إنشاء الحساب! تحقق من بريدك الإلكتروني.' : '✅ Account created! Check your email.')
         // TODO: Save user type to profiles table
-        setTimeout(() => navigate('/'), 2000)
+        setTimeout(() => navigate('/login'), 3000)
       } else {
         const { error } = await signIn(email, password)
         if (error) throw error
-        navigate('/')
+        navigate('/dashboard')
       }
     } catch (err: any) {
       setError(err.message || (isRTL ? 'فشل التسجيل' : 'Authentication failed'))

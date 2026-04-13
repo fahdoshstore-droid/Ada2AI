@@ -4,6 +4,7 @@
 import React from 'react'
 import { Link, useLocation } from 'wouter'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/contexts/LanguageContext'
 import {
   Home, Users, BarChart3, Video, Settings, LogOut,
@@ -71,9 +72,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, signOut } = useAuth()
   const { isRTL } = useLanguage()
   const [location] = useLocation()
+  const [userType, setUserType] = React.useState<UserType>('player')
 
-  // Get user type from profile or default to 'player'
-  const userType: UserType = 'player' // TODO: Get from profile query
+  // Fetch user profile from Supabase
+  React.useEffect(() => {
+    if (!user) return
+    supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', user.id)
+      .single()
+      .then(({ data, error }) => {
+        if (data?.user_type) {
+          setUserType(data.user_type as UserType)
+        }
+      })
+  }, [user])
+
   const navItems = navItemsByType[userType] || navItemsByType.player
 
   const handleSignOut = async () => {
