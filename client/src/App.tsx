@@ -44,6 +44,7 @@ import SportPointsPage  from "./pages/features/SportPointsPage";
 import MinistryReportPage from "./pages/features/MinistryReportPage";
 import YOLOAnalysis   from "./pages/YOLOAnalysis";
 import LoginPage     from "./pages/LoginPage";
+import DashboardHome from "./pages/dashboard/DashboardHome";
 
 // ── Router ────────────────────────────────────────────────
 function Router() {
@@ -98,6 +99,13 @@ function Router() {
       <Route path="/features/qr-checkin"      component={QrCheckinPage} />
       <Route path="/features/sport-points"    component={SportPointsPage} />
       <Route path="/features/ministry-report" component={MinistryReportPage} />
+
+      {/* ── Dashboard ── */}
+      <Route path="/dashboard"         component={DashboardHome} />
+      <Route path="/dashboard/profile"  component={DashboardHome} />
+      <Route path="/dashboard/settings" component={DashboardHome} />
+      <Route path="/dashboard/stats"   component={DashboardHome} />
+      <Route path="/dashboard/videos"   component={DashboardHome} />
 
       {/* ── Fallback ── */}
       <Route path="/404"          component={NotFound} />
