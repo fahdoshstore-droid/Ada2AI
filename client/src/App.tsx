@@ -46,6 +46,7 @@ import YOLOAnalysis   from "./pages/YOLOAnalysis";
 import LoginPage     from "./pages/LoginPage";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import PlayerProfile from "./pages/dashboard/PlayerProfile";
+import VideoUpload from "./pages/dashboard/VideoUpload";
 
 // ── Router ────────────────────────────────────────────────
 function Router() {
@@ -106,7 +107,7 @@ function Router() {
       <Route path="/dashboard/profile"  component={PlayerProfile} />
       <Route path="/dashboard/settings" component={DashboardHome} />
       <Route path="/dashboard/stats"   component={DashboardHome} />
-      <Route path="/dashboard/videos"   component={DashboardHome} />
+      <Route path="/dashboard/videos"   component={VideoUpload} />
 
       {/* ── Fallback ── */}
       <Route path="/404"          component={NotFound} />
