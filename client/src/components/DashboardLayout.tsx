@@ -3,8 +3,7 @@
  */
 import React from 'react'
 import { Link, useLocation } from 'wouter'
-import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useDemoAuth } from '@/contexts/DemoAuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import {
   Home, Users, BarChart3, Video, Settings, LogOut,
@@ -69,27 +68,10 @@ const navItemsByType: Record<UserType, NavItem[]> = {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, signOut } = useAuth()
+  const { user, signOut, userType, setUserType } = useDemoAuth()
   const { isRTL } = useLanguage()
   const [location] = useLocation()
-  const [userType, setUserType] = React.useState<UserType>('player')
-
-  // Fetch user profile from Supabase
-  React.useEffect(() => {
-    if (!user) return
-    supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('id', user.id)
-      .single()
-      .then(({ data, error }) => {
-        if (data?.user_type) {
-          setUserType(data.user_type as UserType)
-        }
-      })
-  }, [user])
-
-  const navItems = navItemsByType[userType] || navItemsByType.player
+  const navItems = navItemsByType[userType as UserType] || navItemsByType.player
 
   const handleSignOut = async () => {
     await signOut()

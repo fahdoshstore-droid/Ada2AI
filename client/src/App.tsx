@@ -5,7 +5,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
-import { AuthProvider } from "./contexts/AuthContext";
+import { DemoAuthProvider } from "./contexts/DemoAuthContext";
 
 // ── Pages ─────────────────────────────────────────────────
 import Home          from "./pages/Home";
@@ -131,7 +131,7 @@ function Router() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
+      <DemoAuthProvider>
         <ThemeProvider defaultTheme="dark">
           <LanguageProvider>
             <TooltipProvider>
@@ -140,7 +140,7 @@ export default function App() {
             </TooltipProvider>
           </LanguageProvider>
         </ThemeProvider>
-      </AuthProvider>
+      </DemoAuthProvider>
     </ErrorBoundary>
   );
 }
