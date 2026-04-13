@@ -2,7 +2,7 @@
  * LoginPage - User authentication page with user type selection
  */
 import React, { useState } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useDemoAuth } from '@/contexts/DemoAuthContext'
 import { Link, useLocation } from 'wouter'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase } from '@/lib/supabase'
@@ -20,7 +20,7 @@ const userTypes = [
 
 export default function LoginPage() {
   const { t, isRTL } = useLanguage()
-  const { signIn, signUp } = useAuth()
+  const { signIn, signUp } = useDemoAuth()
   const [, navigate] = useLocation()
 
   const [mode, setMode] = useState<'login' | 'register'>('login')

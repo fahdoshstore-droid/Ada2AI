@@ -2,13 +2,13 @@
  * VideoUpload - Upload and analyze player videos
  */
 import React, { useState, useRef } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useDemoAuth } from '@/contexts/DemoAuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DashboardLayout from '@/components/DashboardLayout'
 import { Video, Upload, Play, BarChart3, CheckCircle, AlertCircle, X } from 'lucide-react'
 
 export default function VideoUpload() {
-  const { user } = useAuth()
+  const { user } = useDemoAuth()
   const { isRTL } = useLanguage()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
