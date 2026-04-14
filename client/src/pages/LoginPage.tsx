@@ -3,7 +3,7 @@
  * Supports: Academy, Club, Coach, Player, Parent, Scout
  */
 import React, { useState } from 'react'
-import { useNavigate } from 'wouter'
+import { useLocation } from 'wouter'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { supabase, signIn, signUp, type UserType } from '@/lib/supabase'
 import { Users, Building2, UserCheck, Heart, Search, Shield, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
@@ -20,7 +20,7 @@ const userTypes = [
 
 export default function LoginPage() {
   const { isRTL } = useLanguage()
-  const navigate = useNavigate()
+  const [, navigate] = useLocation()
 
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [userType, setUserType] = useState<UserType>('player')
