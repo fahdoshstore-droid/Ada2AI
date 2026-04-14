@@ -14,7 +14,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 // VisualGuide - Arabic AI Teaching Overlay
-import { VisualGuide, createFormationGuide, analyzeFormation, generateGuideStepsFromAnalysis } from "@/components/VisualGuide";
+import { VisualGuide, HighlightOverlay, createFormationGuide, analyzeFormation, generateGuideStepsFromAnalysis, presetHighlights } from "@/components/VisualGuide";
 import {
   Brain, RotateCcw, ChevronDown, ChevronUp,
   TrendingUp, Shield, Swords, Eye, Target,
@@ -261,11 +261,18 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
   const [guideActive, setGuideActive] = useState(false);
   const [guideSession, setGuideSession] = useState<ReturnType<typeof createFormationGuide> | null>(null);
   const [guideStep, setGuideStep] = useState(0);
+  const [highlightActive, setHighlightActive] = useState(false);
+  const [currentHighlights, setCurrentHighlights] = useState<typeof presetHighlights[keyof typeof presetHighlights]>([]);
 
   const startGuide = () => {
     // Analyze current formation and generate smart guidance
     const analysis = analyzeFormation(players);
     const aiSteps = generateGuideStepsFromAnalysis(analysis, players);
+    
+    // Activate highlights for this formation
+    const formationHighlights = presetHighlights[formation] || [];
+    setCurrentHighlights(formationHighlights);
+    setHighlightActive(true);
     
     const session = {
       id: `guide-${Date.now()}`,
@@ -610,6 +617,7 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
             {/* Pitch */}
             <div
               ref={pitchRef}
+              data-pitch="true"
               className="relative rounded-xl overflow-hidden select-none"
               style={{ paddingTop: "62%", background: "linear-gradient(180deg, #1a4a2e 0%, #1e5233 50%, #1a4a2e 100%)", cursor: "default" }}
             >
@@ -632,6 +640,16 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
                 ))}
               </svg>
 
+              {/* Highlight Overlay */}
+              <HighlightOverlay
+                highlights={currentHighlights.map(h => ({
+                  ...h,
+                  label: typeof h.label === 'function' ? h.label(isRTL) : h.label,
+                }))}
+                isActive={highlightActive}
+                language={isRTL ? "ar" : "en"}
+              />
+
               {/* Formation label */}
               <div className="absolute bottom-2 start-3 text-xs font-black" style={{ color: "#00DCC8", fontFamily: "'Space Grotesk', sans-serif", zIndex: 10 }}>
                 {formation}
@@ -649,6 +667,7 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
                   <div
                     key={player.id}
                     className="absolute flex flex-col items-center"
+                    data-role={player.role}
                     style={{
                       left: `${player.x}%`,
                       top: `${player.y}%`,

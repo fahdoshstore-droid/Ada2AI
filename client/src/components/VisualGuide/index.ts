@@ -19,6 +19,11 @@ export {
   getPlayerGuidance,
 } from './AIGuidanceEngine';
 
+// Highlight Overlay
+export { default as HighlightOverlay } from './HighlightOverlay';
+export { presetHighlights, createArrow } from './HighlightOverlay';
+export type { HighlightZone, HighlightConfig, ArrowConfig } from './HighlightOverlay';
+
 export type { 
   GuideStep, 
   GuideSession, 
