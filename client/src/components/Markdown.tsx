@@ -217,7 +217,6 @@ export const Markdown = memo(function Markdown({
     <Streamdown
       className={cn("text-foreground leading-relaxed", className)}
       components={{ ...components, ...customComponents }}
-      plugins={plugins}
       shikiTheme={shikiTheme}
       controls={controls}
       {...props}

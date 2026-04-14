@@ -629,7 +629,7 @@ export default function CoachDashboard() {
                     type="range"
                     min="0"
                     max="100"
-                    value={evaluation[item.key as keyof typeof evaluation]}
+                    value={evaluation[item.key as keyof typeof evaluation] ?? 0}
                     onChange={(e) => setEvaluation({ ...evaluation, [item.key]: Number(e.target.value) })}
                     style={{ width: '100%', accentColor: item.color }}
                   />

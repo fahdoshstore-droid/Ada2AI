@@ -56,12 +56,6 @@ function LandingPageInner() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  async function handleEnter() {
-    setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
-    navigate('/passport/athlete');
-  }
-
 
 
   return (

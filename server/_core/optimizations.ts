@@ -40,7 +40,7 @@ export function invalidateCache(pattern?: string): void {
     return;
   }
   
-  for (const key of CACHE.keys()) {
+  for (const key of Array.from(CACHE.keys())) {
     if (key.includes(pattern)) {
       CACHE.delete(key);
     }

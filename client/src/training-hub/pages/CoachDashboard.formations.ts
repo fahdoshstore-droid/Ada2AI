@@ -1,6 +1,6 @@
 // Formation templates for CoachDashboard
 
-import { PitchPlayer, Formation } from "./CoachDashboard.types";
+import { PitchPlayer, Formation, CustomOpponent } from "./CoachDashboard.types";
 
 export const formationTemplates: Record<Formation, Omit<PitchPlayer, "id" | "nameAr" | "nameEn" | "rating" | "hasWarning">[]> = {
   "4-3-3": [

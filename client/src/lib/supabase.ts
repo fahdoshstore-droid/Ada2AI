@@ -229,7 +229,7 @@ export const createEvaluation = async (evaluation: Partial<Evaluation>) => {
 export const getMatches = async (clubId?: string) => {
   let query = supabase.from('matches').select('*').order('match_date', { ascending: false })
   if (clubId) query = query.eq('club_id', clubId)
-  const { data, error } = query
+  const { data, error } = await query
   return { data: data as Match[] || [], error }
 }
 

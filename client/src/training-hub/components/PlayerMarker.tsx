@@ -1,4 +1,11 @@
-import { roleColors, type PlayerRole, type PitchPlayer } from "./Pitch";
+import { type PlayerRole, type PitchPlayer } from "../pages/CoachDashboard.types";
+
+const roleColors: Record<PlayerRole, { bg: string; border: string; labelAr: string; label: string }> = {
+  GK:   { bg: "#F59E0B", border: "#F59E0B", labelAr: "حارس مرمى", label: "GK" },
+  DEF:  { bg: "#3B82F6", border: "#3B82F6", labelAr: "مدافع", label: "DEF" },
+  MID:  { bg: "#22C55E", border: "#22C55E", labelAr: "وسط", label: "MID" },
+  FWD:  { bg: "#EF4444", border: "#EF4444", labelAr: "مهاجم", label: "FWD" },
+};
 
 interface PlayerMarkerProps {
   player: PitchPlayer;

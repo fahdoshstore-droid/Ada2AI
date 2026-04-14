@@ -5,7 +5,7 @@ import FastAnalysis from './FastAnalysis'
 import DetailedAnalysis from './DetailedAnalysis'
 import AnalysisReport from './AnalysisReport'
 
-type AnalysisMode = 'none' | 'fast' | 'detailed'
+type AnalysisMode = 'fast' | 'detailed'
 type AnalysisState = 'select-mode' | 'upload' | 'processing' | 'complete'
 
 export interface PlayerAnalysisResult {
@@ -39,7 +39,7 @@ interface PlayerAnalysisPageProps {
 }
 
 function PlayerAnalysisPage({ lang = 'ar' }: PlayerAnalysisPageProps) {
-  const [mode, setMode] = useState<AnalysisMode>('none')
+  const [mode, setMode] = useState<AnalysisMode>('fast')
   const [state, setState] = useState<AnalysisState>('select-mode')
   const [file, setFile] = useState<File | null>(null)
   const [result, setResult] = useState<PlayerAnalysisResult | null>(null)
@@ -61,7 +61,7 @@ function PlayerAnalysisPage({ lang = 'ar' }: PlayerAnalysisPageProps) {
   }
 
   const handleReset = () => {
-    setMode('none')
+    setMode('fast')
     setState('select-mode')
     setFile(null)
     setResult(null)

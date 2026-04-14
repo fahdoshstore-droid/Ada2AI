@@ -10,7 +10,7 @@ import {
   Search, UserX, Layers, Lock,
   IdCard, Upload, BarChart2, Link2,
   Play, ChevronDown,
-  ArrowRight,
+
 } from "lucide-react";
 import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 import { useLanguage } from "@/contexts/LanguageContext";

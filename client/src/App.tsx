@@ -21,7 +21,6 @@ import DemoVideo      from "./pages/DemoVideo";
 import NahdaDemo     from "./pages/NahdaDemo";
 import Players       from "./pages/Players";
 import Dashboards    from "./pages/Dashboards";
-import SportID       from "./pages/SportID";
 import SportIDPassport from "./pages/SportIDPassport";
 import AthleteProfile   from "./pages/passport/AthleteProfile";
 import AthleteCareer    from "./pages/passport/AthleteCareer";
