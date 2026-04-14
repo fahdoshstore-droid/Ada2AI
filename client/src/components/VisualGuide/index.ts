@@ -4,7 +4,10 @@
  * Export all components and types for easy import
  */
 
+// Main component
 export { default as VisualGuide } from './VisualGuide';
+
+// Types and utilities
 export { 
   defaultGuideProps,
   guideColors,
@@ -18,23 +21,21 @@ export {
   generateGuideStepsFromAnalysis,
   getPlayerGuidance,
 } from './AIGuidanceEngine';
+export type {
+  FormationAnalysis,
+  PlayerAnalysis,
+} from './AIGuidanceEngine';
 
 // Highlight Overlay
 export { default as HighlightOverlay } from './HighlightOverlay';
 export { presetHighlights, createArrow } from './HighlightOverlay';
-export type { HighlightZone, HighlightConfig, ArrowConfig } from './HighlightOverlay';
+export type { HighlightZone, HighlightConfig, ArrowConfig, LabelGenerator } from './HighlightOverlay';
 
+// Guide types
 export type { 
   GuideStep, 
   GuideSession, 
   VisualGuideProps, 
   GuideAction,
   GuideLevel,
-  FormationAnalysis,
-  PlayerAnalysis,
 } from './types';
-
-export type {
-  FormationAnalysis as AIGuidanceResult,
-  PlayerAnalysis,
-} from './AIGuidanceEngine';

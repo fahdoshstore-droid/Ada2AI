@@ -15,6 +15,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 // VisualGuide - Arabic AI Teaching Overlay
 import { VisualGuide, HighlightOverlay, createFormationGuide, analyzeFormation, generateGuideStepsFromAnalysis, presetHighlights } from "@/components/VisualGuide";
+import type { HighlightConfig } from "@/components/VisualGuide";
 import {
   Brain, RotateCcw, ChevronDown, ChevronUp,
   TrendingUp, Shield, Swords, Eye, Target,
@@ -262,7 +263,7 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
   const [guideSession, setGuideSession] = useState<ReturnType<typeof createFormationGuide> | null>(null);
   const [guideStep, setGuideStep] = useState(0);
   const [highlightActive, setHighlightActive] = useState(false);
-  const [currentHighlights, setCurrentHighlights] = useState<typeof presetHighlights[keyof typeof presetHighlights]>([]);
+  const [currentHighlights, setCurrentHighlights] = useState<HighlightConfig[]>([]);
 
   const startGuide = () => {
     // Analyze current formation and generate smart guidance

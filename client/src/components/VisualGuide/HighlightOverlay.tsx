@@ -21,12 +21,14 @@ export type HighlightZone =
   | 'attacking-third'
   | 'goalkeeper-zone';
 
+export type LabelGenerator = (isRtl: boolean) => string;
+
 export interface HighlightConfig {
   zone: HighlightZone;
   color: string;
   opacity: number;
   pulse?: boolean;
-  label?: string;
+  label?: string | LabelGenerator;
 }
 
 export interface ArrowConfig {
@@ -231,9 +233,9 @@ export default function HighlightOverlay({
 
 export const presetHighlights: Record<string, HighlightConfig[]> = {
   '4-4-2': [
-    { zone: 'defensive-third', color: '#3B82F6', opacity: 0.3, label: isRtl => isRtl ? 'المنطقة الدفاعية' : 'Defensive Zone' },
-    { zone: 'middle-third', color: '#22C55E', opacity: 0.25, label: isRtl => isRtl ? 'منطقة الوسط' : 'Midfield Zone' },
-    { zone: 'attacking-third', color: '#EF4444', opacity: 0.25, label: isRtl => isRtl ? 'منطقة الهجوم' : 'Attack Zone' },
+    { zone: 'defensive-third', color: '#3B82F6', opacity: 0.3, label: 'Defensive Zone' },
+    { zone: 'middle-third', color: '#22C55E', opacity: 0.25, label: 'Midfield Zone' },
+    { zone: 'attacking-third', color: '#EF4444', opacity: 0.25, label: 'Attack Zone' },
   ],
   '4-3-3': [
     { zone: 'defensive-third', color: '#3B82F6', opacity: 0.3 },
