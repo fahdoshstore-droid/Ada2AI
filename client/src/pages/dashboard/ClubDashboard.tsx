@@ -1,5 +1,5 @@
 /**
- * ClubDashboard - Rawdat Al-Rawda Club Management
+ * ClubDashboard - Al-Rawda Club Management
  * Real Supabase integration with player management
  */
 import React, { useState, useEffect } from 'react'
@@ -182,7 +182,7 @@ export default function ClubDashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <h1 style={{ color: '#EEEFEE', fontSize: '28px', fontWeight: 'bold', fontFamily: "'Cairo', sans-serif", marginBottom: '8px' }}>
-              🏟️ {isRTL ? 'نادي الروضة' : 'Rawdat Al-Rawda Club'}
+              🏟️ {isRTL ? 'نادي الروضة' : 'Al-Rawda Club'}
             </h1>
             <p style={{ color: '#9CA3AF' }}>
               {clubProfile?.city || 'Riyadh'} • {clubProfile?.region || 'Saudi Arabia'}
