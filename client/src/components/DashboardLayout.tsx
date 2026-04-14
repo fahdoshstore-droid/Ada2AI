@@ -1,15 +1,16 @@
 /**
  * DashboardLayout - Unified dashboard for all user types
  */
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'wouter'
-import { useDemoAuth } from '@/contexts/DemoAuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { supabase, getProfile } from '@/lib/supabase'
 import {
   Home, Users, BarChart3, Video, Settings, LogOut,
   ChevronRight, Shield, Building2, UserCheck, Search, Heart
 } from 'lucide-react'
-import type { UserType } from '@/types/profiles'
+import type { UserType, Profile } from '@/types/profiles'
 import NotificationBell from '@/components/NotificationBell'
 
 const userTypeIcons: Record<UserType, React.ReactNode> = {
@@ -69,13 +70,30 @@ const navItemsByType: Record<UserType, NavItem[]> = {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, signOut, userType, setUserType } = useDemoAuth()
+  const { user, signOut: authSignOut } = useAuth()
   const { isRTL } = useLanguage()
   const [location] = useLocation()
-  const navItems = navItemsByType[userType as UserType] || navItemsByType.player
+  const [userType, setUserType] = useState<UserType>('player')
+  const [profile, setProfile] = useState<Profile | null>(null)
+
+  // Fetch user profile to get userType
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user) {
+        const { data } = await getProfile(user.id)
+        if (data) {
+          setProfile(data)
+          setUserType((data.user_type as UserType) || 'player')
+        }
+      }
+    }
+    fetchProfile()
+  }, [user])
+
+  const navItems = navItemsByType[userType] || navItemsByType.player
 
   const handleSignOut = async () => {
-    await signOut()
+    await authSignOut()
     window.location.href = '/'
   }
 
