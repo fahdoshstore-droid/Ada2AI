@@ -14,7 +14,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 // VisualGuide - Arabic AI Teaching Overlay
-import { VisualGuide, createFormationGuide } from "@/components/VisualGuide";
+import { VisualGuide, createFormationGuide, analyzeFormation, generateGuideStepsFromAnalysis } from "@/components/VisualGuide";
 import {
   Brain, RotateCcw, ChevronDown, ChevronUp,
   TrendingUp, Shield, Swords, Eye, Target,
@@ -263,7 +263,18 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
   const [guideStep, setGuideStep] = useState(0);
 
   const startGuide = () => {
-    const session = createFormationGuide();
+    // Analyze current formation and generate smart guidance
+    const analysis = analyzeFormation(players);
+    const aiSteps = generateGuideStepsFromAnalysis(analysis, players);
+    
+    const session = {
+      id: `guide-${Date.now()}`,
+      name: 'ai-formation-guide',
+      level: 'beginner' as const,
+      steps: aiSteps,
+      completedSteps: [],
+    };
+    
     setGuideSession(session);
     setGuideStep(0);
     setGuideActive(true);

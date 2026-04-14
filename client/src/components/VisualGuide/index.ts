@@ -12,10 +12,24 @@ export {
   createTrainingGuide,
 } from './types';
 
+// AI Guidance Engine
+export {
+  analyzeFormation,
+  generateGuideStepsFromAnalysis,
+  getPlayerGuidance,
+} from './AIGuidanceEngine';
+
 export type { 
   GuideStep, 
   GuideSession, 
   VisualGuideProps, 
   GuideAction,
   GuideLevel,
+  FormationAnalysis,
+  PlayerAnalysis,
 } from './types';
+
+export type {
+  FormationAnalysis as AIGuidanceResult,
+  PlayerAnalysis,
+} from './AIGuidanceEngine';
