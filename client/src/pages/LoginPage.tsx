@@ -1,33 +1,34 @@
 /**
- * LoginPage - User authentication page with user type selection
+ * LoginPage - Real Supabase Authentication
+ * Supports: Academy, Club, Coach, Player, Parent, Scout
  */
 import React, { useState } from 'react'
-import { useDemoAuth } from '@/contexts/DemoAuthContext'
-import { Link, useLocation } from 'wouter'
+import { useNavigate } from 'wouter'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { supabase } from '@/lib/supabase'
-import { Users, Building2, UserCheck, Heart, Search, ChevronRight } from 'lucide-react'
-
-type UserType = 'player' | 'club' | 'coach' | 'parent' | 'scout'
+import { supabase, signIn, signUp, type UserType } from '@/lib/supabase'
+import { Users, Building2, UserCheck, Heart, Search, Shield, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import type { User } from '@supabase/supabase-js'
 
 const userTypes = [
-  { id: 'player' as UserType, icon: <Users size={20} />, labelAr: 'لاعب', labelEn: 'Player' },
+  { id: 'academy' as UserType, icon: <Shield size={20} />, labelAr: 'أكاديمية', labelEn: 'Academy' },
   { id: 'club' as UserType, icon: <Building2 size={20} />, labelAr: 'نادي', labelEn: 'Club' },
   { id: 'coach' as UserType, icon: <UserCheck size={20} />, labelAr: 'مدرب', labelEn: 'Coach' },
+  { id: 'player' as UserType, icon: <Users size={20} />, labelAr: 'لاعب', labelEn: 'Player' },
   { id: 'parent' as UserType, icon: <Heart size={20} />, labelAr: 'ولي أمر', labelEn: 'Parent' },
   { id: 'scout' as UserType, icon: <Search size={20} />, labelAr: 'كشاف', labelEn: 'Scout' },
 ]
 
 export default function LoginPage() {
-  const { t, isRTL } = useLanguage()
-  const { signIn, signUp } = useDemoAuth()
-  const [, navigate] = useLocation()
+  const { isRTL } = useLanguage()
+  const navigate = useNavigate()
 
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [userType, setUserType] = useState<UserType>('player')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [name, setName] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [city, setCity] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -40,26 +41,48 @@ export default function LoginPage() {
 
     try {
       if (mode === 'register') {
-        const { data, error } = await signUp(email, password)
-        if (error) throw error
-        // Save user_type to profiles table
-        if (data.user) {
-          await supabase.from('profiles').upsert({
-            id: data.user.id,
-            email: data.user.email,
+        // Sign up with Supabase Auth
+        const { data, error: signUpError } = await signUp(email, password, {
+          full_name: fullName,
+          user_type: userType
+        })
+        
+        if (signUpError) throw signUpError
+        if (!data.user) throw new Error('No user returned')
+
+        // Create profile in profiles table
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: data.user.id,
             user_type: userType,
-            full_name: name || null,
+            full_name: fullName,
+            phone: phone || null,
+            city: city || null,
+            sport: 'football'
           })
-        }
-        setSuccess(isRTL ? '✅ تم إنشاء الحساب! تحقق من بريدك الإلكتروني.' : '✅ Account created! Check your email.')
-        setTimeout(() => navigate('/login'), 3000)
+
+        if (profileError) console.error('Profile creation error:', profileError)
+
+        setSuccess(isRTL 
+          ? '✅ تم إنشاء الحساب بنجاح!' 
+          : '✅ Account created successfully!')
+        
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          setMode('login')
+          setSuccess(null)
+        }, 2000)
       } else {
-        const { error } = await signIn(email, password)
-        if (error) throw error
+        // Sign in with Supabase Auth
+        const { error: signInError } = await signIn(email, password)
+        if (signInError) throw signInError
+        
+        // Success - redirect to dashboard
         navigate('/dashboard')
       }
     } catch (err: any) {
-      setError(err.message || (isRTL ? 'فشل التسجيل' : 'Authentication failed'))
+      setError(err.message || (isRTL ? 'حدث خطأ' : 'An error occurred'))
     } finally {
       setLoading(false)
     }
@@ -67,7 +90,7 @@ export default function LoginPage() {
 
   const title = mode === 'login'
     ? (isRTL ? 'تسجيل الدخول' : 'Sign In')
-    : (isRTL ? 'إنشاء حساب' : 'Create Account')
+    : (isRTL ? 'إنشاء حساب جديد' : 'Create New Account')
 
   return (
     <div style={{
@@ -80,122 +103,143 @@ export default function LoginPage() {
     }}>
       <div style={{
         width: '100%',
-        maxWidth: '500px',
+        maxWidth: '480px',
         backgroundColor: '#0A0E1A',
         borderRadius: '16px',
         padding: '32px',
-        border: '1px solid #00DCC8'
+        border: '1px solid #1F2937'
       }}>
         {/* Header */}
-        <h1 style={{
-          color: '#00DCC8',
-          fontSize: '28px',
-          marginBottom: '8px',
-          textAlign: 'center',
-          fontFamily: "'Cairo', sans-serif"
-        }}>
-          {title}
-        </h1>
-        <p style={{
-          color: '#94a3b8',
-          textAlign: 'center',
-          marginBottom: '24px'
-        }}>
-          {isRTL ? 'اختر نوع الحساب وأدخل بياناتك' : 'Choose account type and enter your details'}
-        </p>
-
-        {/* User Type Tabs */}
-        {(
-          <div style={{
-            display: 'flex',
-            gap: '8px',
-            marginBottom: '24px',
-            flexWrap: 'wrap',
-            justifyContent: 'center'
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h1 style={{
+            color: '#00DCC8',
+            fontSize: '28px',
+            fontWeight: 'bold',
+            marginBottom: '8px',
+            fontFamily: "'Cairo', sans-serif"
           }}>
-            {userTypes.map((type) => (
-              <button
-                key={type.id}
-                onClick={() => setUserType(type.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: userType === type.id ? '2px solid #00DCC8' : '1px solid #374151',
-                  background: userType === type.id ? 'rgba(0,220,200,0.1)' : 'transparent',
-                  color: userType === type.id ? '#00DCC8' : '#9CA3AF',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontFamily: "'Cairo', sans-serif",
-                  transition: 'all 0.2s'
-                }}
-              >
-                {type.icon}
-                <span>{isRTL ? type.labelAr : type.labelEn}</span>
-              </button>
-            ))}
-          </div>
-        )}
+            {title}
+          </h1>
+          <p style={{ color: '#9CA3AF', fontSize: '14px' }}>
+            {isRTL 
+              ? 'مرحباً بك في Ada2AI - منصة رياضية متكاملة' 
+              : 'Welcome to Ada2AI - Complete Sports Platform'}
+          </p>
+        </div>
 
-        {/* Error/Success Messages */}
+        {/* Success/Error Messages */}
         {error && (
           <div style={{
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            backgroundColor: 'rgba(239,68,68,0.1)',
             border: '1px solid #EF4444',
             borderRadius: '8px',
-            padding: '12px',
+            padding: '12px 16px',
             marginBottom: '16px',
-            color: '#EF4444',
-            textAlign: 'center'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#EF4444'
           }}>
+            <AlertCircle size={18} />
             {error}
           </div>
         )}
 
         {success && (
           <div style={{
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            backgroundColor: 'rgba(16,185,129,0.1)',
             border: '1px solid #10B981',
             borderRadius: '8px',
-            padding: '12px',
+            padding: '12px 16px',
             marginBottom: '16px',
-            color: '#10B981',
-            textAlign: 'center'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#10B981'
           }}>
+            <CheckCircle size={18} />
             {success}
           </div>
         )}
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          {/* Name (Register only) */}
+          {/* User Type Selection (Register only) */}
+          {mode === 'register' && (
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                color: '#9CA3AF',
+                fontSize: '13px',
+                marginBottom: '8px'
+              }}>
+                {isRTL ? 'نوع الحساب' : 'Account Type'}
+              </label>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '8px'
+              }}>
+                {userTypes.map((type) => (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => setUserType(type.id)}
+                    style={{
+                      padding: '12px 8px',
+                      backgroundColor: userType === type.id 
+                        ? 'rgba(0,220,200,0.15)' 
+                        : 'rgba(255,255,255,0.02)',
+                      border: userType === type.id 
+                        ? '2px solid #00DCC8' 
+                        : '1px solid #374151',
+                      borderRadius: '8px',
+                      color: userType === type.id ? '#00DCC8' : '#9CA3AF',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '11px',
+                      fontFamily: "'Cairo', sans-serif"
+                    }}
+                  >
+                    {type.icon}
+                    <span>{isRTL ? type.labelAr : type.labelEn}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Full Name (Register only) */}
           {mode === 'register' && (
             <div style={{ marginBottom: '16px' }}>
               <label style={{
                 display: 'block',
-                color: '#EEEFEE',
-                marginBottom: '8px',
-                fontSize: '14px'
+                color: '#9CA3AF',
+                fontSize: '13px',
+                marginBottom: '6px'
               }}>
-                {isRTL ? 'الاسم' : 'Name'}
+                {isRTL ? 'الاسم الكامل' : 'Full Name'}
               </label>
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required={mode === 'register'}
+                placeholder={isRTL ? 'مثال: أحمد محمد' : 'e.g. Ahmed Mohammed'}
                 style={{
                   width: '100%',
-                  padding: '12px',
+                  padding: '12px 16px',
                   backgroundColor: '#000A0F',
-                  border: '1px solid #007ABA',
+                  border: '1px solid #374151',
                   borderRadius: '8px',
                   color: '#EEEFEE',
-                  fontSize: '16px'
+                  fontSize: '14px',
+                  fontFamily: "'Cairo', sans-serif",
+                  boxSizing: 'border-box'
                 }}
-                placeholder={isRTL ? 'أدخل اسمك' : 'Enter your name'}
               />
             </div>
           )}
@@ -204,9 +248,9 @@ export default function LoginPage() {
           <div style={{ marginBottom: '16px' }}>
             <label style={{
               display: 'block',
-              color: '#EEEFEE',
-              marginBottom: '8px',
-              fontSize: '14px'
+              color: '#9CA3AF',
+              fontSize: '13px',
+              marginBottom: '6px'
             }}>
               {isRTL ? 'البريد الإلكتروني' : 'Email'}
             </label>
@@ -215,26 +259,28 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              placeholder={isRTL ? 'example@email.com' : 'example@email.com'}
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: '12px 16px',
                 backgroundColor: '#000A0F',
-                border: '1px solid #007ABA',
+                border: '1px solid #374151',
                 borderRadius: '8px',
                 color: '#EEEFEE',
-                fontSize: '16px'
+                fontSize: '14px',
+                fontFamily: "'Cairo', sans-serif",
+                boxSizing: 'border-box'
               }}
-              placeholder="you@example.com"
             />
           </div>
 
           {/* Password */}
-          <div style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '16px' }}>
             <label style={{
               display: 'block',
-              color: '#EEEFEE',
-              marginBottom: '8px',
-              fontSize: '14px'
+              color: '#9CA3AF',
+              fontSize: '13px',
+              marginBottom: '6px'
             }}>
               {isRTL ? 'كلمة المرور' : 'Password'}
             </label>
@@ -244,18 +290,89 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
+              placeholder={isRTL ? '••••••••' : '••••••••'}
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: '12px 16px',
                 backgroundColor: '#000A0F',
-                border: '1px solid #007ABA',
+                border: '1px solid #374151',
                 borderRadius: '8px',
                 color: '#EEEFEE',
-                fontSize: '16px'
+                fontSize: '14px',
+                fontFamily: "'Cairo', sans-serif",
+                boxSizing: 'border-box'
               }}
-              placeholder="••••••••"
             />
           </div>
+
+          {/* Phone (Register only) */}
+          {mode === 'register' && (
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'block',
+                color: '#9CA3AF',
+                fontSize: '13px',
+                marginBottom: '6px'
+              }}>
+                {isRTL ? 'رقم الجوال (اختياري)' : 'Phone Number (Optional)'}
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder={isRTL ? '0551234567' : '0551234567'}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  backgroundColor: '#000A0F',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#EEEFEE',
+                  fontSize: '14px',
+                  fontFamily: "'Cairo', sans-serif",
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+          )}
+
+          {/* City (Register only) */}
+          {mode === 'register' && (
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                color: '#9CA3AF',
+                fontSize: '13px',
+                marginBottom: '6px'
+              }}>
+                {isRTL ? 'المدينة' : 'City'}
+              </label>
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  backgroundColor: '#000A0F',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: email ? '#EEEFEE' : '#6B7280',
+                  fontSize: '14px',
+                  fontFamily: "'Cairo', sans-serif",
+                  boxSizing: 'border-box'
+                }}
+              >
+                <option value="">{isRTL ? 'اختر المدينة' : 'Select City'}</option>
+                <option value="Riyadh">{isRTL ? 'الرياض' : 'Riyadh'}</option>
+                <option value="Jeddah">{isRTL ? 'جدة' : 'Jeddah'}</option>
+                <option value="Dammam">{isRTL ? 'الدمام' : 'Dammam'}</option>
+                <option value="Mecca">{isRTL ? 'مكة' : 'Mecca'}</option>
+                <option value="Medina">{isRTL ? 'المدينة' : 'Medina'}</option>
+                <option value="Abha">{isRTL ? 'أبها' : 'Abha'}</option>
+                <option value="Other">{isRTL ? 'أخرى' : 'Other'}</option>
+              </select>
+            </div>
+          )}
 
           {/* Submit Button */}
           <button
@@ -267,68 +384,88 @@ export default function LoginPage() {
               backgroundColor: loading ? '#007ABA80' : '#00DCC8',
               color: '#000A0F',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '10px',
               fontSize: '16px',
               fontWeight: 'bold',
               cursor: loading ? 'not-allowed' : 'pointer',
-              fontFamily: "'Cairo', sans-serif"
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              fontFamily: "'Cairo', sans-serif",
+              marginBottom: '16px'
             }}
           >
-            {loading
-              ? (isRTL ? 'جاري المعالجة...' : 'Processing...')
-              : (mode === 'login'
-                  ? (isRTL ? 'تسجيل الدخول' : 'Sign In')
-                  : (isRTL ? 'إنشاء حساب' : 'Create Account'))
+            {loading && <Loader2 size={18} className="animate-spin" />}
+            {loading 
+              ? (isRTL ? 'جاري التحميل...' : 'Loading...')
+              : (mode === 'login' 
+                  ? (isRTL ? 'دخول' : 'Sign In')
+                  : (isRTL ? 'إنشاء حساب' : 'Create Account')
+                )
             }
           </button>
         </form>
 
         {/* Toggle Mode */}
         <div style={{
-          marginTop: '24px',
           textAlign: 'center',
-          color: '#94a3b8'
+          color: '#9CA3AF',
+          fontSize: '14px'
         }}>
           {mode === 'login' ? (
             <>
-              {isRTL ? 'ليس لديك حساب؟' : "Don't have an account?"}{' '}
+              {isRTL ? 'ما عندك حساب؟' : "Don't have an account?"}
+              {' '}
               <button
-                onClick={() => { setMode('register'); setError(null); setSuccess(null); }}
+                onClick={() => { setMode('register'); setError(null); setSuccess(null) }}
                 style={{
                   background: 'none',
                   border: 'none',
                   color: '#00DCC8',
                   cursor: 'pointer',
-                  textDecoration: 'underline'
+                  fontWeight: '600',
+                  fontFamily: "'Cairo', sans-serif"
                 }}
               >
-                {isRTL ? 'سجل الآن' : 'Sign up'}
+                {isRTL ? 'سجل هنا' : 'Register here'}
               </button>
             </>
           ) : (
             <>
-              {isRTL ? 'لديك حساب بالفعل؟' : 'Already have an account?'}{' '}
+              {isRTL ? 'عندك حساب؟' : 'Already have an account?'}
+              {' '}
               <button
-                onClick={() => { setMode('login'); setError(null); setSuccess(null); }}
+                onClick={() => { setMode('login'); setError(null); setSuccess(null) }}
                 style={{
                   background: 'none',
                   border: 'none',
                   color: '#00DCC8',
                   cursor: 'pointer',
-                  textDecoration: 'underline'
+                  fontWeight: '600',
+                  fontFamily: "'Cairo', sans-serif"
                 }}
               >
-                {isRTL ? 'سجل دخولك' : 'Sign in'}
+                {isRTL ? 'سجل دخول' : 'Sign in'}
               </button>
             </>
           )}
         </div>
 
-        {/* Back to Home */}
-        <div style={{ marginTop: '16px', textAlign: 'center' }}>
-          <Link to="/" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>
-            ← {isRTL ? 'العودة للرئيسية' : 'Back to Home'}
-          </Link>
+        {/* Demo Mode Notice */}
+        <div style={{
+          marginTop: '24px',
+          padding: '12px',
+          backgroundColor: 'rgba(245,158,11,0.1)',
+          borderRadius: '8px',
+          border: '1px solid #F59E0B30',
+          textAlign: 'center'
+        }}>
+          <p style={{ color: '#9CA3AF', fontSize: '12px' }}>
+            💡 {isRTL 
+              ? 'للتجربة: demo@ada2ai.com / password123'
+              : 'Demo: demo@ada2ai.com / password123'}
+          </p>
         </div>
       </div>
     </div>
