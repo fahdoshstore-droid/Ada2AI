@@ -8,10 +8,18 @@ import DashboardLayout from '@/components/DashboardLayout'
 import { Users, BarChart3, Video, Calendar, TrendingUp, Search, Plus, MessageSquare, X, Check, Edit3, Download, TrendingDown } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts'
 
+// VisualGuide - Arabic AI Teaching Overlay
+import { VisualGuide, createFormationGuide } from '@/components/VisualGuide'
+import type { GuideSession } from '@/components/VisualGuide'
+
 export default function CoachDashboard() {
   const { isRTL } = useLanguage()
   const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<'players' | 'training' | 'stats' | 'attendance'>('players')
+  
+  // VisualGuide State
+  const [guideActive, setGuideActive] = useState(false)
+  const [guideSession, setGuideSession] = useState<GuideSession | null>(null)
   const [showTrainingModal, setShowTrainingModal] = useState(false)
   const [showEvaluationModal, setShowEvaluationModal] = useState(false)
   const [selectedTrainingForAttendance, setSelectedTrainingForAttendance] = useState<number | null>(null)
@@ -89,6 +97,14 @@ export default function CoachDashboard() {
     setTrainings([...trainings, training])
     setNewTraining({ title: '', titleEn: '', date: '', time: '' })
     setShowTrainingModal(false)
+  }
+
+  // VisualGuide Handler
+  const startGuide = () => {
+    const formation = '4-4-2'
+    const session = createFormationGuide(formation, isRTL)
+    setGuideSession(session)
+    setGuideActive(true)
   }
 
   // Handle Attendance Toggle
