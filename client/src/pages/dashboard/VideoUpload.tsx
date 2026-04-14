@@ -3,7 +3,7 @@
  * Real integration with Ada2AI YOLO Backend API
  */
 import React, { useState, useRef } from 'react'
-import { useDemoAuth } from '@/contexts/DemoAuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DashboardLayout from '@/components/DashboardLayout'
 import { Video, Upload, Play, BarChart3, CheckCircle, AlertCircle, X, Loader2, TrendingUp, Activity, Zap } from 'lucide-react'
@@ -27,7 +27,7 @@ interface AnalysisResult {
 }
 
 export default function VideoUpload() {
-  const { user } = useDemoAuth()
+  const { user } = useAuth()
   const { isRTL } = useLanguage()
   const fileInputRef = useRef<HTMLInputElement>(null)
 

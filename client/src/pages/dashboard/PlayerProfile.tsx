@@ -2,14 +2,14 @@
  * PlayerProfile - Player profile edit and view page
  */
 import React, { useState } from 'react'
-import { useDemoAuth } from '@/contexts/DemoAuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DashboardLayout from '@/components/DashboardLayout'
 import { supabase } from '@/lib/supabase'
 import { User, Save, Camera, Trophy, Target, TrendingUp } from 'lucide-react'
 
 export default function PlayerProfile() {
-  const { user } = useDemoAuth()
+  const { user } = useAuth()
   const { isRTL } = useLanguage()
 
   const [profile, setProfile] = useState({

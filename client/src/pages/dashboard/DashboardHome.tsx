@@ -2,13 +2,13 @@
  * Dashboard Home - Unified dashboard for all user types
  */
 import React from 'react'
-import { useDemoAuth } from '@/contexts/DemoAuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DashboardLayout from '@/components/DashboardLayout'
 import { Users, BarChart3, Video, TrendingUp, Calendar, Activity } from 'lucide-react'
 
 export default function DashboardHome() {
-  const { user } = useDemoAuth()
+  const { user } = useAuth()
   const { isRTL } = useLanguage()
 
   // Mock stats - replace with real data from Supabase
