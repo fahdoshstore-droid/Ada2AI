@@ -1,0 +1,199 @@
+# Ada2AI YOLO Backend - High Availability Infrastructure
+# Docker Compose with multiple YOLO instances + Redis Queue + Nginx
+
+services:
+  # ============================================
+  # YOLO Backend Instances (3x for HA)
+  # ============================================
+  yolo-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ada2ai-yolo-1
+    ports:
+      - "5001:5001"
+    environment:
+      - WORKER_ID=1
+      - REDIS_URL=redis://redis:6379
+      - CUDA_ENABLED=${CUDA_ENABLED:-false}
+    volumes:
+      - ./uploads:/app/uploads
+      - yolo-models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  yolo-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ada2ai-yolo-2
+    ports:
+      - "5002:5001"
+    environment:
+      - WORKER_ID=2
+      - REDIS_URL=redis://redis:6379
+      - CUDA_ENABLED=${CUDA_ENABLED:-false}
+    volumes:
+      - ./uploads:/app/uploads
+      - yolo-models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  yolo-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ada2ai-yolo-3
+    ports:
+      - "5003:5001"
+    environment:
+      - WORKER_ID=3
+      - REDIS_URL=redis://redis:6379
+      - CUDA_ENABLED=${CUDA_ENABLED:-false}
+    volumes:
+      - ./uploads:/app/uploads
+      - yolo-models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ============================================
+  # Redis Queue (Job Management)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: ada2ai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ============================================
+  # Celery Worker (Async Job Processing)
+  # ============================================
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    container_name: ada2ai-celery
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - CUDA_ENABLED=${CUDA_ENABLED:-false}
+    volumes:
+      - ./uploads:/app/uploads
+      - yolo-models:/app/models
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  # ============================================
+  # Nginx Load Balancer
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    container_name: ada2ai-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      yolo-1:
+        condition: service_healthy
+      yolo-2:
+        condition: service_healthy
+      yolo-3:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ============================================
+  # Redis Commander (Monitoring - dev only)
+  # ============================================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: ada2ai-redis-ui
+    environment:
+      - REDIS_HOSTS=local=redis:6379
+      - HTTP_USER=admin
+      - HTTP_PASSWORD=${REDIS_PASSWORD:-admin123}
+    ports:
+      - "8081:8081"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - dev
+
+volumes:
+  redis-data:
+    driver: local
+  yolo-models:
+    driver: local
+
+networks:
+  default:
+    name: ada2ai-network
+    driver: bridge
