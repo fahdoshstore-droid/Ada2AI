@@ -13,6 +13,8 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
+// VisualGuide - Arabic AI Teaching Overlay
+import { VisualGuide, createFormationGuide } from "@/components/VisualGuide";
 import {
   Brain, RotateCcw, ChevronDown, ChevronUp,
   TrendingUp, Shield, Swords, Eye, Target,
@@ -254,6 +256,18 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
   const [tacticalNotes, setTacticalNotes] = useState("");
   const pitchRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef<{ id: number } | null>(null);
+
+  // ── VisualGuide State ────────────────────────────────────────────────────────
+  const [guideActive, setGuideActive] = useState(false);
+  const [guideSession, setGuideSession] = useState<ReturnType<typeof createFormationGuide> | null>(null);
+  const [guideStep, setGuideStep] = useState(0);
+
+  const startGuide = () => {
+    const session = createFormationGuide();
+    setGuideSession(session);
+    setGuideStep(0);
+    setGuideActive(true);
+  };
 
   // ── Player Assignment Modal ──────────────────────────────────────────────────
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -511,6 +525,17 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
             <h1 className="text-2xl font-black text-white" style={{ fontFamily: font }}>
               {isRTL ? "لوحة المدرب" : "Coach Dashboard"}
             </h1>
+            <button
+              onClick={startGuide}
+              className="mt-2 text-xs px-3 py-1.5 rounded-lg flex items-center gap-2 transition-all hover:scale-105"
+              style={{
+                background: guideActive ? "rgba(0,220,200,0.15)" : "rgba(0,220,200,0.08)",
+                color: "#00DCC8",
+                border: "1px solid rgba(0,220,200,0.2)",
+              }}
+            >
+              🐺 {isRTL ? "تفعيل المدرب الذكي" : "Activate AI Coach"}
+            </button>
             <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.4)", fontFamily: font }}>
               {isRTL ? "التكتيكات · أداء الفريق · تحليل الخصم · تحليل الفيديو" : "Tactics · Team Performance · Opponent Analysis · Video Analysis"}
             </p>
