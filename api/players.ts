@@ -10,6 +10,15 @@ function getSupabase(): SupabaseClient | null {
   return createClient(url, key);
 }
 
+async function verifyAuth(req: Request, supabase: SupabaseClient): Promise<{ user: any } | null> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+  const token = authHeader.slice(7);
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data.user) return null;
+  return { user: data.user };
+}
+
 export default async function handler(req: Request) {
   const supabase = getSupabase();
   if (!supabase) return new Response(JSON.stringify({ error: "Database not configured" }), { status: 503, headers: { "Content-Type": "application/json" } });
@@ -32,6 +41,9 @@ export default async function handler(req: Request) {
     }
 
     if (method === "POST") {
+      const auth = await verifyAuth(req, supabase);
+      if (!auth) return new Response(JSON.stringify({ error: "Unauthorized — missing or invalid Authorization header" }), { status: 401, headers: { "Content-Type": "application/json" } });
+
       const body = await req.json();
       const { name, name_ar, sport, position, age, region, rating, speed, agility, technique, badge, badge_color, academy_name } = body;
       if (!name) return new Response(JSON.stringify({ error: "Player name is required" }), { status: 400, headers: { "Content-Type": "application/json" } });
@@ -41,6 +53,9 @@ export default async function handler(req: Request) {
     }
 
     if (method === "DELETE") {
+      const auth = await verifyAuth(req, supabase);
+      if (!auth) return new Response(JSON.stringify({ error: "Unauthorized — missing or invalid Authorization header" }), { status: 401, headers: { "Content-Type": "application/json" } });
+
       const id = url.searchParams.get("id");
       if (!id) return new Response(JSON.stringify({ error: "Player id required" }), { status: 400, headers: { "Content-Type": "application/json" } });
       const { error } = await supabase.from("players").delete().eq("id", id);

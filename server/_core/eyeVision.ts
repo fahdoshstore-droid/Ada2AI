@@ -1,13 +1,14 @@
 /**
  * DHEEB Eye Vision — Claude Vision endpoint for screen analysis
+ * Uses ai-provider for Anthropic → Ollama fallback
  *
  * POST /api/eye/vision
  * Body: { imageBase64: string, transcript?: string, context: 'coach' | 'factcheck', prompt?: string }
  * Response: { actions: EyeAction[], descriptionAr: string, descriptionEn: string, suggestions: string[] }
  */
-import Anthropic from "@anthropic-ai/sdk";
 import type { Express, Request, Response } from "express";
 import { z } from "zod/v4";
+import { analyzeVision, getProviderStatus } from "./ai-provider";
 
 // ── Schemas ──────────────────────────────────────────────────────────────────
 
@@ -91,17 +92,6 @@ const FACTCHECK_SYSTEM_PROMPT = `أنت DHEEB Eye، مدقق معلومات ذك
 
 // ── API Handler ──────────────────────────────────────────────────────────────
 
-let anthropicClient: Anthropic | null = null;
-
-function getAnthropicClient(): Anthropic {
-  if (!anthropicClient) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not configured on the server");
-    anthropicClient = new Anthropic({ apiKey });
-  }
-  return anthropicClient;
-}
-
 export function registerEyeVisionRoutes(app: Express): void {
   app.post("/api/eye/vision", async (req: Request, res: Response) => {
     try {
@@ -116,70 +106,36 @@ export function registerEyeVisionRoutes(app: Express): void {
 
       const { imageBase64, transcript, context, prompt, sessionId } = parsed.data;
 
-      // Determine media type (default to png)
-      const mediaType = "image/png";
-
-      // Build messages
+      // Build system prompt and user message
       const systemPrompt = context === "coach" ? COACH_SYSTEM_PROMPT : FACTCHECK_SYSTEM_PROMPT;
+      const userMessage = transcript
+        ? (prompt || (context === "coach"
+            ? `المدرب يقول: "${transcript}". حلل ما تراه في الصورة.`
+            : `تحقق من الادعاءات في هذه الصورة. السياق: "${transcript}"`))
+        : (prompt || (context === "coach"
+            ? "حلل هذه الشاشة التكتيكية. ماذا ترى؟"
+            : "استخرج وتحقق من الادعاءات في هذه الصورة."));
 
-      const userContent: Anthropic.MessageParam[] = [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: mediaType,
-                data: imageBase64,
-              },
-            },
-            ...(transcript
-              ? [
-                  {
-                    type: "text" as const,
-                    text: prompt || (context === "coach"
-                      ? `المدرب يقول: "${transcript}". حلل ما تراه في الصورة.`
-                      : `تحقق من الادعاءات في هذه الصورة. السياق: "${transcript}"`),
-                  },
-                ]
-              : [
-                  {
-                    type: "text" as const,
-                    text: prompt || (context === "coach"
-                      ? "حلل هذه الشاشة التكتيكية. ماذا ترى؟"
-                      : "استخرج وتحقق من الادعاءات في هذه الصورة."),
-                  },
-                ]),
-          ],
-        },
-      ];
-
-      // Call Claude Vision
-      const client = getAnthropicClient();
-      const response = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 4096,
-        system: systemPrompt,
-        messages: userContent,
+      // Call AI provider (Anthropic → Ollama fallback)
+      const result = await analyzeVision({
+        imageBase64,
+        mediaType: "image/png",
+        systemPrompt,
+        userMessage,
+        maxTokens: 4096,
       });
 
-      // Extract text response
-      const textBlock = response.content.find((block) => block.type === "text");
-      const responseText = textBlock && textBlock.type === "text" ? textBlock.text : "";
-
-      // Parse JSON from response (Claude may wrap in markdown code blocks)
+      // Parse JSON from response (may wrap in markdown code blocks)
       let parsedResponse: Record<string, unknown>;
       try {
-        // Try to extract JSON from markdown code blocks
-        const jsonMatch = responseText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-        const jsonStr = jsonMatch ? jsonMatch[1] : responseText;
+        const jsonMatch = result.text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+        const jsonStr = jsonMatch ? jsonMatch[1] : result.text;
         parsedResponse = JSON.parse(jsonStr.trim());
       } catch {
         // If JSON parsing fails, return the raw text as description
         parsedResponse = {
-          descriptionAr: responseText,
-          descriptionEn: responseText,
+          descriptionAr: result.text,
+          descriptionEn: result.text,
           actions: [],
           suggestions: [],
           suggestionsAr: [],
@@ -203,19 +159,11 @@ export function registerEyeVisionRoutes(app: Express): void {
         suggestions: parsedResponse.suggestions || parsedResponse.suggestionsEn || [],
         suggestionsAr: parsedResponse.suggestionsAr || parsedResponse.suggestions || [],
         sessionId,
+        _meta: { provider: result.provider, model: result.model },
       });
 
     } catch (error) {
       console.error("[Eye Vision] Error:", error);
-
-      // Handle Anthropic API errors specifically
-      if (error instanceof Anthropic.APIError) {
-        return res.status(error.status || 500).json({
-          error: "Vision API error",
-          details: error.message,
-        });
-      }
-
       return res.status(500).json({
         error: "Vision analysis failed",
         details: error instanceof Error ? error.message : "Unknown error",
@@ -225,10 +173,12 @@ export function registerEyeVisionRoutes(app: Express): void {
 
   // Health check endpoint
   app.get("/api/eye/health", (_req: Request, res: Response) => {
-    const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
+    const status = getProviderStatus();
     res.json({
       status: "ok",
-      vision: hasApiKey ? "configured" : "missing_api_key",
+      vision: status.vision,
+      text: status.text,
+      provider: status.provider,
       timestamp: new Date().toISOString(),
     });
   });

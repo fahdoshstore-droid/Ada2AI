@@ -122,3 +122,7 @@ __pycache__/
 *.pyd
 .Python
 *.so
+.env.*
+!.env.example
+venv/
+.uploads/

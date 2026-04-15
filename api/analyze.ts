@@ -1,11 +1,63 @@
 /**
  * Scout Analysis API - Serverless Version for Vercel
  * Uses Anthropic Claude Vision for athlete analysis
+ * CORS restricted to allowed origins only; auth via Supabase Bearer token
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-// Anthropic API Key from environment
+// ── Allowed Origins ────────────────────────────────────────────────────
+
+const ALLOWED_ORIGINS = [
+  "https://ada2ai.vercel.app",
+  "http://localhost:3002",
+  "http://localhost:3000",
+];
+
+function getOrigin(req: any): string | undefined {
+  return req.headers?.origin || req.headers?.Origin || undefined;
+}
+
+function isOriginAllowed(origin: string | undefined): boolean {
+  if (!origin) return false;
+  return ALLOWED_ORIGINS.includes(origin);
+}
+
+function setCORsHeaders(req: any, res: any): void {
+  const origin = getOrigin(req);
+  if (origin && isOriginAllowed(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  // If origin not allowed, no Access-Control-Allow-Origin header is set
+  // — browser will block the response
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Vary", "Origin");
+}
+
+// ── Auth ───────────────────────────────────────────────────────────────
+
+function getSupabase(): SupabaseClient | null {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key);
+}
+
+async function verifyAuth(req: any): Promise<{ user: any } | null> {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+  const authHeader = req.headers?.authorization || req.headers?.Authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+  const token = authHeader.slice(7);
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data.user) return null;
+  return { user: data.user };
+}
+
+// ── Anthropic API Key ──────────────────────────────────────────────────
+
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
 export async function analyzeAthlete(imageData: string, imageMimeType: string = "image/jpeg") {
@@ -138,10 +190,8 @@ Return ONLY the JSON object.`;
 
 // For Vercel serverless - export handler
 export default async function handler(req: any, res: any) {
-  // CORS headers
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  // CORS headers — restricted to allowed origins
+  setCORsHeaders(req, res);
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
@@ -149,6 +199,12 @@ export default async function handler(req: any, res: any) {
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  // Auth check — require valid Supabase Bearer token
+  const auth = await verifyAuth(req);
+  if (!auth) {
+    return res.status(401).json({ error: "Unauthorized — missing or invalid Authorization header" });
   }
 
   try {

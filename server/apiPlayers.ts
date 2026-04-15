@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getSupabase } from './db';
+import { requireAuth } from './_core/auth';
 
 const router = Router();
 
@@ -65,7 +66,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/players — create new player
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   const supabase = getSupabase();
   if (!supabase) return res.status(503).json({ error: 'Database not configured' });
 
@@ -92,7 +93,7 @@ router.post('/', async (req, res) => {
 });
 
 // DELETE /api/players/:id — delete player
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth, async (req, res) => {
   const supabase = getSupabase();
   if (!supabase) return res.status(503).json({ error: 'Database not configured' });
 
