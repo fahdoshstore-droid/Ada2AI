@@ -1,0 +1,298 @@
+{
+  "video": "output/saudi_league_stars_2025.mp4",
+  "total_frames": 417,
+  "total_player_detections": 0,
+  "total_ball_detections": 0,
+  "frames_with_players": 0,
+  "device": "mps",
+  "model": "yolo11n",
+  "detections_sample": [
+    {
+      "frame": 10,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 20,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 30,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 40,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 50,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 60,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 70,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 80,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 90,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 100,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 110,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 120,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 130,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 140,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 150,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 160,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 170,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 180,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 190,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 200,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 210,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 220,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 230,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 240,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 250,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 260,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 270,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 280,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 290,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 300,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 310,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 320,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 330,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 340,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 350,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 360,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 370,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 380,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 390,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 400,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    },
+    {
+      "frame": 410,
+      "players": 0,
+      "balls": 0,
+      "player_boxes": [],
+      "ball_boxes": []
+    }
+  ]
+}

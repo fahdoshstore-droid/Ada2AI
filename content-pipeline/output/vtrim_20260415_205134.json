@@ -1,0 +1,13 @@
+{
+  "video": "output/saudi_league_stars_2025.mp4",
+  "duration": 13.9,
+  "human_segments": 0,
+  "speech_segments": 1,
+  "merged_segments": 1,
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 13.9
+    }
+  ]
+}
