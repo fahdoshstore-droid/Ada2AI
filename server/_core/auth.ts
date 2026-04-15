@@ -142,7 +142,7 @@ export function validateUploadSize(req: Request, res: Response, next: NextFuncti
 // Cleanup rate limit map every 5 minutes
 setInterval(() => {
   const now = Date.now();
-  for (const [key, entry] of rateLimitMap) {
+  for (const [key, entry] of Array.from(rateLimitMap.entries())) {
     if (now > entry.resetAt) rateLimitMap.delete(key);
   }
 }, 5 * 60_000);

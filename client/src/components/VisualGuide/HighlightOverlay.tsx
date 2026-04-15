@@ -127,7 +127,7 @@ function ZoneHighlight({ config, isRtl, onClick }: ZoneHighlightProps) {
             fontFamily: isRtl ? "'Tajawal', sans-serif" : "'Space Grotesk', sans-serif",
           }}
         >
-          {config.label}
+          {typeof config.label === "function" ? (config.label as LabelGenerator)(isRtl) : config.label}
         </div>
       )}
     </div>

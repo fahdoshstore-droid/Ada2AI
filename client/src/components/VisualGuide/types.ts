@@ -179,7 +179,7 @@ export const defaultGuideProps: Partial<VisualGuideProps> = {
 // Guide Session Factory
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function createFormationGuide(): GuideSession {
+export function createFormationGuide(formation: string = "4-4-2", isRTL: boolean = false): GuideSession {
   return {
     id: `guide-${Date.now()}`,
     name: 'formation-basics',
