@@ -66,7 +66,9 @@ async function startServer() {
       console.log("[Football Analysis] Starting analysis for:", team_a_name, "vs", team_b_name);
       
       // Call the scout analysis internally
-      const response = await fetch(`http://localhost:${port}/api/scout/analyze`, {
+      // Use req.hostname to avoid closure bug — 'port' is not yet defined at route registration time
+      const serverPort = (server.address() as any)?.port || parseInt(process.env.PORT || "3000");
+      const response = await fetch(`http://localhost:${serverPort}/api/scout/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageUrl: videoUrl }),
