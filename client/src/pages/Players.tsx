@@ -8,7 +8,7 @@ import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 import BackButton from "@/components/BackButton";
 
 interface Player {
-  id: number;
+  id: string;
   name: string;
   name_ar: string;
   sport: string;
@@ -155,7 +155,7 @@ export default function Players() {
     fetch(url)
       .then(r => r.json())
       .then(d => { setAthletes(d); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
+      .catch(e => { console.error('Players fetch error:', e); setError(e.message); setLoading(false); });
   }, [searchQuery, selectedSport, selectedRegion, selectedAge]);
 
   if (loading) return (

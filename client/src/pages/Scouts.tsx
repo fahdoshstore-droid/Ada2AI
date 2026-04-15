@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 interface Scout {
-  id: number;
+  id: string;
   name: string;
   name_ar: string;
   organization: string;
@@ -38,7 +38,7 @@ export default function Scouts() {
   const [sortKey, setSortKey] = useState<SortKey>("rating");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showFilters, setShowFilters] = useState(false);
-  const [compareList, setCompareList] = useState<number[]>([]);
+  const [compareList, setCompareList] = useState<string[]>([]);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -93,7 +93,7 @@ export default function Scouts() {
     else { setSortKey(key); setSortDir("desc"); }
   };
 
-  const toggleCompare = (id: number) => {
+  const toggleCompare = (id: string) => {
     setCompareList(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : prev.length < 2 ? [...prev, id] : prev
     );

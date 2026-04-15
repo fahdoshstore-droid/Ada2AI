@@ -7,7 +7,7 @@ import BackButton from "@/components/BackButton";
 import { MapPin, Star, Users, Phone, MessageCircle, Filter, Search, X } from "lucide-react";
 
 interface Academy {
-  id: number;
+  id: string;
   name: string;
   name_ar: string;
   sport: string;
@@ -50,7 +50,7 @@ export default function Academies() {
     fetch(url)
       .then(r => r.json())
       .then(d => { setAcademies(d); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
+      .catch(e => { console.error('Academies fetch error:', e); setError(e.message); setLoading(false); });
   }, [searchQuery, selectedCity, selectedSport]);
 
   if (loading) return (
