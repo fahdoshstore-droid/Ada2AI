@@ -4,172 +4,21 @@ import { useRef, useState, useEffect } from "react";
 import { MapView } from "@/components/Map";
 import BackButton from "@/components/BackButton";
 
-
 import { MapPin, Star, Users, Phone, MessageCircle, Filter, Search, X } from "lucide-react";
 
-// 10 local academies in Eastern Province
-const academies = [
-  {
-    id: 1,
-    name: "أكاديمية كابتن",
-    city: "دمام",
-    sport: "كرة القدم",
-    ageRange: "6-18",
-    rating: 4.8,
-    students: 320,
-    phone: "+966501234567",
-    address: "حي الشاطئ، دمام",
-    lat: 26.4207,
-    lng: 50.0888,
-    tags: ["كرة قدم", "تدريب احترافي", "Professional Standards معتمد"],
-    description: "من أبرز أكاديميات كرة القدم في المنطقة الشرقية، تأسست عام 2010 وخرّجت عدداً من اللاعبين الاحترافيين.",
-    color: "#1db954",
-  },
-  {
-    id: 2,
-    name: "أكاديمية الظهران الرياضية",
-    city: "ظهران",
-    sport: "كرة القدم",
-    ageRange: "8-20",
-    rating: 4.6,
-    students: 280,
-    phone: "+966502345678",
-    address: "حي الفيصلية، ظهران",
-    lat: 26.2794,
-    lng: 50.1521,
-    tags: ["كرة قدم", "تطوير مهارات", "بطولات محلية"],
-    description: "أكاديمية متخصصة في تطوير مهارات الشباب وإعدادهم للمستوى الاحترافي.",
-    color: "#1db954",
-  },
-  {
-    id: 3,
-    name: "أكاديمية الموهبة الكروية",
-    city: "خبر",
-    sport: "كرة القدم",
-    ageRange: "5-16",
-    rating: 4.7,
-    students: 210,
-    phone: "+966503456789",
-    address: "حي العزيزية، الخبر",
-    lat: 26.2172,
-    lng: 50.1971,
-    tags: ["كرة قدم", "براعم", "تدريب متخصص"],
-    description: "تركز على اكتشاف المواهب المبكرة وتأهيل اللاعبين من سن 5 سنوات.",
-    color: "#1db954",
-  },
-  {
-    id: 4,
-    name: "نادي الاتحاد الرياضي",
-    city: "دمام",
-    sport: "متعدد",
-    ageRange: "10-25",
-    rating: 4.5,
-    students: 450,
-    phone: "+966504567890",
-    address: "حي الروضة، دمام",
-    lat: 26.4367,
-    lng: 50.1033,
-    tags: ["كرة قدم", "كرة سلة", "سباحة"],
-    description: "نادٍ رياضي شامل يضم أقساماً متعددة للرياضات المختلفة.",
-    color: "#f59e0b",
-  },
-  {
-    id: 5,
-    name: "أكاديمية النجوم الصاعدة",
-    city: "خبر",
-    sport: "كرة القدم",
-    ageRange: "7-17",
-    rating: 4.4,
-    students: 180,
-    phone: "+966505678901",
-    address: "حي الثقبة، الخبر",
-    lat: 26.2419,
-    lng: 50.2147,
-    tags: ["كرة قدم", "تدريب فني", "معسكرات"],
-    description: "تتميز بمناهج تدريبية متطورة وكوادر تدريبية مؤهلة دولياً.",
-    color: "#1db954",
-  },
-  {
-    id: 6,
-    name: "مدرسة الأبطال الرياضية",
-    city: "دمام",
-    sport: "كرة القدم",
-    ageRange: "6-14",
-    rating: 4.3,
-    students: 150,
-    phone: "+966506789012",
-    address: "حي المريكبات، دمام",
-    lat: 26.4012,
-    lng: 50.0756,
-    tags: ["براعم", "ناشئين", "تأسيس"],
-    description: "متخصصة في المرحلة التأسيسية لكرة القدم للأطفال والناشئين.",
-    color: "#1db954",
-  },
-  {
-    id: 7,
-    name: "أكاديمية الخليج للرياضة",
-    city: "ظهران",
-    sport: "متعدد",
-    ageRange: "8-22",
-    rating: 4.6,
-    students: 380,
-    phone: "+966507890123",
-    address: "حي الدوحة، ظهران",
-    lat: 26.2956,
-    lng: 50.1689,
-    tags: ["كرة قدم", "تنس", "سباحة"],
-    description: "أكاديمية شاملة تقدم برامج رياضية متنوعة بمستوى عالمي.",
-    color: "#f59e0b",
-  },
-  {
-    id: 8,
-    name: "أكاديمية الشرقية للكرة",
-    city: "خبر",
-    sport: "كرة القدم",
-    ageRange: "9-19",
-    rating: 4.5,
-    students: 220,
-    phone: "+966508901234",
-    address: "حي الصفا، الخبر",
-    lat: 26.2283,
-    lng: 50.2089,
-    tags: ["كرة قدم", "تكتيك", "لياقة بدنية"],
-    description: "تعتمد أساليب تدريب حديثة مع التركيز على الجانب التكتيكي والبدني.",
-    color: "#1db954",
-  },
-  {
-    id: 9,
-    name: "نادي الفتح الرياضي",
-    city: "دمام",
-    sport: "كرة القدم",
-    ageRange: "12-25",
-    rating: 4.9,
-    students: 500,
-    phone: "+966509012345",
-    address: "ملعب الأمير محمد بن فهد، دمام",
-    lat: 26.4552,
-    lng: 50.1198,
-    tags: ["احترافي", "دوري", "Professional Standards"],
-    description: "الفريق الاحترافي الأبرز في المنطقة الشرقية مع أكاديمية شبابية متكاملة.",
-    color: "#ef4444",
-  },
-  {
-    id: 10,
-    name: "أكاديمية الرياضة والتميز",
-    city: "ظهران",
-    sport: "متعدد",
-    ageRange: "6-20",
-    rating: 4.4,
-    students: 260,
-    phone: "+966500123456",
-    address: "حي العمل، ظهران",
-    lat: 26.3112,
-    lng: 50.1445,
-    tags: ["كرة قدم", "ألعاب قوى", "تطوير شامل"],
-    description: "تجمع بين التميز الأكاديمي والرياضي لبناء جيل واعد من الرياضيين.",
-    color: "#f59e0b",
-  },
-];
+interface Academy {
+  id: number;
+  name: string;
+  name_ar: string;
+  sport: string;
+  region: string;
+  city: string;
+  description: string;
+  description_ar: string;
+  rating: number;
+  player_count: number;
+  verified: boolean;
+}
 
 const cities = ["الكل", "دمام", "خبر", "ظهران"];
 const sports = ["الكل", "كرة القدم", "متعدد"];
@@ -179,12 +28,38 @@ export default function Academies() {
   const { isRTL, t, lang } = useLanguage();
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
+  const [academies, setAcademies] = useState<Academy[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState("الكل");
   const [selectedSport, setSelectedSport] = useState("الكل");
   const [selectedAge, setSelectedAge] = useState("الكل");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAcademy, setSelectedAcademy] = useState<typeof academies[0] | null>(null);
+  const [selectedAcademy, setSelectedAcademy] = useState<Academy | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("search", searchQuery);
+    if (selectedCity !== "الكل") params.set("city", selectedCity);
+    if (selectedSport !== "الكل") params.set("sport", selectedSport);
+    const qs = params.toString();
+    const url = `/api/academies${qs ? `?${qs}` : ""}`;
+
+    setLoading(true);
+    fetch(url)
+      .then(r => r.json())
+      .then(d => { setAcademies(d); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, [searchQuery, selectedCity, selectedSport]);
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: "#00DCC8", borderTopColor: "transparent" }}></div>
+      <span className="ml-3 text-sm" style={{ color: "rgba(238,239,238,0.6)", fontFamily: "'Cairo', sans-serif" }}>Loading academies...</span>
+    </div>
+  );
+  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
 
   const filtered = academies.filter((a) => {
     const cityMatch = selectedCity === "الكل" || a.city === selectedCity;
@@ -192,13 +67,9 @@ export default function Academies() {
     const searchMatch =
       searchQuery === "" ||
       a.name.includes(searchQuery) ||
+      (a.name_ar && a.name_ar.includes(searchQuery)) ||
       a.city.includes(searchQuery);
-    const ageMatch =
-      selectedAge === "الكل" ||
-      (selectedAge === "5-10" && parseInt(a.ageRange) <= 10) ||
-      (selectedAge === "10-15" && parseInt(a.ageRange) >= 8 && parseInt(a.ageRange.split("-")[1]) >= 12) ||
-      (selectedAge === "15-25" && parseInt(a.ageRange.split("-")[1]) >= 15);
-    return cityMatch && sportMatch && searchMatch && ageMatch;
+    return cityMatch && sportMatch && searchMatch;
   });
 
   const handleMapReady = (map: google.maps.Map) => {
@@ -219,11 +90,17 @@ export default function Academies() {
     });
 
     // Add markers
-    academies.forEach((academy) => {
+    academies.forEach((academy, idx) => {
+      // Default to Eastern Province center if no lat/lng from API
+      const colors = ["#1db954", "#f59e0b", "#ef4444", "#3b82f6"];
+      const color = colors[idx % colors.length];
+      const lat = 26.35 + (idx * 0.015);
+      const lng = 50.10 + (idx * 0.018);
+
       const markerEl = document.createElement("div");
       markerEl.innerHTML = `
         <div style="
-          background: ${academy.color};
+          background: ${color};
           color: #0d1117;
           border-radius: 50%;
           width: 36px;
@@ -233,7 +110,7 @@ export default function Academies() {
           justify-content: center;
           font-weight: 900;
           font-size: 14px;
-          box-shadow: 0 0 15px ${academy.color}88;
+          box-shadow: 0 0 15px ${color}88;
           cursor: pointer;
           font-family: 'Space Grotesk', sans-serif;
           border: 2px solid rgba(255,255,255,0.2);
@@ -242,14 +119,14 @@ export default function Academies() {
 
       const marker = new google.maps.marker.AdvancedMarkerElement({
         map,
-        position: { lat: academy.lat, lng: academy.lng },
+        position: { lat, lng },
         title: academy.name,
         content: markerEl,
       });
 
       marker.addListener("click", () => {
         setSelectedAcademy(academy);
-        map.panTo({ lat: academy.lat, lng: academy.lng });
+        map.panTo({ lat, lng });
         map.setZoom(14);
       });
 
@@ -257,12 +134,20 @@ export default function Academies() {
     });
   };
 
-  const focusAcademy = (academy: typeof academies[0]) => {
+  const focusAcademy = (academy: Academy) => {
     setSelectedAcademy(academy);
     if (mapRef.current) {
-      mapRef.current.panTo({ lat: academy.lat, lng: academy.lng });
+      const idx = academies.findIndex(a => a.id === academy.id);
+      const lat = 26.35 + (idx * 0.015);
+      const lng = 50.10 + (idx * 0.018);
+      mapRef.current.panTo({ lat, lng });
       mapRef.current.setZoom(15);
     }
+  };
+
+  const getAcademyColor = (idx: number) => {
+    const colors = ["#1db954", "#f59e0b", "#ef4444", "#3b82f6"];
+    return colors[idx % colors.length];
   };
 
   return (
@@ -387,7 +272,7 @@ export default function Academies() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
             {/* Academies list */}
             <div className="lg:col-span-2 space-y-3 max-h-[600px] overflow-y-auto pr-1">
-              {filtered.map((academy) => (
+              {filtered.map((academy, idx) => (
                 <div
                   key={academy.id}
                   onClick={() => focusAcademy(academy)}
@@ -395,7 +280,7 @@ export default function Academies() {
                     selectedAcademy?.id === academy.id ? "neon-border" : "hover:border-white/20"
                   }`}
                   style={{
-                    borderRight: `3px solid ${academy.color}`,
+                    borderRight: `3px solid ${getAcademyColor(idx)}`,
                   }}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
@@ -403,7 +288,7 @@ export default function Academies() {
                       className="text-[#EEEFEE] font-bold text-base leading-tight"
                       style={{ fontFamily: "'Tajawal', sans-serif" }}
                     >
-                      {academy.name}
+                      {lang === "ar" && academy.name_ar ? academy.name_ar : academy.name}
                     </h3>
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <Star size={12} className="text-yellow-400 fill-yellow-400" />
@@ -424,51 +309,24 @@ export default function Academies() {
                     <div className="flex items-center gap-1 text-[#EEEFEE]/45 text-xs">
                       <Users size={11} />
                       <span style={{ fontFamily: "'Space Grotesk', sans-serif", direction: "ltr" }}>
-                        {academy.students}+
+                        {academy.player_count}+
                       </span>
                     </div>
                     <span className="tag-green text-xs">{academy.sport}</span>
                   </div>
 
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {academy.tags.slice(0, 2).map((tag, i) => (
-                      <span
-                        key={i}
-                        className="bg-white/5 text-[#EEEFEE]/40 text-xs px-2 py-0.5 rounded"
-                        style={{ fontFamily: "'Tajawal', sans-serif" }}
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`text-xs px-2 py-0.5 rounded ${academy.verified ? "bg-green-500/10 text-green-400 border border-green-500/30" : "bg-white/5 text-[#EEEFEE]/40"}`}>
+                      {academy.verified ? "✓ Verified" : "Unverified"}
+                    </span>
                   </div>
 
-                  <div className="flex gap-2">
-                    <a
-                      href={`https://wa.me/${academy.phone.replace("+", "")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                      style={{
-                        background: "oklch(0.65 0.2 145 / 0.1)",
-                        border: "1px solid oklch(0.65 0.2 145 / 0.25)",
-                        color: "oklch(0.65 0.2 145)",
-                        fontFamily: "'Tajawal', sans-serif",
-                      }}
-                    >
-                      <MessageCircle size={12} />
-                      واتساب
-                    </a>
-                    <a
-                      href={`tel:${academy.phone}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-white/5 border border-white/10 text-[#EEEFEE]/50 hover:text-[#EEEFEE]"
-                      style={{ fontFamily: "'Tajawal', sans-serif" }}
-                    >
-                      <Phone size={12} />
-                      اتصل
-                    </a>
-                  </div>
+                  <p
+                    className="text-[#EEEFEE]/50 text-xs mb-2 line-clamp-2"
+                    style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
+                  >
+                    {lang === "ar" && academy.description_ar ? academy.description_ar : academy.description}
+                  </p>
                 </div>
               ))}
 
@@ -494,7 +352,7 @@ export default function Academies() {
               {selectedAcademy && (
                 <div
                   className="absolute bottom-4 left-4 right-4 card-dark rounded-xl p-4"
-                  style={{ border: `1px solid ${selectedAcademy.color}44` }}
+                  style={{ border: `1px solid ${getAcademyColor(academies.findIndex(a => a.id === selectedAcademy.id))}44` }}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -502,17 +360,17 @@ export default function Academies() {
                         className="text-[#EEEFEE] font-bold text-base mb-1"
                         style={{ fontFamily: "'Tajawal', sans-serif" }}
                       >
-                        {selectedAcademy.name}
+                        {lang === "ar" && selectedAcademy.name_ar ? selectedAcademy.name_ar : selectedAcademy.name}
                       </h4>
                       <p
                         className="text-[#EEEFEE]/50 text-xs mb-2"
                         style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
                       >
-                        {selectedAcademy.description}
+                        {lang === "ar" && selectedAcademy.description_ar ? selectedAcademy.description_ar : selectedAcademy.description}
                       </p>
                       <div className="flex items-center gap-2 text-[#EEEFEE]/40 text-xs">
                         <MapPin size={11} />
-                        <span style={{ fontFamily: "'Tajawal', sans-serif" }}>{selectedAcademy.address}</span>
+                        <span style={{ fontFamily: "'Tajawal', sans-serif" }}>{selectedAcademy.city}, {selectedAcademy.region}</span>
                       </div>
                     </div>
                     <button

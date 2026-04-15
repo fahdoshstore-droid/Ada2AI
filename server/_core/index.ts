@@ -7,6 +7,9 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerChatRoutes } from "./chat";
 import { registerScoutAnalysisRoutes } from "../scoutAnalysis";
 import { registerEyeVisionRoutes } from "./eyeVision";
+import { registerPlayerRoutes } from "../apiPlayers";
+import { registerAcademyRoutes } from "../apiAcademies";
+import { registerScoutRoutes } from "../apiScouts";
 import { requireAuth, rateLimit, validateUploadSize } from "./auth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -52,6 +55,14 @@ async function startServer() {
   registerScoutAnalysisRoutes(app);
   // DHEEB Eye Vision — Claude Vision analysis endpoint
   registerEyeVisionRoutes(app);
+
+  // ── Public API routes (rate-limited, no auth required) ──────────
+  app.use("/api/players", rateLimit);
+  app.use("/api/academies", rateLimit);
+  app.use("/api/scouts", rateLimit);
+  registerPlayerRoutes(app);
+  registerAcademyRoutes(app);
+  registerScoutRoutes(app);
   
   // ── Football Video Analysis API ─────────────────────────────────────────────
   // This endpoint is called by CoachDashboard to analyze match videos

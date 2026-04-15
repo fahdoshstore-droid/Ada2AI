@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Search, Filter, Star, MapPin, Trophy, Activity,
@@ -7,65 +7,22 @@ import {
 import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 import BackButton from "@/components/BackButton";
 
-// Sample athlete data representing the database
-const sampleAthletes = [
-  {
-    id: 1, name: "Mohammed Al-Qahtani", nameAr: "محمد القحطاني",
-    sport: "Football", position: "RW", age: 17, region: "Riyadh",
-    rating: 84, speed: 88, agility: 82, technique: 85,
-    badge: "TOP TALENT", badgeColor: "#00DCC8",
-    academy: "Al-Hilal Academy",
-  },
-  {
-    id: 2, name: "Khalid Al-Ghamdi", nameAr: "خالد الغامدي",
-    sport: "Football", position: "CM", age: 19, region: "Jeddah",
-    rating: 78, speed: 74, agility: 80, technique: 79,
-    badge: "RISING STAR", badgeColor: "#007ABA",
-    academy: "Al-Ittihad Academy",
-  },
-  {
-    id: 3, name: "Faisal Al-Shehri", nameAr: "فيصل الشهري",
-    sport: "Athletics", position: "Sprint", age: 16, region: "Dammam",
-    rating: 81, speed: 92, agility: 85, technique: 76,
-    badge: "VERIFIED", badgeColor: "#00DCC8",
-    academy: "Eastern Province Sports",
-  },
-  {
-    id: 4, name: "Omar Al-Dosari", nameAr: "عمر الدوسري",
-    sport: "Basketball", position: "PG", age: 18, region: "Riyadh",
-    rating: 76, speed: 79, agility: 83, technique: 72,
-    badge: "PROSPECT", badgeColor: "#FFA500",
-    academy: "Saudi Basketball Federation",
-  },
-  {
-    id: 5, name: "Abdullah Al-Harbi", nameAr: "عبدالله الحربي",
-    sport: "Football", position: "ST", age: 20, region: "Mecca",
-    rating: 82, speed: 85, agility: 78, technique: 84,
-    badge: "TOP TALENT", badgeColor: "#00DCC8",
-    academy: "Al-Ahli Academy",
-  },
-  {
-    id: 6, name: "Nawaf Al-Mutairi", nameAr: "نواف المطيري",
-    sport: "Swimming", position: "Freestyle", age: 15, region: "Riyadh",
-    rating: 79, speed: 88, agility: 80, technique: 77,
-    badge: "RISING STAR", badgeColor: "#007ABA",
-    academy: "Saudi Aquatics Federation",
-  },
-  {
-    id: 7, name: "Turki Al-Zahrani", nameAr: "تركي الزهراني",
-    sport: "Football", position: "CB", age: 18, region: "Abha",
-    rating: 75, speed: 72, agility: 76, technique: 74,
-    badge: "PROSPECT", badgeColor: "#FFA500",
-    academy: "Al-Wahda Academy",
-  },
-  {
-    id: 8, name: "Saleh Al-Otaibi", nameAr: "صالح العتيبي",
-    sport: "Football", position: "GK", age: 17, region: "Medina",
-    rating: 77, speed: 68, agility: 79, technique: 80,
-    badge: "VERIFIED", badgeColor: "#00DCC8",
-    academy: "Al-Taawoun Academy",
-  },
-];
+interface Player {
+  id: number;
+  name: string;
+  name_ar: string;
+  sport: string;
+  position: string;
+  age: number;
+  region: string;
+  rating: number;
+  speed: number;
+  agility: number;
+  technique: number;
+  badge: string;
+  badge_color: string;
+  academy_name: string;
+}
 
 const sports = ["All Sports", "Football", "Athletics", "Basketball", "Swimming", "Tennis", "Volleyball"];
 const regions = ["All Regions", "Riyadh", "Jeddah", "Dammam", "Mecca", "Medina", "Abha"];
@@ -79,7 +36,7 @@ function RatingBar({ value, color = "#00DCC8" }: { value: number; color?: string
   );
 }
 
-function AthleteCard({ athlete }: { athlete: (typeof sampleAthletes)[number] }) {
+function AthleteCard({ athlete }: { athlete: Player }) {
   const [, navigate] = useLocation();
   return (
     <div className="ada-card p-5 flex flex-col gap-4 cursor-pointer group">
@@ -98,15 +55,15 @@ function AthleteCard({ athlete }: { athlete: (typeof sampleAthletes)[number] }) 
               {athlete.name}
             </div>
             <div className="text-xs" style={{ color: "rgba(238,239,238,0.45)", fontFamily: "'Cairo', sans-serif" }}>
-              {athlete.nameAr}
+              {athlete.name_ar}
             </div>
           </div>
         </div>
         <span className="text-xs px-2 py-0.5 rounded"
           style={{
-            background: `${athlete.badgeColor}18`,
-            color: athlete.badgeColor,
-            border: `1px solid ${athlete.badgeColor}40`,
+            background: `${athlete.badge_color}18`,
+            color: athlete.badge_color,
+            border: `1px solid ${athlete.badge_color}40`,
             fontFamily: "'Orbitron', sans-serif",
             fontWeight: 700,
             fontSize: "0.55rem",
@@ -162,7 +119,7 @@ function AthleteCard({ athlete }: { athlete: (typeof sampleAthletes)[number] }) 
       {/* Academy */}
       <div className="pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
         <div className="text-xs" style={{ color: "rgba(238,239,238,0.4)", fontFamily: "'Cairo', sans-serif" }}>
-          🏫 {athlete.academy}
+          🏫 {athlete.academy_name}
         </div>
       </div>
 
@@ -177,20 +134,37 @@ function AthleteCard({ athlete }: { athlete: (typeof sampleAthletes)[number] }) 
 }
 
 export default function Players() {
+  const [athletes, setAthletes] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSport, setSelectedSport] = useState("All Sports");
   const [selectedRegion, setSelectedRegion] = useState("All Regions");
   const [selectedAge, setSelectedAge] = useState("All Ages");
 
-  const filtered = sampleAthletes.filter((a) => {
-    const matchSearch = searchQuery === "" ||
-      a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.nameAr.includes(searchQuery) ||
-      a.position.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchSport = selectedSport === "All Sports" || a.sport === selectedSport;
-    const matchRegion = selectedRegion === "All Regions" || a.region === selectedRegion;
-    return matchSearch && matchSport && matchRegion;
-  });
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("search", searchQuery);
+    if (selectedSport !== "All Sports") params.set("sport", selectedSport);
+    if (selectedRegion !== "All Regions") params.set("region", selectedRegion);
+    if (selectedAge !== "All Ages") params.set("age", selectedAge);
+    const qs = params.toString();
+    const url = `/api/players${qs ? `?${qs}` : ""}`;
+
+    setLoading(true);
+    fetch(url)
+      .then(r => r.json())
+      .then(d => { setAthletes(d); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, [searchQuery, selectedSport, selectedRegion, selectedAge]);
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: "#00DCC8", borderTopColor: "transparent" }}></div>
+      <span className="ml-3 text-sm" style={{ color: "rgba(238,239,238,0.6)", fontFamily: "'Cairo', sans-serif" }}>Loading athletes...</span>
+    </div>
+  );
+  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
 
   return (
     <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]">
@@ -215,15 +189,15 @@ export default function Players() {
             </div>
             <div className="flex items-center gap-3">
               <div className="ada-card px-4 py-3 text-center">
-                <div className="ada-stat-number text-2xl">{sampleAthletes.length}</div>
+                <div className="ada-stat-number text-2xl">{athletes.length}</div>
                 <div className="text-xs" style={{ color: "rgba(238,239,238,0.45)", fontFamily: "'Cairo', sans-serif" }}>Athletes</div>
               </div>
               <div className="ada-card px-4 py-3 text-center">
-                <div className="ada-stat-number text-2xl">8</div>
+                <div className="ada-stat-number text-2xl">{new Set(athletes.map(a => a.sport)).size}</div>
                 <div className="text-xs" style={{ color: "rgba(238,239,238,0.45)", fontFamily: "'Cairo', sans-serif" }}>Sports</div>
               </div>
               <div className="ada-card px-4 py-3 text-center">
-                <div className="ada-stat-number text-2xl">6</div>
+                <div className="ada-stat-number text-2xl">{new Set(athletes.map(a => a.region)).size}</div>
                 <div className="text-xs" style={{ color: "rgba(238,239,238,0.45)", fontFamily: "'Cairo', sans-serif" }}>Regions</div>
               </div>
             </div>
@@ -311,7 +285,7 @@ export default function Players() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <p className="text-sm" style={{ color: "rgba(238,239,238,0.5)", fontFamily: "'Cairo', sans-serif" }}>
-              Showing <span style={{ color: "#00DCC8" }}>{filtered.length}</span> athletes
+              Showing <span style={{ color: "#00DCC8" }}>{athletes.length}</span> athletes
             </p>
             <Link href="/upload">
               <button className="btn-ada-primary text-xs px-5 py-2.5 flex items-center gap-2">
@@ -320,7 +294,7 @@ export default function Players() {
             </Link>
           </div>
 
-          {filtered.length === 0 ? (
+          {athletes.length === 0 ? (
             <div className="text-center py-20">
               <Users size={48} className="mx-auto mb-4" style={{ color: "rgba(0,220,200,0.3)" }} />
               <p className="text-base mb-2 text-[#EEEFEE]" style={{ fontFamily: "'Orbitron', sans-serif" }}>No athletes found</p>
@@ -330,7 +304,7 @@ export default function Players() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {filtered.map((a) => <AthleteCard key={a.id} athlete={a} />)}
+              {athletes.map((a) => <AthleteCard key={a.id} athlete={a} />)}
             </div>
           )}
 

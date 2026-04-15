@@ -16,7 +16,7 @@ import { ENV } from "./_core/env";
 // ─── Supabase Client (lazy singleton) ────────────────────────────────
 let _supabase: SupabaseClient | null = null;
 
-function getSupabase(): SupabaseClient | null {
+export function getSupabase(): SupabaseClient | null {
   if (!_supabase && (ENV.supabaseUrl || process.env.SUPABASE_URL)) {
     const url = ENV.supabaseUrl || process.env.SUPABASE_URL;
     const key = ENV.supabaseAnonKey || process.env.SUPABASE_ANON_KEY || "";
