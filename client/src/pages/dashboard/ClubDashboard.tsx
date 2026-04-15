@@ -8,15 +8,27 @@ import { useNotifications } from '@/contexts/NotificationContext'
 import DashboardLayout from '@/components/DashboardLayout'
 import BackButton from '@/components/BackButton'
 import { Building2, Users, Trophy, TrendingUp, BarChart3, Calendar, Video, Settings, Plus, X, Edit2, Trash2, Bell, Loader2, CheckCircle, AlertCircle, UserPlus } from 'lucide-react'
-import { supabase, getPlayers, createPlayer, updatePlayer, type Player, type Profile } from '@/lib/supabase'
+import { supabase, type Profile } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
+
+interface DashboardPlayer {
+  id: string
+  name: string
+  name_ar: string
+  sport: string
+  position: string
+  age: number
+  region: string
+  rating: number
+  academy_name: string
+}
 
 export default function ClubDashboard() {
   const { isRTL } = useLanguage()
   const { addNotification } = useNotifications()
   const [user, setUser] = useState<User | null>(null)
   const [clubProfile, setClubProfile] = useState<Profile | null>(null)
-  const [players, setPlayers] = useState<Player[]>([])
+  const [players, setPlayers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddPlayer, setShowAddPlayer] = useState(false)
   
@@ -47,15 +59,13 @@ export default function ClubDashboard() {
             .eq('user_id', user.id)
             .single()
           setClubProfile(profile)
-          
-          // Fetch players
-          const { data: playersData } = await supabase
-            .from('players')
-            .select('*, profile:profiles(*)')
-            .eq('club_id', profile?.id)
-            .order('jersey_number')
-          
-          setPlayers(playersData || [])
+        }
+        
+        // Fetch players from API (public, no auth needed for reading)
+        const res = await fetch('/api/players')
+        if (res.ok) {
+          const data = await res.json()
+          setPlayers(data || [])
         }
       } catch (err) {
         console.error('Error loading data:', err)
@@ -74,64 +84,37 @@ export default function ClubDashboard() {
     { icon: <BarChart3 size={24} />, label: isRTL ? 'المباريات' : 'Matches', value: '18', color: '#007ABA' },
   ]
 
-  // Add player
+  // Add player via API
   const handleAddPlayer = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!clubProfile) return
-    
     setSaving(true)
     try {
-      // Create profile for player first
       const playerName = newPlayer.full_name
-      const { data: playerProfile, error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          user_type: 'player',
-          full_name: playerName,
-          sport: 'football'
-        })
-        .select()
-        .single()
-      
-      if (profileError) throw profileError
-      
-      // Then create player record
-      const { error: playerError } = await supabase
-        .from('players')
-        .insert({
-          profile_id: playerProfile.id,
-          club_id: clubProfile.id,
-          position: newPlayer.position,
+      const res = await fetch('/api/players', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: playerName,
+          sport: 'Football',
+          position: newPlayer.position || 'RW',
           age: parseInt(newPlayer.age) || null,
-          height_cm: parseInt(newPlayer.height_cm) || null,
-          weight_kg: parseInt(newPlayer.weight_kg) || null,
-          jersey_number: parseInt(newPlayer.jersey_number) || null,
-          dominant_foot: newPlayer.dominant_foot
         })
-      
-      if (playerError) throw playerError
+      })
+      if (!res.ok) throw new Error('Failed to add player')
       
       // Refresh players list
-      const { data: updatedPlayers } = await supabase
-        .from('players')
-        .select('*, profile:profiles(*)')
-        .eq('club_id', clubProfile.id)
-        .order('jersey_number')
-      setPlayers(updatedPlayers || [])
+      const refreshRes = await fetch('/api/players')
+      if (refreshRes.ok) setPlayers(await refreshRes.json() || [])
       
-      // Reset form
       setNewPlayer({ full_name: '', age: '', position: '', height_cm: '', weight_kg: '', jersey_number: '', dominant_foot: 'right' })
       setShowAddPlayer(false)
       
-      // Add notification
       addNotification({
         type: 'success',
         title: isRTL ? 'تم إضافة اللاعب' : 'Player Added',
         message: `${playerName} ${isRTL ? 'تمت إضافته للنادي' : 'has been added to the club'}`
       })
-      
     } catch (err: any) {
-      console.error('Error adding player:', err)
       addNotification({
         type: 'error',
         title: isRTL ? 'خطأ' : 'Error',
@@ -142,13 +125,13 @@ export default function ClubDashboard() {
     }
   }
 
-  // Delete player
+  // Delete player via API
   const handleDeletePlayer = async (playerId: string, playerName: string) => {
     if (!confirm(isRTL ? 'هل أنت متأكد من حذف هذا اللاعب؟' : 'Are you sure you want to delete this player?')) return
     
     try {
-      const { error } = await supabase.from('players').delete().eq('id', playerId)
-      if (error) throw error
+      const res = await fetch(`/api/players/${playerId}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Delete failed')
       
       setPlayers(prev => prev.filter(p => p.id !== playerId))
       

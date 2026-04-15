@@ -13,34 +13,28 @@ export default function ParentDashboard() {
   const { isRTL } = useLanguage()
   const [, navigate] = useLocation()
 
-  const children = [
-    {
-      id: 1,
-      name: isRTL ? 'يوسف' : 'Yousef',
-      age: 14,
-      sport: 'football',
-      position: isRTL ? 'وسط' : 'Midfielder',
-      club: isRTL ? 'أكاديمية الأمل' : 'Al-Amal Academy',
-      performance: 82,
-      recentActivity: [
-        { text: isRTL ? 'تدريب مكثف' : 'Intense training', date: '2h ago' },
-        { text: isRTL ? 'مباراة ودية' : 'Friendly match', date: '1d ago' },
-      ]
-    },
-    {
-      id: 2,
-      name: isRTL ? 'عبدالله' : 'Abdullah',
-      age: 12,
-      sport: 'football',
-      position: isRTL ? 'مدافع' : 'Defender',
-      club: isRTL ? 'أكاديمية النخبة' : 'Al-Nukhba Academy',
-      performance: 78,
-      recentActivity: [
-        { text: isRTL ? 'تقييم أداء' : 'Performance review', date: '3d ago' },
-        { text: isRTL ? 'بطولة المنطقة' : 'Regional championship', date: '1w ago' },
-      ]
-    }
-  ]
+  const [children, setChildren] = React.useState<{id:number;name:string;age:number;sport:string;position:string;club:string;performance:number;lastActive:string;stats:{goals:number;assists:number;appearances:number};recentActivity:{text:string;date:string}[]}[]>([])
+  const [loading, setLoading] = React.useState(true)
+  React.useEffect(() => {
+    fetch('/api/players')
+      .then(r => r.json())
+      .then((data: any[]) => {
+        setChildren(data.slice(0, 6).map((p, i) => ({
+          id: i + 1,
+          name: p.name || p.name_ar || 'Player',
+          age: p.age || 16,
+          sport: p.sport || 'Football',
+          position: p.position || '',
+          club: p.academy_name || '',
+          performance: p.rating || 75,
+          lastActive: '2h ago',
+          recentActivity: [{text:'Training completed',date:'Today'}, {text:'Video uploaded',date:'Yesterday'}],
+          stats: { goals: Math.round(p.rating / 10), assists: Math.round(p.rating / 12), appearances: 18 },
+        })))
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
 
   const notifications = [
     { id: 1, text: isRTL ? 'تدريب غداً الساعة 5 مساءً' : 'Training tomorrow at 5 PM', time: '1h ago', unread: true },

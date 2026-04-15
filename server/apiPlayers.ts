@@ -64,6 +64,56 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// POST /api/players — create new player
+router.post('/', async (req, res) => {
+  const supabase = getSupabase();
+  if (!supabase) return res.status(503).json({ error: 'Database not configured' });
+
+  try {
+    const { name, name_ar, sport, position, age, region, rating, speed, agility, technique, badge, badge_color, academy_name } = req.body;
+    if (!name) return res.status(400).json({ error: 'Player name is required' });
+
+    const { data, error } = await supabase
+      .from('players')
+      .insert({ name, name_ar, sport: sport || 'Football', position, age, region, rating: rating || 0, speed: speed || 0, agility: agility || 0, technique: technique || 0, badge, badge_color, academy_name })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Players] Insert error:', error);
+      return res.status(500).json({ error: 'Failed to create player' });
+    }
+
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('[Players] Unexpected error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /api/players/:id — delete player
+router.delete('/:id', async (req, res) => {
+  const supabase = getSupabase();
+  if (!supabase) return res.status(503).json({ error: 'Database not configured' });
+
+  try {
+    const { error } = await supabase
+      .from('players')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) {
+      console.error('[Players] Delete error:', error);
+      return res.status(500).json({ error: 'Failed to delete player' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[Players] Unexpected error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export function registerPlayerRoutes(app: import('express').Express) {
   app.use('/api/players', router);
 }

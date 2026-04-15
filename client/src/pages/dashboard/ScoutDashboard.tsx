@@ -43,15 +43,27 @@ export default function ScoutDashboard() {
   const [showFilters, setShowFilters] = useState(false)
   const [playerNotes, setPlayerNotes] = useState<Record<number, string>>({})
 
-  const players: Player[] = [
-    { id: 1, name: isRTL ? 'أحمد صلاح' : 'Ahmed Salah', age: 19, position: isRTL ? 'مهاجم' : 'Forward', club: 'Al-Ittihad', rating: 9.2, region: 'Jeddah', videoUrl: '#', stats: { goals: 12, assists: 5, appearances: 18 }, lastScouted: '2026-04-10' },
-    { id: 2, name: isRTL ? 'محمد خالد' : 'Mohammed Khaled', age: 21, position: isRTL ? 'وسط' : 'Midfielder', club: 'Al-Hilal', rating: 8.5, region: 'Riyadh', videoUrl: '#', stats: { goals: 8, assists: 12, appearances: 22 }, lastScouted: '2026-04-08' },
-    { id: 3, name: isRTL ? 'عبدالله أحمد' : 'Abdullah Ahmed', age: 18, position: isRTL ? 'مدافع' : 'Defender', club: 'Al-Nassr', rating: 8.8, region: 'Riyadh', videoUrl: '#', stats: { goals: 2, assists: 3, appearances: 20 }, lastScouted: '2026-04-12' },
-    { id: 4, name: isRTL ? 'فهد' : 'Fahad', age: 22, position: isRTL ? 'حارس' : 'Goalkeeper', club: 'Al-Ahli', rating: 8.1, region: 'Jeddah', videoUrl: '#', stats: { goals: 0, assists: 0, appearances: 16 } },
-    { id: 5, name: isRTL ? 'يوسف' : 'Yousef', age: 20, position: isRTL ? 'وسط' : 'Midfielder', club: 'Al-Taawun', rating: 8.6, region: 'Abha', videoUrl: '#', stats: { goals: 6, assists: 9, appearances: 19 }, lastScouted: '2026-04-05' },
-    { id: 6, name: isRTL ? 'سالم' : 'Salem', age: 23, position: isRTL ? 'مدافع' : 'Defender', club: 'Al-Shabab', rating: 7.9, region: 'Riyadh', videoUrl: '#', stats: { goals: 1, assists: 2, appearances: 15 } },
-  ]
-
+  const [players, setPlayers] = React.useState<Player[]>([])
+  const [loading, setLoading] = React.useState(true)
+  React.useEffect(() => {
+    fetch('/api/players')
+      .then(r => r.json())
+      .then((data: any[]) => {
+        setPlayers(data.map((p, i) => ({
+          id: i + 1,
+          name: p.name || p.name_ar || 'Player',
+          age: p.age || 18,
+          position: p.position || 'RW',
+          club: p.academy_name || '',
+          rating: Math.round((p.rating || 0) / 10),
+          region: p.region || '',
+          videoUrl: '#',
+          stats: { goals: 0, assists: 0, appearances: 0 },
+        })))
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
   const toggleFavorite = (id: number) => {
     setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
   }
@@ -74,7 +86,7 @@ export default function ScoutDashboard() {
     <DashboardLayout>
       <div>
         <BackButton fallbackRoute="/dashboards" />
-        {/* Header */}
+        {loading ? <div style={{display:'flex',justifyContent:'center',padding:'40px',color:'#9CA3AF'}}>{isRTL ? 'جاري التحميل...' : 'Loading...'}</div> : <>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <h1 style={{ color: '#EEEFEE', fontSize: '28px', fontWeight: 'bold', fontFamily: "'Cairo', sans-serif", marginBottom: '8px' }}>
@@ -608,6 +620,7 @@ export default function ScoutDashboard() {
             ))}
           </div>
         </div>
+    </>}
       </div>
     </DashboardLayout>
   )

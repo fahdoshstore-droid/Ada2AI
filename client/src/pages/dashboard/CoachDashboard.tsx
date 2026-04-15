@@ -15,7 +15,7 @@ import type { GuideSession } from '@/components/VisualGuide'
 
 export default function CoachDashboard() {
   const { isRTL } = useLanguage()
-  const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null)
+  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'players' | 'training' | 'stats' | 'attendance'>('players')
   
   // VisualGuide State
@@ -26,16 +26,20 @@ export default function CoachDashboard() {
   const [selectedTrainingForAttendance, setSelectedTrainingForAttendance] = useState<number | null>(null)
 
   // Mock Players Data
-  const players = [
-    { id: 1, name: 'أحمد محمد', nameEn: 'Ahmed Mohammed', age: 22, position: 'وسط', positionEn: 'Midfielder', status: 'active', performance: 85, attendance: 92, goals: 12, assists: 8, number: 10 },
-    { id: 2, name: 'محمد عبدالله', nameEn: 'Mohammed Abdullah', age: 20, position: 'مدافع', positionEn: 'Defender', status: 'active', performance: 78, attendance: 88, goals: 2, assists: 5, number: 4 },
-    { id: 3, name: 'عبدالله', nameEn: 'Abdullah', age: 24, position: 'مهاجم', positionEn: 'Forward', status: 'injured', performance: 92, attendance: 95, goals: 25, assists: 6, number: 9 },
-    { id: 4, name: 'خالد', nameEn: 'Khaled', age: 21, position: 'حارس', positionEn: 'Goalkeeper', status: 'active', performance: 80, attendance: 90, goals: 0, assists: 1, number: 1 },
-    { id: 5, name: 'سالم', nameEn: 'Salem', age: 23, position: 'وسط', positionEn: 'Midfielder', status: 'active', performance: 76, attendance: 85, goals: 5, assists: 12, number: 8 },
-  ]
+  const [players, setPlayers] = React.useState<{id:string;name:string;name_ar:string;sport:string;position:string;age:number;rating:number;academy_name:string;performance:number;attendance:number;goals:number;assists:number;number:string;status:string}[]>([])
+  const [loading, setLoading] = React.useState(true)
+  React.useEffect(() => {
+    fetch('/api/players?sport=Football')
+      .then(r => r.json())
+      .then((data: {id:string;name:string;name_ar:string;sport:string;position:string;age:number;rating:number;academy_name:string;performance:number;attendance:number;goals:number;assists:number;number:string;status:string}[]) => {
+        setPlayers(data)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
 
   // Mock Training Sessions
-  const [trainings, setTrainings] = useState([
+  const [trainings, setTrainings] = useState<{id:number;title:string;titleEn:string;date:string;time:string;attendance:(string|number)[];maxAttendance:number}[]>([
     { id: 1, title: 'تمارين اللياقة', titleEn: 'Fitness Training', date: '2026-04-15', time: '18:00', attendance: [], maxAttendance: 25 },
     { id: 2, title: 'تمارين تكتيكية', titleEn: 'Tactical Drills', date: '2026-04-14', time: '19:00', attendance: [1, 2, 3, 4, 5], maxAttendance: 25 },
     { id: 3, title: 'مباراة ودية', titleEn: 'Friendly Match', date: '2026-04-13', time: '17:00', attendance: [1, 2, 3, 4], maxAttendance: 22 },
@@ -52,8 +56,8 @@ export default function CoachDashboard() {
 
   // Stats Data for Charts
   const performanceData = players.map(p => ({
-    name: p.nameEn.substring(0, 3),
-    performance: p.performance,
+    name: p.name.substring(0, 3),
+    performance: p.rating,
     attendance: p.attendance,
     goals: p.goals,
   }))
@@ -75,7 +79,7 @@ export default function CoachDashboard() {
 
   // Evaluation Form
   const [evaluation, setEvaluation] = useState({
-    playerId: null as number | null,
+    playerId: null as string | null,
     technical: 0,
     tactical: 0,
     physical: 0,
@@ -109,10 +113,10 @@ export default function CoachDashboard() {
   }
 
   // Handle Attendance Toggle
-  const toggleAttendance = (trainingId: number, playerId: number) => {
+  const toggleAttendance = (trainingId: number, playerId: string | number) => {
     setTrainings(trainings.map(t => {
       if (t.id === trainingId) {
-        const hasAttendance = t.attendance.includes(playerId)
+        const hasAttendance = t.attendance.some(a => String(a) === String(playerId))
         return {
           ...t,
           attendance: hasAttendance 
@@ -202,7 +206,7 @@ export default function CoachDashboard() {
               </button>
 
               <button 
-                onClick={() => { setShowEvaluationModal(true); setEvaluation({ ...evaluation, playerId: selectedPlayer }) }}
+                onClick={() => { setShowEvaluationModal(true); setEvaluation({ ...evaluation, playerId: selectedPlayer || '' }) }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '12px', padding: '20px',
                   backgroundColor: '#0A0E1A', border: '1px solid #10B98130', borderRadius: '12px',
@@ -271,11 +275,11 @@ export default function CoachDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: player.status === 'active' ? '#10B981' : '#EF4444' }} />
                       <div style={{
-                        backgroundColor: player.performance >= 85 ? 'rgba(16,185,129,0.2)' : player.performance >= 75 ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)',
-                        color: player.performance >= 85 ? '#10B981' : player.performance >= 75 ? '#F59E0B' : '#EF4444',
+                        backgroundColor: player.rating >= 85 ? 'rgba(16,185,129,0.2)' : player.rating >= 75 ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)',
+                        color: player.rating >= 85 ? '#10B981' : player.rating >= 75 ? '#F59E0B' : '#EF4444',
                         padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600'
                       }}>
-                        {player.performance}%
+                        {player.rating}%
                       </div>
                     </div>
                   </div>
@@ -456,7 +460,7 @@ export default function CoachDashboard() {
                 </thead>
                 <tbody>
                   {attendanceRecords.map((record, index) => {
-                    const player = players.find(p => p.id === record.playerId)
+                    const player = players.find(p => p.id === String(record.playerId))
                     return (
                       <tr key={record.playerId} style={{ borderBottom: '1px solid #1F2937' }}>
                         <td style={{ padding: '12px', color: '#EEEFEE' }}>{player?.name}</td>
@@ -514,7 +518,7 @@ export default function CoachDashboard() {
                   <BarChart3 size={16} /> {isRTL ? 'التحليل' : 'Analysis'}
                 </button>
                 <button 
-                  onClick={() => { setShowEvaluationModal(true); setEvaluation({ ...evaluation, playerId: selectedPlayer }) }}
+                  onClick={() => { setShowEvaluationModal(true); setEvaluation({ ...evaluation, playerId: selectedPlayer || '' }) }}
                   style={{
                     padding: '10px 16px', backgroundColor: 'rgba(0,220,200,0.1)', border: '1px solid #00DCC8',
                     borderRadius: '8px', color: '#00DCC8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
@@ -623,7 +627,7 @@ export default function CoachDashboard() {
                 <label style={{ color: '#9CA3AF', fontSize: '12px', marginBottom: '4px', display: 'block' }}>{isRTL ? 'اللاعب' : 'Player'}</label>
                 <select
                   value={evaluation.playerId || ''}
-                  onChange={(e) => setEvaluation({ ...evaluation, playerId: Number(e.target.value) })}
+                  onChange={(e) => setEvaluation({ ...evaluation, playerId: e.target.value })}
                   style={{ width: '100%', padding: '10px 12px', backgroundColor: '#000A0F', border: '1px solid #374151', borderRadius: '6px', color: '#EEEFEE' }}
                 >
                   <option value="">{isRTL ? 'اختر لاعب' : 'Select player'}</option>
@@ -695,14 +699,14 @@ export default function CoachDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {players.map(player => {
                 const training = trainings.find(t => t.id === selectedTrainingForAttendance)
-                const isAttending = training?.attendance.includes(player.id)
+                const isAttending = training?.attendance.map(String).includes(player.id)
                 return (
                   <div key={player.id} style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px',
                     backgroundColor: isAttending ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
                     borderRadius: '8px', cursor: 'pointer', border: isAttending ? '1px solid #10B981' : '1px solid #EF4444'
                   }}
-                    onClick={() => toggleAttendance(selectedTrainingForAttendance, player.id)}
+                    onClick={() => toggleAttendance(selectedTrainingForAttendance, Number(player.id))}
                   >
                     <div style={{ color: '#EEEFEE', display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div style={{

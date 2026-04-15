@@ -20,24 +20,39 @@ export default function DashboardHome() {
     { path: '/dashboard/profile', border: '#007ABA30', icon: <Users size={24} color="#007ABA" style={{ marginBottom: '12px' }} />, title: isRTL ? 'إدارة الملف' : 'Manage Profile', desc: isRTL ? 'تحديث البيانات الشخصية' : 'Update personal information' },
   ]
 
-  // Mock stats - replace with real data from Supabase
+  const [playerCount, setPlayerCount] = React.useState(0)
+  const [avgRating, setAvgRating] = React.useState(0)
+  const [sportCount, setSportCount] = React.useState(0)
+  const [topPlayers, setTopPlayers] = React.useState<{name:string;rating:number;sport:string}[]>([])
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    fetch('/api/players')
+      .then(r => r.json())
+      .then((data: {name:string;rating:number;sport:string}[]) => {
+        setPlayerCount(data.length)
+        setAvgRating(data.length ? Math.round(data.reduce((s,p)=>s+p.rating,0)/data.length) : 0)
+        setSportCount(Array.from(new Set(data.map(p=>p.sport))).length)
+        setTopPlayers(data.sort((a,b)=>b.rating-a.rating).slice(0,3))
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
   const stats = [
-    { icon: <Activity size={24} />, value: '12', label: isRTL ? 'مباريات' : 'Matches', color: '#00DCC8' },
-    { icon: <TrendingUp size={24} />, value: '85%', label: isRTL ? 'أداء' : 'Performance', color: '#10B981' },
-    { icon: <Video size={24} />, value: '5', label: isRTL ? 'فيديو' : 'Videos', color: '#007ABA' },
-    { icon: <Calendar size={24} />, value: '3', label: isRTL ? 'تدريبات' : 'Training', color: '#F59E0B' },
+    { icon: <Users size={24} />, value: String(playerCount), label: isRTL ? 'لاعبين' : 'Players', color: '#00DCC8' },
+    { icon: <TrendingUp size={24} />, value: avgRating + '%', label: isRTL ? 'متوسط الأداء' : 'Avg Rating', color: '#10B981' },
+    { icon: <Activity size={24} />, value: String(sportCount), label: isRTL ? 'رياضات' : 'Sports', color: '#007ABA' },
+    { icon: <Calendar size={24} />, value: String(topPlayers.length), label: isRTL ? 'أفضل لاعبين' : 'Top Players', color: '#F59E0B' },
   ]
 
-  const recentActivity = [
-    { id: 1, text: isRTL ? 'تم رفع فيديو جديد' : 'New video uploaded', time: '2h ago' },
-    { id: 2, text: isRTL ? 'تحديث الملف الشخصي' : 'Profile updated', time: '5h ago' },
-    { id: 3, text: isRTL ? 'إضافة إنجاز جديد' : 'New achievement added', time: '1d ago' },
-  ]
+  const recentActivity = topPlayers.map((p, i) => ({ id: i, text: isRTL ? (p.name + '— تقييم ' + p.rating) : (p.name + '— Rating ' + p.rating), time: p.sport }))
 
   return (
     <DashboardLayout>
       <div>
         <BackButton fallbackRoute="/dashboards" />
+        {loading && <div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'200px',color:'#9CA3AF'}}>{isRTL ? 'جاري التحميل...' : 'Loading...'}</div>}
         {/* Welcome Header */}
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{
