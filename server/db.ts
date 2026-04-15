@@ -10,11 +10,10 @@ import { ENV } from "./_core/env";
 let _supabase: SupabaseClient | null = null;
 
 function getSupabase(): SupabaseClient | null {
-  if (!_supabase && ENV.databaseUrl) {
-    // databaseUrl is repurposed as SUPABASE_URL for backward compat
-    // but prefer explicit env vars
-    const url = process.env.SUPABASE_URL || ENV.databaseUrl;
-    const key = process.env.SUPABASE_ANON_KEY || "";
+  if (!_supabase && (ENV.supabaseUrl || process.env.SUPABASE_URL)) {
+    // Prefer explicit SUPABASE_URL, fall back to DATABASE_URL
+    const url = ENV.supabaseUrl || process.env.SUPABASE_URL;
+    const key = ENV.supabaseAnonKey || process.env.SUPABASE_ANON_KEY || "";
     if (url && key) {
       _supabase = createClient(url, key);
     }
