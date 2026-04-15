@@ -4,7 +4,7 @@ import axios, { type AxiosInstance } from "axios";
 import { parse as parseCookieHeader } from "cookie";
 import type { Request } from "express";
 import { SignJWT, jwtVerify } from "jose";
-import type { User } from "../../drizzle/schema";
+import type { User } from "../db";
 import * as db from "../db";
 import { ENV } from "./env";
 import type {
@@ -275,11 +275,11 @@ class SDKServer {
       try {
         const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
         await db.upsertUser({
-          openId: userInfo.openId,
+          open_id: userInfo.openId,
           name: userInfo.name || null,
           email: userInfo.email ?? null,
-          loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-          lastSignedIn: signedInAt,
+          login_method: userInfo.loginMethod ?? userInfo.platform ?? null,
+          last_signed_in: signedInAt.toISOString(),
         });
         user = await db.getUserByOpenId(userInfo.openId);
       } catch (error) {
@@ -293,8 +293,8 @@ class SDKServer {
     }
 
     await db.upsertUser({
-      openId: user.openId,
-      lastSignedIn: signedInAt,
+      open_id: user.open_id,
+      last_signed_in: signedInAt.toISOString(),
     });
 
     return user;

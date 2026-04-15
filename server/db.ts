@@ -1,114 +1,152 @@
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, waitlist } from "../drizzle/schema";
-import { ENV } from './_core/env';
+/**
+ * Supabase Database Client — Ada2AI
+ * Unified database layer replacing MySQL/Drizzle.
+ * Uses Supabase for users, profiles, and waitlist.
+ */
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { ENV } from "./_core/env";
 
-let _db: ReturnType<typeof drizzle> | null = null;
+// ─── Supabase Client (lazy singleton) ─────────────────────────────────
+let _supabase: SupabaseClient | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
-export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
-    try {
-      _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
+function getSupabase(): SupabaseClient | null {
+  if (!_supabase && ENV.databaseUrl) {
+    // databaseUrl is repurposed as SUPABASE_URL for backward compat
+    // but prefer explicit env vars
+    const url = process.env.SUPABASE_URL || ENV.databaseUrl;
+    const key = process.env.SUPABASE_ANON_KEY || "";
+    if (url && key) {
+      _supabase = createClient(url, key);
     }
   }
-  return _db;
+  return _supabase;
 }
 
-export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) {
-    throw new Error("User openId is required for upsert");
-  }
+// ─── Types ─────────────────────────────────────────────────────────────
+export interface User {
+  id: string;
+  open_id: string;
+  name: string | null;
+  email: string | null;
+  login_method: string | null;
+  role: "user" | "admin";
+  last_signed_in: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
-  const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
+export interface InsertUser {
+  open_id: string;
+  name?: string | null;
+  email?: string | null;
+  login_method?: string | null;
+  role?: "user" | "admin";
+  last_signed_in?: string;
+}
+
+export interface WaitlistEntry {
+  id?: string;
+  name: string;
+  email: string;
+  role: "athlete" | "scout" | "coach" | "academy" | "federation" | "other";
+  sport?: string | null;
+  message?: string | null;
+  created_at?: string;
+}
+
+// ─── User Operations ──────────────────────────────────────────────────
+export async function upsertUser(user: InsertUser): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    console.warn("[Database] Cannot upsert user: Supabase not configured");
     return;
   }
 
-  try {
-    const values: InsertUser = {
-      openId: user.openId,
-    };
-    const updateSet: Record<string, unknown> = {};
+  const row: Record<string, unknown> = {
+    open_id: user.open_id,
+    name: user.name ?? null,
+    email: user.email ?? null,
+    login_method: user.login_method ?? null,
+  };
 
-    const textFields = ["name", "email", "loginMethod"] as const;
-    type TextField = (typeof textFields)[number];
+  if (user.role) {
+    row.role = user.role;
+  } else if (user.open_id === ENV.ownerOpenId) {
+    row.role = "admin";
+  }
 
-    const assignNullable = (field: TextField) => {
-      const value = user[field];
-      if (value === undefined) return;
-      const normalized = value ?? null;
-      values[field] = normalized;
-      updateSet[field] = normalized;
-    };
+  if (user.last_signed_in) {
+    row.last_signed_in = user.last_signed_in;
+  }
 
-    textFields.forEach(assignNullable);
+  // Ensure updated_at is always refreshed
+  row.updated_at = new Date().toISOString();
 
-    if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
-      updateSet.lastSignedIn = user.lastSignedIn;
-    }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
-    }
+  const { error } = await supabase
+    .from("users")
+    .upsert(row, { onConflict: "open_id" });
 
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
-    }
-
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
-    }
-
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
-  } catch (error) {
+  if (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
   }
 }
 
-export async function getUserByOpenId(openId: string) {
-  const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
+export async function getUserByOpenId(openId: string): Promise<User | undefined> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    console.warn("[Database] Cannot get user: Supabase not configured");
     return undefined;
   }
 
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("open_id", openId)
+    .limit(1)
+    .maybeSingle();
 
-  return result.length > 0 ? result[0] : undefined;
+  if (error) {
+    console.error("[Database] Failed to get user:", error);
+    return undefined;
+  }
+
+  return (data as User) ?? undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
-
-export async function joinWaitlist(data: {
-  name: string;
-  email: string;
-  role: "athlete" | "scout" | "coach" | "academy" | "federation" | "other";
-  sport?: string;
-  message?: string;
-}): Promise<void> {
-  const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot join waitlist: database not available");
+// ─── Waitlist Operations ──────────────────────────────────────────────
+export async function joinWaitlist(entry: WaitlistEntry): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    console.warn("[Database] Cannot join waitlist: Supabase not configured");
     return;
   }
-  await db.insert(waitlist).values(data).onDuplicateKeyUpdate({ set: { name: data.name } });
+
+  const { error } = await supabase
+    .from("waitlist")
+    .upsert(
+      { name: entry.name, email: entry.email, role: entry.role, sport: entry.sport ?? null, message: entry.message ?? null },
+      { onConflict: "email" }
+    );
+
+  if (error) {
+    console.error("[Database] Failed to join waitlist:", error);
+    throw error;
+  }
 }
 
 export async function getWaitlistCount(): Promise<number> {
-  const db = await getDb();
-  if (!db) return 0;
-  const result = await db.select().from(waitlist);
-  return result.length;
+  const supabase = getSupabase();
+  if (!supabase) return 0;
+
+  const { count, error } = await supabase
+    .from("waitlist")
+    .select("*", { count: "exact", head: true });
+
+  if (error) {
+    console.error("[Database] Failed to get waitlist count:", error);
+    return 0;
+  }
+
+  return count ?? 0;
 }
