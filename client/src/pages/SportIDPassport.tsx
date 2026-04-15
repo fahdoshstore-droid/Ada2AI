@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useLang, LanguageProvider } from '@/lib/passport/LanguageContext';
 import { t } from '@/lib/passport/i18n';
+import BackButton from '@/components/BackButton';
 
 /* ── ada2ai "A" Logo Mark ── */
 function Ada2aiMark({ size = 36 }: { size?: number }) {
@@ -38,6 +39,7 @@ function LandingPageInner() {
   const { lang, toggleLang } = useLang();
   const [loading,    setLoading]    = useState(false);
   const [dropdown,   setDropdown]   = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
 
   async function handleEnter() {
@@ -51,6 +53,7 @@ function LandingPageInner() {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
         setDropdown(null);
       }
+      setMobileMenuOpen(false);
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -142,6 +145,19 @@ function LandingPageInner() {
             </div>
           </nav>
 
+          {/* Mobile hamburger */}
+          <button
+            className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all"
+            onClick={() => setMobileMenuOpen(o => !o)}
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            )}
+          </button>
+
           {/* Right controls */}
           <div className="flex items-center gap-2 shrink-0">
             <button
@@ -158,11 +174,54 @@ function LandingPageInner() {
         </div>
       </header>
 
+      {/* ── MOBILE NAV DROPDOWN ── */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-b border-white/5 bg-[#000A0F]/98 backdrop-blur-md" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-1">
+            <a href="/" onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-lg text-sm font-cairo text-white/80 hover:bg-white/5 transition-all">
+              {lang === 'ar' ? 'المنتج' : 'Product'}
+            </a>
+            <a href="/passport/hub" onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-lg text-sm font-cairo text-white/45 hover:text-white/80 hover:bg-white/5 transition-all">
+              {lang === 'ar' ? 'مركز التدريب' : 'Training Hub'}
+            </a>
+            <a href="/passport/partnerships" onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-lg text-sm font-cairo text-white/45 hover:text-white/80 hover:bg-white/5 transition-all">
+              {lang === 'ar' ? 'الشراكات' : 'Partnerships'}
+            </a>
+            <a href="/passport/governance" onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-lg text-sm font-cairo text-white/45 hover:text-white/80 hover:bg-white/5 transition-all">
+              {lang === 'ar' ? 'الحوكمة' : 'Governance'}
+            </a>
+            <a href="/passport/athlete" onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-lg text-sm font-cairo text-white/45 hover:text-white/80 hover:bg-white/5 transition-all">
+              🏃 {lang === 'ar' ? 'لوحة الرياضي' : 'Athlete Dashboard'}
+            </a>
+            <a href="/passport/facility" onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-lg text-sm font-cairo text-white/45 hover:text-white/80 hover:bg-white/5 transition-all">
+              🏟️ {lang === 'ar' ? 'لوحة المنشأة' : 'Facility Dashboard'}
+            </a>
+            <a href="/passport/ministry" onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-lg text-sm font-cairo text-white/45 hover:text-white/80 hover:bg-white/5 transition-all">
+              🏛️ {lang === 'ar' ? 'لوحة الوزارة' : 'Ministry Dashboard'}
+            </a>
+            <div className="border-t border-white/5 my-1" />
+            <a href="/dashboards" onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-lg text-sm font-cairo text-[#00DCC8] hover:bg-[#00DCC8]/10 transition-all">
+              {lang === 'ar' ? 'لوحات التحكم' : 'Dashboards'}
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* ── HERO ── */}
       <section className="flex-1 flex items-center">
         <div className="max-w-3xl mx-auto w-full px-6 py-10 lg:py-16 flex flex-col gap-7 items-center text-center">
 
           <div className="flex flex-col gap-7 max-w-xl">
+
+            <div className="w-full"><BackButton fallbackRoute="/" /></div>
 
             {/* SPORT DIGITAL ID pill */}
             <div className="inline-flex items-center gap-2 self-start px-4 py-2 rounded-full border" style={{ background: 'rgba(0,122,186,0.1)', borderColor: 'rgba(0,122,186,0.3)' }}>

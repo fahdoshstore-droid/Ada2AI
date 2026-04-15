@@ -5,11 +5,20 @@ import React from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DashboardLayout from '@/components/DashboardLayout'
+import BackButton from '@/components/BackButton'
 import { Users, BarChart3, Video, TrendingUp, Calendar, Activity } from 'lucide-react'
+import { useLocation } from 'wouter'
 
 export default function DashboardHome() {
   const { user } = useAuth()
   const { isRTL } = useLanguage()
+  const [, navigate] = useLocation()
+
+  const quickActions = [
+    { path: '/dashboard/videos', border: '#00DCC830', icon: <Video size={24} color="#00DCC8" style={{ marginBottom: '12px' }} />, title: isRTL ? 'رفع فيديو' : 'Upload Video', desc: isRTL ? 'ارفع فيديو لتحليل الأداء' : 'Upload a video for performance analysis' },
+    { path: '/dashboard/stats', border: '#10B98130', icon: <BarChart3 size={24} color="#10B981" style={{ marginBottom: '12px' }} />, title: isRTL ? 'عرض الإحصائيات' : 'View Statistics', desc: isRTL ? 'تحليل شامل للأداء' : 'Comprehensive performance analysis' },
+    { path: '/dashboard/profile', border: '#007ABA30', icon: <Users size={24} color="#007ABA" style={{ marginBottom: '12px' }} />, title: isRTL ? 'إدارة الملف' : 'Manage Profile', desc: isRTL ? 'تحديث البيانات الشخصية' : 'Update personal information' },
+  ]
 
   // Mock stats - replace with real data from Supabase
   const stats = [
@@ -28,6 +37,7 @@ export default function DashboardHome() {
   return (
     <DashboardLayout>
       <div>
+        <BackButton fallbackRoute="/dashboards" />
         {/* Welcome Header */}
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{
@@ -115,51 +125,23 @@ export default function DashboardHome() {
           gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
           gap: '20px'
         }}>
-          <div style={{
-            backgroundColor: '#0A0E1A',
-            borderRadius: '12px',
-            padding: '24px',
-            border: '1px solid #00DCC830',
-            cursor: 'pointer'
-          }}>
-            <Video size={24} color="#00DCC8" style={{ marginBottom: '12px' }} />
-            <h3 style={{ color: '#EEEFEE', marginBottom: '8px' }}>
-              {isRTL ? 'رفع فيديو' : 'Upload Video'}
-            </h3>
-            <p style={{ color: '#9CA3AF', fontSize: '14px' }}>
-              {isRTL ? 'ارفع فيديو لتحليل الأداء' : 'Upload a video for performance analysis'}
-            </p>
-          </div>
-          <div style={{
-            backgroundColor: '#0A0E1A',
-            borderRadius: '12px',
-            padding: '24px',
-            border: '1px solid #10B98130',
-            cursor: 'pointer'
-          }}>
-            <BarChart3 size={24} color="#10B981" style={{ marginBottom: '12px' }} />
-            <h3 style={{ color: '#EEEFEE', marginBottom: '8px' }}>
-              {isRTL ? 'عرض الإحصائيات' : 'View Statistics'}
-            </h3>
-            <p style={{ color: '#9CA3AF', fontSize: '14px' }}>
-              {isRTL ? 'تحليل شامل للأداء' : 'Comprehensive performance analysis'}
-            </p>
-          </div>
-          <div style={{
-            backgroundColor: '#0A0E1A',
-            borderRadius: '12px',
-            padding: '24px',
-            border: '1px solid #007ABA30',
-            cursor: 'pointer'
-          }}>
-            <Users size={24} color="#007ABA" style={{ marginBottom: '12px' }} />
-            <h3 style={{ color: '#EEEFEE', marginBottom: '8px' }}>
-              {isRTL ? 'إدارة الملف' : 'Manage Profile'}
-            </h3>
-            <p style={{ color: '#9CA3AF', fontSize: '14px' }}>
-              {isRTL ? 'تحديث البيانات الشخصية' : 'Update personal information'}
-            </p>
-          </div>
+          {quickActions.map((action, i) => (
+            <div key={i} onClick={() => navigate(action.path)} style={{
+              backgroundColor: '#0A0E1A',
+              borderRadius: '12px',
+              padding: '24px',
+              border: `1px solid ${action.border}`,
+              cursor: 'pointer'
+            }}>
+              {action.icon}
+              <h3 style={{ color: '#EEEFEE', marginBottom: '8px' }}>
+                {action.title}
+              </h3>
+              <p style={{ color: '#9CA3AF', fontSize: '14px' }}>
+                {action.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </DashboardLayout>

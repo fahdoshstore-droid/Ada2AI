@@ -1,12 +1,14 @@
 /**
  * PlayerProfile - Player profile edit and view page
  */
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DashboardLayout from '@/components/DashboardLayout'
+import BackButton from '@/components/BackButton'
 import { supabase } from '@/lib/supabase'
 import { User, Save, Camera, Trophy, Target, TrendingUp } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function PlayerProfile() {
   const { user } = useAuth()
@@ -29,6 +31,16 @@ export default function PlayerProfile() {
 
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      toast.success(isRTL ? 'تم اختيار الصورة' : 'Photo selected', {
+        description: file.name,
+      })
+    }
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,6 +97,7 @@ export default function PlayerProfile() {
   return (
     <DashboardLayout>
       <div style={{ maxWidth: '800px' }}>
+        <BackButton fallbackRoute="/dashboard" />
         {/* Header */}
         <div style={{
           display: 'flex',
@@ -142,7 +155,14 @@ export default function PlayerProfile() {
               position: 'relative'
             }}>
               <User size={40} color="#000A0F" />
-              <button type="button" style={{
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+              <button type="button" onClick={() => fileInputRef.current?.click()} style={{
                 position: 'absolute',
                 bottom: 0,
                 right: 0,

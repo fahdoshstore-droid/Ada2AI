@@ -2,6 +2,7 @@ import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRef, useState, useEffect } from "react";
 import { MapView } from "@/components/Map";
+import BackButton from "@/components/BackButton";
 
 
 import { MapPin, Star, Users, Phone, MessageCircle, Filter, Search, X } from "lucide-react";
@@ -272,6 +273,7 @@ export default function Academies() {
       <section className="pt-24 pb-10 relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-20" />
         <div className="container mx-auto px-4 relative z-10">
+          <BackButton fallbackRoute="/" />
           <div className="text-center mb-8">
             <span className="tag-green mb-4">{lang === "ar" ? "دليل الأكاديميات" : "Academies Directory"}</span>
             <h1

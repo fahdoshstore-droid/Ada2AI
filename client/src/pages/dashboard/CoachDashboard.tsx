@@ -5,6 +5,7 @@
 import React, { useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DashboardLayout from '@/components/DashboardLayout'
+import BackButton from '@/components/BackButton'
 import { Users, BarChart3, Video, Calendar, TrendingUp, Search, Plus, MessageSquare, X, Check, Edit3, Download, TrendingDown } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts'
 
@@ -137,6 +138,7 @@ export default function CoachDashboard() {
   return (
     <DashboardLayout>
       <div>
+        <BackButton fallbackRoute="/dashboards" />
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{ color: '#EEEFEE', fontSize: '28px', fontWeight: 'bold', fontFamily: "'Cairo', sans-serif", marginBottom: '8px' }}>

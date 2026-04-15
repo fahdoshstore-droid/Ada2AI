@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DashboardLayout from '@/components/DashboardLayout'
+import BackButton from '@/components/BackButton'
 import { Search, Star, MapPin, Filter, Heart, Eye, Video, TrendingUp, Bell, X, Check, UserPlus, BarChart3, GitCompare, FileText, MessageSquare } from 'lucide-react'
 
 interface Player {
@@ -72,6 +73,7 @@ export default function ScoutDashboard() {
   return (
     <DashboardLayout>
       <div>
+        <BackButton fallbackRoute="/dashboards" />
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>

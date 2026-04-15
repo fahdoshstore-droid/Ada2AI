@@ -4,10 +4,14 @@
 import React from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DashboardLayout from '@/components/DashboardLayout'
+import BackButton from '@/components/BackButton'
 import { Users, Video, Calendar, MessageSquare, TrendingUp, Bell, BarChart3 } from 'lucide-react'
+import { useLocation } from 'wouter'
+import { toast } from 'sonner'
 
 export default function ParentDashboard() {
   const { isRTL } = useLanguage()
+  const [, navigate] = useLocation()
 
   const children = [
     {
@@ -47,6 +51,7 @@ export default function ParentDashboard() {
   return (
     <DashboardLayout>
       <div>
+        <BackButton fallbackRoute="/dashboards" />
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <div>
@@ -180,7 +185,7 @@ export default function ParentDashboard() {
 
               {/* Actions */}
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button style={{
+                <button onClick={() => navigate('/dashboard/profile')} style={{
                   flex: 1,
                   padding: '10px',
                   backgroundColor: 'rgba(0,122,186,0.1)',
@@ -199,7 +204,7 @@ export default function ParentDashboard() {
                   <BarChart3 size={14} />
                   {isRTL ? 'التفاصيل' : 'Details'}
                 </button>
-                <button style={{
+                <button onClick={() => toast.success(isRTL ? 'سيتم التواصل قريباً' : 'Contact feature coming soon')} style={{
                   flex: 1,
                   padding: '10px',
                   backgroundColor: 'rgba(0,220,200,0.1)',

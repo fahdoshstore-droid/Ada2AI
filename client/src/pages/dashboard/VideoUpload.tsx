@@ -6,6 +6,7 @@ import React, { useState, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DashboardLayout from '@/components/DashboardLayout'
+import BackButton from '@/components/BackButton'
 import { Video, Upload, Play, BarChart3, CheckCircle, AlertCircle, X, Loader2, TrendingUp, Activity, Zap } from 'lucide-react'
 
 // Backend API URL - change to your deployed backend URL
@@ -208,6 +209,7 @@ export default function VideoUpload() {
   return (
     <DashboardLayout>
       <div style={{ maxWidth: '900px' }}>
+        <BackButton fallbackRoute="/dashboard" />
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{

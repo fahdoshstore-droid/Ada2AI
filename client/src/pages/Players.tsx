@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   Search, Filter, Star, MapPin, Trophy, Activity,
   ChevronRight, Users, Zap, ArrowRight, SlidersHorizontal
 } from "lucide-react";
 import Ada2aiNavbar from "@/components/Ada2aiNavbar";
+import BackButton from "@/components/BackButton";
 
 // Sample athlete data representing the database
 const sampleAthletes = [
@@ -78,7 +79,8 @@ function RatingBar({ value, color = "#00DCC8" }: { value: number; color?: string
   );
 }
 
-function AthleteCard({ athlete }: { athlete: typeof sampleAthletes[0] }) {
+function AthleteCard({ athlete }: { athlete: (typeof sampleAthletes)[number] }) {
+  const [, navigate] = useLocation();
   return (
     <div className="ada-card p-5 flex flex-col gap-4 cursor-pointer group">
       {/* Header */}
@@ -166,6 +168,7 @@ function AthleteCard({ athlete }: { athlete: typeof sampleAthletes[0] }) {
 
       {/* CTA */}
       <button className="flex items-center gap-1.5 text-xs font-semibold transition-all group-hover:gap-2.5"
+        onClick={() => navigate(`/sport-id`)}
         style={{ color: "#00DCC8", fontFamily: "'Orbitron', sans-serif" }}>
         View Full Report <ArrowRight size={12} />
       </button>
@@ -199,6 +202,7 @@ export default function Players() {
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: "radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0,122,186,0.08) 0%, transparent 70%)" }} />
         <div className="relative container mx-auto px-4">
+          <BackButton fallbackRoute="/" />
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div>
               <span className="badge-pro mb-3 inline-block">Player Database</span>

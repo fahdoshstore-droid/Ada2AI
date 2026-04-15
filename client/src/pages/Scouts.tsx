@@ -289,7 +289,7 @@ export default function Scouts() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => navigate(`/sport-id`)}
+                            onClick={() => navigate(`/dashboard/profile`)}
                             className="p-1.5 rounded-lg transition-all"
                             title={t("scouts.viewProfile")}
                             style={{ background: "rgba(0,220,200,0.08)", color: "#00DCC8" }}

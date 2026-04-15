@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Ada2aiNavbar from "@/components/Ada2aiNavbar";
 import { useLanguage } from "@/contexts/LanguageContext";
+import BackButton from "@/components/BackButton";
 
 export default function Dashboards() {
   const { t, lang, isRTL } = useLanguage();
@@ -100,6 +101,7 @@ export default function Dashboards() {
           style={{ background: "radial-gradient(ellipse 60% 40% at 50% 20%, rgba(0,220,200,0.07) 0%, transparent 70%)" }}
         />
         <div className="relative container mx-auto px-4 text-center">
+          <div className="text-left mb-2"><BackButton fallbackRoute="/" /></div>
           <span className="badge-verified mb-5 inline-block">
             {isRTL ? "مركز التحكم" : "Control Center"}
           </span>

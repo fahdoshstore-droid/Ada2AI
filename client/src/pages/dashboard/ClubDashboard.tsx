@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useNotifications } from '@/contexts/NotificationContext'
 import DashboardLayout from '@/components/DashboardLayout'
+import BackButton from '@/components/BackButton'
 import { Building2, Users, Trophy, TrendingUp, BarChart3, Calendar, Video, Settings, Plus, X, Edit2, Trash2, Bell, Loader2, CheckCircle, AlertCircle, UserPlus } from 'lucide-react'
 import { supabase, getPlayers, createPlayer, updatePlayer, type Player, type Profile } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
@@ -178,6 +179,7 @@ export default function ClubDashboard() {
   return (
     <DashboardLayout>
       <div>
+        <BackButton fallbackRoute="/dashboards" />
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
