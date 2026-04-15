@@ -2,16 +2,22 @@
  * Supabase Database Client — Ada2AI
  * Unified database layer replacing MySQL/Drizzle.
  * Uses Supabase for users, profiles, and waitlist.
+ * 
+ * Schema: The `users` table has these columns:
+ *   id (UUID PK), open_id (VARCHAR 64 UNIQUE), email, full_name, name,
+ *   role (user|admin), sport, login_method, last_signed_in, is_active,
+ *   created_at, updated_at
+ * The `profiles` table is the auth-related profile table.
+ * The `waitlist` table stores waitlist entries.
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { ENV } from "./_core/env";
 
-// ─── Supabase Client (lazy singleton) ─────────────────────────────────
+// ─── Supabase Client (lazy singleton) ────────────────────────────────
 let _supabase: SupabaseClient | null = null;
 
 function getSupabase(): SupabaseClient | null {
   if (!_supabase && (ENV.supabaseUrl || process.env.SUPABASE_URL)) {
-    // Prefer explicit SUPABASE_URL, fall back to DATABASE_URL
     const url = ENV.supabaseUrl || process.env.SUPABASE_URL;
     const key = ENV.supabaseAnonKey || process.env.SUPABASE_ANON_KEY || "";
     if (url && key) {
@@ -21,14 +27,17 @@ function getSupabase(): SupabaseClient | null {
   return _supabase;
 }
 
-// ─── Types ─────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────
 export interface User {
   id: string;
   open_id: string;
   name: string | null;
+  full_name?: string | null;   // from profiles — mapped to name on read
   email: string | null;
   login_method: string | null;
   role: "user" | "admin";
+  sport?: string | null;
+  is_active?: boolean;
   last_signed_in: string | null;
   created_at: string;
   updated_at: string;
@@ -53,7 +62,7 @@ export interface WaitlistEntry {
   created_at?: string;
 }
 
-// ─── User Operations ──────────────────────────────────────────────────
+// ─── User Operations ─────────────────────────────────────────────────
 export async function upsertUser(user: InsertUser): Promise<void> {
   const supabase = getSupabase();
   if (!supabase) {
