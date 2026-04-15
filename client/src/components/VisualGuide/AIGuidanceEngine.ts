@@ -7,6 +7,7 @@
 
 import type { PlayerRole } from '@/training-hub/pages/CoachDashboard.types';
 import type { GuideStep } from './types';
+import type { VisionAnalysisResult, EyeAction } from '../Eye/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Formation Analysis Types
@@ -148,10 +149,23 @@ function generateOptimalPositions(counts: Record<PlayerRole, number>): string[] 
 
 export function generateGuideStepsFromAnalysis(
   analysis: FormationAnalysis,
-  players: Array<{ role: PlayerRole; number: number; nameAr?: string }>
+  players: Array<{ role: PlayerRole; number: number; nameAr?: string }>,
+  eyeContext?: { transcript?: string; visionResult?: VisionAnalysisResult }
 ): GuideStep[] {
   const steps: GuideStep[] = [];
-  
+
+  // Eye integration: prepend voice-driven steps if transcript provided
+  if (eyeContext?.transcript) {
+    const voiceSteps = parseTranscriptToSteps(eyeContext.transcript, analysis);
+    steps.push(...voiceSteps);
+  }
+
+  // Eye integration: add vision-driven steps if Claude Vision result provided
+  if (eyeContext?.visionResult) {
+    const visionSteps = parseVisionToSteps(eyeContext.visionResult, players);
+    steps.push(...visionSteps);
+  }
+
   // Introduction
   steps.push({
     id: 'intro-analysis',
@@ -284,6 +298,165 @@ export function getPlayerGuidance(
   }
   
   return guidance;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Eye Integration: Parse voice transcript into guide steps
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ARABIC_FORMATION_KEYWORDS: Record<string, PlayerRole[]> = {
+  'مدافع': ['DEF'],
+  'دفاع': ['DEF'],
+  'مدافعين': ['DEF'],
+  'وسط': ['MID'],
+  'وسطاء': ['MID'],
+  'مهاجم': ['FWD'],
+  'هجوم': ['FWD'],
+  'مهاجمين': ['FWD'],
+  'حارس': ['GK'],
+  'حارس المرمى': ['GK'],
+  'تشكيل': [],
+  '4-4-2': [],
+  '4-3-3': [],
+  '3-5-2': [],
+};
+
+function parseTranscriptToSteps(
+  transcript: string,
+  analysis: FormationAnalysis
+): GuideStep[] {
+  const steps: GuideStep[] = [];
+  const lowerTranscript = transcript.toLowerCase();
+
+  // Check for formation keywords
+  for (const [keyword, roles] of Object.entries(ARABIC_FORMATION_KEYWORDS)) {
+    if (lowerTranscript.includes(keyword)) {
+      if (roles.length > 0) {
+        steps.push({
+          id: `voice-${keyword}-${Date.now()}`,
+          action: 'point',
+          target: roles.map(r => `[data-role="${r}"]`).join(', '),
+          messageAr: `تحدثت عن ${keyword}. دعني أوضح لك.`,
+          messageEn: `You mentioned ${keyword}. Let me explain.`,
+          duration: 3000,
+          highlightColor: '#00DCC8',
+          eyeActions: [{
+            id: `eye-voice-${Date.now()}`,
+            type: 'speak',
+            payload: {},
+            messageAr: `تحدثت عن ${keyword}. دعني أوضح لك المناطق المتعلقة.`,
+            messageEn: `You mentioned ${keyword}. Let me highlight the relevant areas.`,
+          }],
+        });
+      }
+    }
+  }
+
+  // If no keywords matched, add a generic voice step
+  if (steps.length === 0) {
+    steps.push({
+      id: `voice-generic-${Date.now()}`,
+      action: 'explain',
+      messageAr: `سمعت: "${transcript.slice(0, 50)}${transcript.length > 50 ? '...' : ''}"`,
+      messageEn: `I heard: "${transcript.slice(0, 50)}${transcript.length > 50 ? '...' : ''}"`,
+      duration: 3000,
+      eyeActions: [{
+        id: `eye-voice-generic-${Date.now()}`,
+        type: 'speak',
+        payload: {},
+        messageAr: 'تم استلام طلبك. سأحلل الشاشة الآن.',
+        messageEn: 'Request received. Analyzing the screen now.',
+      }],
+    });
+  }
+
+  return steps;
+}
+
+function parseVisionToSteps(
+  visionResult: VisionAnalysisResult,
+  players: Array<{ role: PlayerRole; number: number; nameAr?: string }>
+): GuideStep[] {
+  const steps: GuideStep[] = [];
+
+  // Add description step
+  if (visionResult.descriptionAr) {
+    steps.push({
+      id: `vision-desc-${Date.now()}`,
+      action: 'explain',
+      messageAr: visionResult.descriptionAr,
+      messageEn: visionResult.description,
+      duration: 4000,
+      eyeActions: [{
+        id: `eye-vision-desc-${Date.now()}`,
+        type: 'speak',
+        payload: {},
+        messageAr: visionResult.descriptionAr,
+        messageEn: visionResult.description,
+      }],
+    });
+  }
+
+  // Add point steps for detected objects/players
+  for (const obj of visionResult.objects) {
+    const matchingRole = findMatchingRole(obj.labelAr || obj.label, players);
+    steps.push({
+      id: `vision-obj-${obj.labelAr || obj.label}-${Date.now()}`,
+      action: matchingRole ? 'point' : 'highlight',
+      target: matchingRole ? `[data-role="${matchingRole}"]` : undefined,
+      messageAr: obj.labelAr || obj.label,
+      messageEn: obj.label,
+      duration: 2500,
+      highlightColor: obj.confidence > 0.8 ? '#22C55E' : '#F59E0B',
+      eyeActions: obj.bbox ? [{
+        id: `eye-obj-${Date.now()}`,
+        type: 'point',
+        payload: {
+          x: obj.bbox.x + (obj.bbox.w / 2),
+          y: obj.bbox.y + (obj.bbox.h / 2),
+          unit: 'percent' as const,
+        },
+        messageAr: obj.labelAr || obj.label,
+        messageEn: obj.label,
+      }] : [],
+    });
+  }
+
+  // Add suggestion steps
+  for (const suggestion of (visionResult.suggestionsAr || visionResult.suggestions)) {
+    steps.push({
+      id: `vision-sug-${Date.now()}-${suggestion.slice(0, 10)}`,
+      action: 'suggest',
+      messageAr: suggestion,
+      messageEn: visionResult.suggestions[visionResult.suggestionsAr?.indexOf(suggestion)] || suggestion,
+      duration: 3500,
+      highlightColor: '#00DCC8',
+    });
+  }
+
+  return steps;
+}
+
+function findMatchingRole(
+  label: string,
+  players: Array<{ role: PlayerRole; number: number; nameAr?: string }>
+): PlayerRole | null {
+  const lowerLabel = label.toLowerCase();
+
+  // Check Arabic role names
+  if (lowerLabel.includes('حارس') || lowerLabel.includes('gk')) return 'GK';
+  if (lowerLabel.includes('مدافع') || lowerLabel.includes('def')) return 'DEF';
+  if (lowerLabel.includes('وسط') || lowerLabel.includes('mid')) return 'MID';
+  if (lowerLabel.includes('مهاجم') || lowerLabel.includes('fwd')) return 'FWD';
+
+  // Check player names
+  for (const player of players) {
+    if (player.nameAr && lowerLabel.includes(player.nameAr.toLowerCase())) {
+      return player.role;
+    }
+  }
+
+  return null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -6,9 +6,11 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, ChevronRight, Lightbulb, Target, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, ChevronRight, Lightbulb, Target, CheckCircle2, AlertCircle, Eye } from 'lucide-react';
 import type { GuideStep, GuideSession, VisualGuideProps, GuideAction } from './types';
 import { defaultGuideProps, guideColors, createFormationGuide } from './types';
+import { EyeOverlay } from '../Eye/EyeOverlay';
+import { EyeEngine } from '../Eye/EyeEngine';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Action Icons
@@ -149,7 +151,16 @@ export default function VisualGuide({
 }: VisualGuideProps) {
   const [visible, setVisible] = useState(false);
   const [animating, setAnimating] = useState(false);
-  
+  const [eyeMode, setEyeMode] = useState(false);
+  const [eyeEngine] = useState(() => new EyeEngine({
+    context: 'coach',
+    language: language === 'ar' ? 'ar' : 'en',
+    voiceEnabled: true,
+    ttsEnabled: true,
+    visionEnabled: true,
+    visionEndpoint: '/api/eye/vision',
+  }));
+
   const isRtl = language === 'ar';
   
   // Use session steps or defaults
@@ -209,6 +220,7 @@ export default function VisualGuide({
   if (!visible) return null;
   
   return (
+    <>
     <div
       className={`fixed z-50 transition-all duration-300 ${
         animating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
@@ -254,6 +266,20 @@ export default function VisualGuide({
             style={{ color: 'rgba(255,255,255,0.5)' }}
           >
             <X size={16} />
+          </button>
+
+          {/* Eye Mode Toggle */}
+          <button
+            onClick={() => setEyeMode(!eyeMode)}
+            className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+            style={{
+              color: eyeMode ? '#00DCC8' : 'rgba(255,255,255,0.5)',
+              background: eyeMode ? 'rgba(0, 220, 200, 0.1)' : 'transparent',
+              border: eyeMode ? '1px solid rgba(0, 220, 200, 0.3)' : '1px solid transparent',
+            }}
+            title={isRtl ? 'تفعيل العين' : 'Activate Eye'}
+          >
+            <Eye size={16} />
           </button>
         </div>
         
@@ -302,6 +328,21 @@ export default function VisualGuide({
         </div>
       </div>
     </div>
+
+    {/* Eye Mode Overlay */}
+    {eyeMode && (
+      <EyeOverlay
+        engine={eyeEngine}
+        language={language}
+        position={position === 'bottom-right' || position === 'bottom-left' ? 'bottom-left' : 'top-left'}
+        onActionComplete={(action) => {
+          if (action.type === 'point' && step) {
+            onStepComplete?.(step.id);
+          }
+        }}
+      />
+    )}
+    </>
   );
 }
 

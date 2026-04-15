@@ -15,7 +15,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 // VisualGuide - Arabic AI Teaching Overlay
 import { VisualGuide, HighlightOverlay, createFormationGuide, analyzeFormation, generateGuideStepsFromAnalysis, presetHighlights } from "@/components/VisualGuide";
-import type { HighlightConfig } from "@/components/VisualGuide";
+import type { HighlightConfig, HighlightZone } from "@/components/VisualGuide";
+// DHEEB Eye - Voice + Vision AI companion
+import { EyeOverlay, EyeEngine } from "@/components/Eye";
+import type { EyeAction } from "@/components/Eye";
 import {
   Brain, RotateCcw, ChevronDown, ChevronUp,
   TrendingUp, Shield, Swords, Eye, Target,
@@ -264,6 +267,38 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
   const [guideStep, setGuideStep] = useState(0);
   const [highlightActive, setHighlightActive] = useState(false);
   const [currentHighlights, setCurrentHighlights] = useState<HighlightConfig[]>([]);
+
+  // ── DHEEB Eye State ──────────────────────────────────────────────────────────
+  const [eyeActive, setEyeActive] = useState(false);
+  const [eyeEngine] = useState(() => new EyeEngine({
+    context: 'coach',
+    language: lang === 'ar' ? 'ar' : 'en',
+    voiceEnabled: true,
+    ttsEnabled: true,
+    visionEnabled: true,
+    visionEndpoint: '/api/eye/vision',
+    onActionComplete: (action: EyeAction) => {
+      // Feed Eye highlight/point actions back into HighlightOverlay
+      if (action.type === 'highlight') {
+        setCurrentHighlights(prev => [...prev, {
+          zone: (action.payload.zone as HighlightZone) || 'center',
+          color: (action.payload.color as string) || '#00DCC8',
+          opacity: 0.4,
+          pulse: true,
+        }]);
+      }
+    },
+    onSessionEnd: (session) => {
+      // Auto-save voice transcript and analysis as tactical notes
+      if (session.transcript) {
+        setTacticalNotes(prev => {
+          const timestamp = new Date().toLocaleTimeString(lang === 'ar' ? 'ar-SA' : 'en-US');
+          const note = `[${timestamp}] 🎙️ ${session.transcript}`;
+          return prev ? `${prev}\n${note}` : note;
+        });
+      }
+    },
+  }));
 
   const startGuide = () => {
     // Analyze current formation and generate smart guidance
@@ -535,6 +570,7 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
 
   // ─── Render ──────────────────────────────────────────────────────────────────
   return (
+    <>
     <div className="h-full overflow-y-auto" style={{ background: "#0A0E1A", direction: isRTL ? "rtl" : "ltr" }}>
       <div className="p-4 lg:p-6 space-y-5">
 
@@ -554,6 +590,17 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
               }}
             >
               🐺 {isRTL ? "تفعيل المدرب الذكي" : "Activate AI Coach"}
+            </button>{" "}
+            <button
+              onClick={() => setEyeActive(!eyeActive)}
+              className="mt-2 text-xs px-3 py-1.5 rounded-lg flex items-center gap-2 transition-all hover:scale-105"
+              style={{
+                background: eyeActive ? "rgba(0,220,200,0.15)" : "rgba(0,220,200,0.08)",
+                color: "#00DCC8",
+                border: "1px solid rgba(0,220,200,0.2)",
+              }}
+            >
+              👁 {isRTL ? "تفعيل العين" : "Activate Eye"}
             </button>
             <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.4)", fontFamily: font }}>
               {isRTL ? "التكتيكات · أداء الفريق · تحليل الخصم · تحليل الفيديو" : "Tactics · Team Performance · Opponent Analysis · Video Analysis"}
@@ -1516,5 +1563,25 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
         </div>
       )}
     </div>
+
+    {/* DHEEB Eye Overlay */}
+    {eyeActive && (
+      <EyeOverlay
+        engine={eyeEngine}
+        language={lang === 'ar' ? 'ar' : 'en'}
+        position="bottom-left"
+        onSessionEnd={(session) => {
+          // Auto-save voice transcript as tactical notes
+          if (session.transcript) {
+            setTacticalNotes(prev => {
+              const timestamp = new Date().toLocaleTimeString(lang === 'ar' ? 'ar-SA' : 'en-US');
+              const note = `[${timestamp}] 🎙️ ${session.transcript}`;
+              return prev ? `${prev}\n${note}` : note;
+            });
+          }
+        }}
+      />
+    )}
+    </>
   );
 }

@@ -41,18 +41,24 @@ export interface ArrowConfig {
 export interface HighlightOverlayProps {
   /** Current highlights */
   highlights?: HighlightConfig[];
-  
+
   /** Current arrows */
   arrows?: ArrowConfig[];
-  
+
   /** Is active */
   isActive?: boolean;
-  
+
   /** Language */
   language?: 'ar' | 'en';
-  
+
   /** On click handler */
   onZoneClick?: (zone: HighlightZone) => void;
+
+  /** Eye integration: additional highlights from Eye actions */
+  eyeHighlights?: import('../Eye/types').EyeHighlight[];
+
+  /** Eye integration: additional arrows from Eye actions */
+  eyeArrows?: import('../Eye/types').EyeArrow[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

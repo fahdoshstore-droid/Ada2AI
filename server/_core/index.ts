@@ -6,6 +6,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerChatRoutes } from "./chat";
 import { registerScoutAnalysisRoutes } from "../scoutAnalysis";
+import { registerEyeVisionRoutes } from "./eyeVision";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -40,6 +41,8 @@ async function startServer() {
   // Chat API with streaming and tool calling
   registerChatRoutes(app);
   registerScoutAnalysisRoutes(app);
+  // DHEEB Eye Vision — Claude Vision analysis endpoint
+  registerEyeVisionRoutes(app);
   
   // ── Football Video Analysis API ─────────────────────────────────────────────
   // This endpoint is called by CoachDashboard to analyze match videos

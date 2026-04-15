@@ -36,6 +36,8 @@ export interface GuideStep {
   duration?: number;         // Auto-advance after ms
   highlightColor?: string;   // Highlight color
   arrowPosition?: 'top' | 'bottom' | 'left' | 'right';
+  /** Eye integration: attach Eye actions to this guide step */
+  eyeActions?: import('../Eye/types').EyeAction[];
 }
 
 export interface GuideSession {
