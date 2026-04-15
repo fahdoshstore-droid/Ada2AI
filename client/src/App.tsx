@@ -49,7 +49,7 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 import PlayerProfile from "./pages/dashboard/PlayerProfile";
 import VideoUpload from "./pages/dashboard/VideoUpload";
 import TeamAnalysis from "./pages/dashboard/TeamAnalysis";
-import CoachDashboard from "./pages/dashboard/CoachDashboard";
+import CoachDashboard from "./training-hub/pages/CoachDashboard";
 import ScoutDashboard from "./pages/dashboard/ScoutDashboard";
 import ClubDashboard from "./pages/dashboard/ClubDashboard";
 import ParentDashboard from "./pages/dashboard/ParentDashboard";

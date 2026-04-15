@@ -34,10 +34,11 @@ import {
 } from "recharts";
 import { Link } from "wouter";
 import { allPlayers, type Player as DataPlayer } from "@/data/players";
+import { useTacticalAnimation, BUILTIN_SCENARIOS } from "./useTacticalAnimation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface CoachDashboardProps {
-  onNavigate: (page: string, context?: unknown) => void;
+  onNavigate?: (page: string, context?: unknown) => void;
   lang?: "ar" | "en";
 }
 
@@ -249,7 +250,10 @@ const opponentPresets = [
 const footballPlayers = allPlayers.filter(p => p.sport === "Football");
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboardProps) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function CoachDashboard(props: any = {}) {
+  const onNavigate: ((page: string, ctx?: unknown) => void) | undefined = props.onNavigate;
+  const lang: "ar" | "en" = props.lang || "ar";
   const isRTL = lang === "ar";
   const font = isRTL ? "'Cairo', sans-serif" : "'Space Grotesk', sans-serif";
 
@@ -260,6 +264,10 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
   const [tacticalNotes, setTacticalNotes] = useState("");
   const pitchRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef<{ id: number } | null>(null);
+
+  // ── Tactical Animation ──────────────────────────────────────────────────
+  const [tacticalMode, setTacticalMode] = useState(false);
+  const tactical = useTacticalAnimation(players);
 
   // ── VisualGuide State ────────────────────────────────────────────────────────
   const [guideActive, setGuideActive] = useState(false);
@@ -640,11 +648,74 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
                 </button>
               ))}
               <button onClick={() => { setPlayers(buildPlayers(formation)); setSelectedPlayer(null); }}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all ms-auto"
+                className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all"
                 style={{ color: "rgba(255,255,255,0.4)", fontFamily: font }}>
                 <RotateCcw size={11} /> {isRTL ? "إعادة" : "Reset"}
               </button>
+              <button
+                onClick={() => setTacticalMode(!tacticalMode)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ms-auto"
+                style={{
+                  background: tacticalMode ? "#00A651" : "transparent",
+                  color: tacticalMode ? "#fff" : "rgba(255,255,255,0.4)",
+                  border: tacticalMode ? "1px solid #00A651" : "1px solid rgba(255,255,255,0.15)",
+                  fontFamily: font,
+                }}>
+                🎯 {isRTL ? "تكتيكي" : "Tactical"}
+              </button>
             </div>
+
+            {/* Tactical Animation Controls */}
+            {tacticalMode && (
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <button onClick={tactical.togglePlay}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                style={{
+                  background: tactical.isPlaying ? "rgba(255,68,68,0.15)" : "rgba(0,220,200,0.15)",
+                  color: tactical.isPlaying ? "#ff4444" : "#00DCC8",
+                  border: tactical.isPlaying ? "1px solid rgba(255,68,68,0.3)" : "1px solid rgba(0,220,200,0.3)",
+                  fontFamily: font,
+                }}>
+                {tactical.isPlaying ? (isRTL ? "⏸ إيقاف" : "⏸ Pause") : (isRTL ? "▶ تشغيل" : "▶ Play")}
+              </button>
+              <button onClick={tactical.stop}
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs transition-all"
+                style={{ color: "rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.04)", fontFamily: font }}>
+                ⏹ {isRTL ? "إيقاف" : "Stop"}
+              </button>
+              <button onClick={tactical.prevScenario}
+                className="px-2 py-1.5 rounded-lg text-xs transition-all"
+                style={{ color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.04)", fontFamily: font }}>
+                ◀
+              </button>
+              <span className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.6)", fontFamily: font }}>
+                {tactical.scenarioIndex + 1}/{tactical.totalScenarios}
+              </span>
+              <button onClick={tactical.nextScenario}
+                className="px-2 py-1.5 rounded-lg text-xs transition-all"
+                style={{ color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.04)", fontFamily: font }}>
+                ▶
+              </button>
+              {tactical.currentScenario && (
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: "#FFB800", background: "rgba(255,184,0,0.1)", border: "1px solid rgba(255,184,0,0.2)", fontFamily: font }}>
+                  {isRTL ? tactical.currentScenario.nameAr : tactical.currentScenario.nameEn}
+                </span>
+              )}
+              <div className="flex items-center gap-1 ms-auto">
+                {[0, 1, 2, 3, 4].map(i => (
+                  <button key={i} onClick={() => tactical.setScenarioIndex(i)}
+                    className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center transition-all"
+                    style={{
+                      background: tactical.scenarioIndex === i ? "rgba(0,220,200,0.2)" : "rgba(255,255,255,0.04)",
+                      color: tactical.scenarioIndex === i ? "#00DCC8" : "rgba(255,255,255,0.4)",
+                      border: tactical.scenarioIndex === i ? "1px solid rgba(0,220,200,0.3)" : "1px solid transparent",
+                    }}>
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+            </div>
+            )}
 
             {/* Legend */}
             <div className="flex items-center gap-3 mb-3 flex-wrap">
@@ -686,6 +757,57 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
                 {[10, 20, 30, 40, 60, 70, 80, 90].map(y => (
                   <rect key={y} x="1" y={y - 5} width="98" height="10" fill="rgba(0,0,0,0.04)" />
                 ))}
+
+                {/* Tactical animation overlays */}
+                {tacticalMode && (<>
+                {/* SVG defs for arrow markers */}
+                <defs>
+                  <marker id="passArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#00ff88" />
+                  </marker>
+                  <marker id="pressArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff4444" />
+                  </marker>
+                </defs>
+
+                {/* Pressure zone heatmap */}
+                {tactical.pressureZones.map((zone, i) => (
+                  <rect key={`pz-${i}`} x={zone.x} y={zone.y} width={zone.width} height={zone.height}
+                    fill={`rgba(${zone.color},${zone.intensity * 0.35})`}
+                    rx="1" ry="1"
+                  />
+                ))}
+
+                {/* Pass arrows */}
+                {tactical.activePasses.map((pass, i) => {
+                  const fromP = players.find(p => p.number === pass.fromPlayer);
+                  const toP = players.find(p => p.number === pass.toPlayer);
+                  if (!fromP || !toP) return null;
+                  const passColors: Record<string, string> = { short: "#00ff88", long: "#00ccff", through: "#ffcc00", cross: "#ff88ff", back: "#888888" };
+                  const color = passColors[pass.type] || "#00ff88";
+                  const fromPos = tactical.animatedPositions[fromP.id] || { x: fromP.x, y: fromP.y };
+                  const toPos = tactical.animatedPositions[toP.id] || { x: toP.x, y: toP.y };
+                  return (
+                    <line key={`pass-${i}`}
+                      x1={fromPos.x} y1={fromPos.y} x2={toPos.x} y2={toPos.y}
+                      stroke={color} strokeWidth="0.6" markerEnd="url(#passArrow)" opacity="0.8"
+                    />
+                  );
+                })}
+
+                {/* Press arrows */}
+                {tactical.activePresses.map((press, i) => {
+                  const fromP = players.find(p => p.number === press.fromPlayer);
+                  if (!fromP) return null;
+                  const fromPos = tactical.animatedPositions[fromP.id] || { x: fromP.x, y: fromP.y };
+                  return (
+                    <line key={`press-${i}`}
+                      x1={fromPos.x} y1={fromPos.y} x2={press.targetX} y2={press.targetY}
+                      stroke="#ff4444" strokeWidth="0.5" strokeDasharray="1.5 1" markerEnd="url(#pressArrow)" opacity="0.7"
+                    />
+                  );
+                })}
+                </>)}
               </svg>
 
               {/* Highlight Overlay */}
@@ -703,7 +825,9 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
                 {formation}
               </div>
               <div className="absolute bottom-2 end-3 text-xs" style={{ color: "rgba(255,255,255,0.4)", fontFamily: font, zIndex: 10 }}>
-                {isRTL ? "اسحب اللاعبين لتحريكهم" : "Drag players to move"}
+                {tacticalMode && tactical.isPlaying
+                  ? "🔄 " + (isRTL ? "تشغيل تكتيكي—" + tactical.phaseLabel : "Tactical: " + (tactical.currentScenario?.nameEn || ""))
+                  : (isRTL ? "اسحب اللاعبين لتحريكهم" : "Drag players to move")}
               </div>
 
               {/* Players */}
@@ -717,8 +841,8 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
                     className="absolute flex flex-col items-center"
                     data-role={player.role}
                     style={{
-                      left: `${player.x}%`,
-                      top: `${player.y}%`,
+                      left: `${(tacticalMode ? tactical.animatedPositions[player.id]?.x ?? player.x : player.x)}%`,
+                      top: `${(tacticalMode ? tactical.animatedPositions[player.id]?.y ?? player.y : player.y)}%`,
                       transform: "translate(-50%, -50%)",
                       zIndex: isSelected ? 20 : 10,
                       cursor: "grab",
@@ -759,6 +883,7 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
                         fontFamily: "'Space Grotesk', sans-serif",
                         boxShadow: isSelected ? `0 0 12px ${rc.bg}` : isLinked ? "0 0 8px rgba(0,220,200,0.4)" : `0 2px 8px rgba(0,0,0,0.4)`,
                         transform: isSelected ? "scale(1.1)" : "scale(1)",
+                        transition: tacticalMode && tactical.isPlaying ? "left 0.3s ease, top 0.3s ease, transform 0.15s ease" : "transform 0.15s ease",
                       }}
                     >
                       {player.number}
@@ -781,6 +906,13 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
                 );
               })}
             </div>
+            {tacticalMode && tactical.isPlaying && (
+              <div className="mt-2 relative h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                <div className="absolute inset-y-0 start-0 rounded-full transition-all duration-100"
+                  style={{ width: (tactical.progress * 100) + "%", background: "linear-gradient(90deg, #00DCC8, #00A651)" }}
+                />
+              </div>
+            )}
           </div>
 
           {/* ── Right Panel ────────────────────────────────────────────────── */}
@@ -893,7 +1025,7 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
                 </button>
                 {/* Ask AI */}
                 <button
-                  onClick={() => onNavigate("ai-chat", {
+                  onClick={() => (onNavigate || (() => {}))("ai-chat", {
                     prompt: isRTL ? "اقترح أفضل تشكيل للمباراة القادمة بناءً على أداء الفريق" : "Suggest the best formation for the next match based on team performance"
                   })}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
@@ -1163,7 +1295,7 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
 
                   {/* Ask AI about results */}
                   <button
-                    onClick={() => onNavigate("ai-chat", {
+                    onClick={() => (onNavigate || (() => {}))("ai-chat", {
                       prompt: isRTL
                         ? `حلل نتائج المباراة: ${analysisResult.team_0_name} (استحواذ ${analysisResult.team_0_possession.toFixed(1)}%, مساحة ${analysisResult.team_0_area.toFixed(0)}%) مقابل ${analysisResult.team_1_name} (استحواذ ${analysisResult.team_1_possession.toFixed(1)}%, مساحة ${analysisResult.team_1_area.toFixed(0)}%). ما هي التوصيات التكتيكية للمباراة القادمة؟`
                         : `Analyze match results: ${analysisResult.team_0_name} (possession ${analysisResult.team_0_possession.toFixed(1)}%, area ${analysisResult.team_0_area.toFixed(0)}%) vs ${analysisResult.team_1_name} (possession ${analysisResult.team_1_possession.toFixed(1)}%, area ${analysisResult.team_1_area.toFixed(0)}%). What are the tactical recommendations for the next match?`
@@ -1392,7 +1524,7 @@ export default function CoachDashboard({ onNavigate, lang = "ar" }: CoachDashboa
                     }
                   </p>
                   <button
-                    onClick={() => onNavigate("ai-chat", {
+                    onClick={() => (onNavigate || (() => {}))("ai-chat", {
                       prompt: isRTL
                         ? `حلل فريق ${opponent.nameAr} وأعطني خطة تكتيكية مفصلة للفوز عليهم باستخدام تشكيل ${formation}`
                         : `Analyze ${opponent.nameEn} and give me a detailed tactical plan to beat them using ${formation} formation`
