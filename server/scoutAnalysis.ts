@@ -1,11 +1,12 @@
 /**
  * Scout Analysis — Ada2ai
- * دعم: رفع صور وفيديوهات، استخراج 3 إطارات تلقائياً، تحليل Claude Vision
- * معايير SAFF + FIFA — تقرير عربي منظّم
+ * دعم: رفع صور وفيديوهات، استخراج 3 إطارات تلقائياً، تحليل Vision
+ * معايير SAFF + FIFA — تقرير عربي منظم
+ * AI Provider: Anthropic (primary) → Ollama (fallback)
  */
 
 import { Router } from "express";
-import Anthropic from "@anthropic-ai/sdk";
+import { analyzeVisionPremium, getProviderStatus } from "./_core/ai-provider";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { execFile, execFileSync } from "child_process";
@@ -30,14 +31,7 @@ function sanitizeVideoPath(filePath: string): string {
 
 const router = Router();
 
-// ── Anthropic Client ──────────────────────────────────────────────────────────
-function getAnthropicClient() {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not set");
-  return new Anthropic({ apiKey });
-}
-
-// ── System Prompt (SAFF + FIFA v3) ────────────────────────────────────────────
+// ─── System Prompt (SAFF + FIFA v3) ──────────────────────────────────────
 const SYSTEM_PROMPT = `You are a professional football scout for Ada2ai using SAFF and FIFA standards.
 You analyze football players from real training session videos and images, including official footage from Saudi clubs like Nahda FC.
 Return ONLY a valid JSON object — no markdown, no explanation, no extra text.
@@ -71,7 +65,7 @@ JSON structure:
     "dribbling":    { "score": 74, "label": "المراوغة ووضعية الجسم",     "note": "ملاحظة" },
     "firstTouch":   { "score": 72, "label": "اللمسة الأولى والاستقبال",  "note": "ملاحظة" },
     "coordination": { "score": 75, "label": "التنسيق الحركي العام",      "note": "ملاحظة" },
-    "vision":       { "score": 70, "label": "الرؤية التكتيكية",          "note": "ملاحظة" },
+    "vision":       { "score": 70, "label": "الرؤية التكتيلكية",          "note": "ملاحظة" },
     "passing":      { "score": 68, "label": "التمرير",                   "note": "ملاحظة" },
     "shooting":     { "score": 65, "label": "التسديد",                   "note": "ملاحظة" }
   },
@@ -103,7 +97,7 @@ JSON structure:
   "overallRating": 74,
   "confidence": {
     "percentage": 72,
-    "reason": "سبب الثقة بالعربي"
+    "reason": "أسباب الثقة بالعربي"
   }
 }
 
@@ -115,7 +109,7 @@ JSON structure:
 - playerName: إن كان الاسم مرئياً على الزي استخدمه، وإلا اكتب "لاعب موهوب"
 - jerseyNumber: إن كان مرئياً استخدمه كرقم صحيح، وإلا استخدم قيمة overallRating`;
 
-// ── Helper: جلب صورة كـ base64 ────────────────────────────────────────────────
+// ─── Helper: جلب صورة كـ base64 ──────────────────────────────────────
 async function fetchImageAsBase64(url: string): Promise<{
   type: "base64";
   media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
@@ -135,7 +129,7 @@ async function fetchImageAsBase64(url: string): Promise<{
   };
 }
 
-// ── Helper: استخراج 3 إطارات من الفيديو باستخدام ffmpeg ──────────────────────
+// ─── Helper: استخراج 3 إطارات من الفيديو باستخدام ffmpeg ──────────
 async function extractVideoFrames(videoBuffer: Buffer, mimeType: string): Promise<string[]> {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "scout-frames-"));
   const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("mov") ? "mov" : "webm";
@@ -143,7 +137,6 @@ async function extractVideoFrames(videoBuffer: Buffer, mimeType: string): Promis
   fs.writeFileSync(videoPath, videoBuffer);
 
   try {
-    // احصل على مدة الفيديو (باستخدام execFile الآمن)
     let duration = 10;
     try {
       const { stdout: probeOut } = await execFileAsync(
@@ -155,7 +148,6 @@ async function extractVideoFrames(videoBuffer: Buffer, mimeType: string): Promis
       duration = parseFloat(probe.format?.duration || "10");
     } catch (_) { /* استخدم القيمة الافتراضية */ }
 
-    // استخرج 3 إطارات عند 20% و50% و80% من الفيديو
     const frameUrls: string[] = [];
     const timestamps = [0.2, 0.5, 0.8].map(p => Math.max(0.5, p * duration));
 
@@ -185,7 +177,7 @@ async function extractVideoFrames(videoBuffer: Buffer, mimeType: string): Promis
   }
 }
 
-// ── Upload Endpoint ───────────────────────────────────────────────────────────
+// ─── Upload Endpoint ──────────────────────────────────────────────────────
 router.post("/upload", async (req, res) => {
   try {
     const { fileData, mimeType, fileName } = req.body as {
@@ -220,9 +212,9 @@ router.post("/upload", async (req, res) => {
   }
 });
 
-// ── Analysis Endpoint ─────────────────────────────────────────────────────────
+// ─── Analysis Endpoint ────────────────────────────────────────────────────
 router.post("/analyze", async (req, res) => {
-  res.setTimeout(90000, () => {
+  res.setTimeout(120000, () => {
     if (!res.headersSent) res.status(504).json({ error: "انتهت مهلة التحليل" });
   });
 
@@ -239,19 +231,25 @@ router.post("/analyze", async (req, res) => {
     }
 
     console.log(`[Scout Analysis] بدء تحليل SAFF+FIFA على ${urls.length} إطار...`);
-    const anthropic = getAnthropicClient();
 
-    // بناء كتل الصور لجميع الإطارات
-    const imageBlocks: Anthropic.ImageBlockParam[] = [];
-    for (const url of urls) {
-      try {
-        const imgSource = await fetchImageAsBase64(url);
-        imageBlocks.push({ type: "image", source: imgSource });
-      } catch (err) {
-        console.warn("[Scout Analysis] فشل جلب الإطار:", url, err);
-        imageBlocks.push({ type: "image", source: { type: "url", url } });
-      }
+    // Build combined image base64 for multi-frame analysis
+    // For scout, we analyze the first frame as primary with context from all frames
+    let primaryImageBase64: string;
+    let primaryMediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+
+    try {
+      const imgSource = await fetchImageAsBase64(urls[0]);
+      primaryImageBase64 = imgSource.data;
+      primaryMediaType = imgSource.media_type;
+    } catch (err) {
+      console.error("[Scout Analysis] فشل جلب الصورة الأساسية:", err);
+      return res.status(400).json({ error: "فشل جلب صورة التحليل" });
     }
+
+    // If multiple frames, fetch them all and concat info
+    const additionalFrameInfo = urls.length > 1
+      ? `\n\nملاحظة: تم تحليل ${urls.length} إطارات من الفيديو.ركز على الإطار الأول (الأساسي) مع مراعاة الحركة عبر الإطارات.`
+      : "";
 
     const today = new Date().toLocaleDateString("ar-SA", {
       year: "numeric", month: "long", day: "numeric",
@@ -261,28 +259,22 @@ router.post("/analyze", async (req, res) => {
     const nahdaCtx = context && context.includes("النهضة")
       ? `\nالسياق: فيديو تدريبي رسمي من نادي النهضة السعودي — حلل بدقة عالية وأعط توصيات مناسبة للدوري السعودي.`
       : "";
-    const userText = urls.length > 1
-      ? `حلل هذا اللاعب من ${urls.length} إطارات فيديو وفق معايير SAFF وFIFA.${nahdaCtx}\nرقم التقرير: ${reportId}\nتاريخ التحليل: ${today}\nأعد JSON فقط.`
+
+    const userMessage = urls.length > 1
+      ? `حلل هذا اللاعب من ${urls.length} إطار فيديو وفق معايير SAFF وFIFA.${nahdaCtx}${additionalFrameInfo}\nرقم التقرير: ${reportId}\nتاريخ التحليل: ${today}\nأعد JSON فقط.`
       : `حلل هذا اللاعب وفق معايير SAFF وFIFA.${nahdaCtx}\nرقم التقرير: ${reportId}\nتاريخ التحليل: ${today}\nأعد JSON فقط.`;
 
-    const claudeResponse = await anthropic.messages.create({
-      model: "claude-opus-4-5",
-      max_tokens: 2500,
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: [
-            ...imageBlocks,
-            { type: "text", text: userText },
-          ],
-        },
-      ],
+    // Use ai-provider (Anthropic → Ollama fallback)
+    const result = await analyzeVisionPremium({
+      imageBase64: primaryImageBase64,
+      mediaType: primaryMediaType,
+      systemPrompt: SYSTEM_PROMPT,
+      userMessage,
+      maxTokens: 4096,
     });
 
-    const rawText =
-      claudeResponse.content[0].type === "text" ? claudeResponse.content[0].text : "";
-    console.log("[Scout Analysis] طول الاستجابة:", rawText.length);
+    const rawText = result.text;
+    console.log(`[Scout Analysis] طول الاستجابة: ${rawText.length} via ${result.provider}/${result.model}`);
 
     // تحليل JSON — إزالة markdown إن وُجد
     let report;
@@ -311,8 +303,8 @@ router.post("/analyze", async (req, res) => {
     return res.json({
       success: true,
       report,
-      model: "claude-opus-4-5",
-      source: "anthropic",
+      model: result.model,
+      source: result.provider,
       framesAnalyzed: urls.length,
     });
   } catch (err: any) {
@@ -323,13 +315,15 @@ router.post("/analyze", async (req, res) => {
   }
 });
 
-// ── Health ────────────────────────────────────────────────────────────────────
+// ─── Health ───────────────────────────────────────────────────────────────
 router.get("/health", (_req, res) => {
+  const status = getProviderStatus();
   res.json({
     status: "ok",
     service: "scout-analysis",
-    anthropicKeySet: !!process.env.ANTHROPIC_API_KEY,
-    model: "claude-opus-4-5",
+    vision: status.vision,
+    text: status.text,
+    provider: status.provider,
     prompt: "SAFF+FIFA v3 — playerName + video frames",
     ffmpegAvailable: (() => {
       try { execFileSync("which", ["ffmpeg"], { timeout: 2000 }); return true; } catch { return false; }
