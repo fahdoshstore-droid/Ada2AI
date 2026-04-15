@@ -8,10 +8,25 @@ import { Router } from "express";
 import Anthropic from "@anthropic-ai/sdk";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
-import { execSync } from "child_process";
+import { execFile, execFileSync } from "child_process";
+import { promisify } from "util";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
+
+const execFileAsync = promisify(execFile);
+
+// Allowed video extensions for ffmpeg processing
+const ALLOWED_VIDEO_EXTENSIONS = ["mp4", "mov", "webm", "avi", "mkv"];
+
+function sanitizeVideoPath(filePath: string): string {
+  const resolved = path.resolve(filePath);
+  const ext = path.extname(resolved).toLowerCase().slice(1);
+  if (!ALLOWED_VIDEO_EXTENSIONS.includes(ext)) {
+    throw new Error(`Unsupported video format: .${ext}`);
+  }
+  return resolved;
+}
 
 const router = Router();
 
@@ -124,17 +139,18 @@ async function fetchImageAsBase64(url: string): Promise<{
 async function extractVideoFrames(videoBuffer: Buffer, mimeType: string): Promise<string[]> {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "scout-frames-"));
   const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("mov") ? "mov" : "webm";
-  const videoPath = path.join(tmpDir, `input.${ext}`);
+  const videoPath = sanitizeVideoPath(path.join(tmpDir, `input.${ext}`));
   fs.writeFileSync(videoPath, videoBuffer);
 
   try {
-    // احصل على مدة الفيديو
+    // احصل على مدة الفيديو (باستخدام execFile الآمن)
     let duration = 10;
     try {
-      const probeOut = execSync(
-        `ffprobe -v quiet -print_format json -show_format "${videoPath}" 2>&1`,
+      const { stdout: probeOut } = await execFileAsync(
+        "ffprobe",
+        ["-v", "quiet", "-print_format", "json", "-show_format", videoPath],
         { timeout: 10000 }
-      ).toString();
+      );
       const probe = JSON.parse(probeOut);
       duration = parseFloat(probe.format?.duration || "10");
     } catch (_) { /* استخدم القيمة الافتراضية */ }
@@ -146,12 +162,14 @@ async function extractVideoFrames(videoBuffer: Buffer, mimeType: string): Promis
     for (let i = 0; i < timestamps.length; i++) {
       const framePath = path.join(tmpDir, `frame${i}.jpg`);
       try {
-        execSync(
-          `ffmpeg -y -ss ${timestamps[i].toFixed(2)} -i "${videoPath}" -vframes 1 -q:v 2 -vf "scale=720:-1" "${framePath}" 2>/dev/null`,
+        const sanitizedFramePath = path.join(tmpDir, `frame${i}.jpg`);
+        await execFileAsync(
+          "ffmpeg",
+          ["-y", "-ss", timestamps[i].toFixed(2), "-i", videoPath, "-vframes", "1", "-q:v", "2", "-vf", "scale=720:-1", sanitizedFramePath],
           { timeout: 15000 }
         );
-        if (fs.existsSync(framePath)) {
-          const frameBuffer = fs.readFileSync(framePath);
+        if (fs.existsSync(sanitizedFramePath)) {
+          const frameBuffer = fs.readFileSync(sanitizedFramePath);
           const key = `scout-frames/${nanoid()}-frame${i}.jpg`;
           const { url } = await storagePut(key, frameBuffer, "image/jpeg");
           frameUrls.push(url);
@@ -314,7 +332,7 @@ router.get("/health", (_req, res) => {
     model: "claude-opus-4-5",
     prompt: "SAFF+FIFA v3 — playerName + video frames",
     ffmpegAvailable: (() => {
-      try { execSync("which ffmpeg", { timeout: 2000 }); return true; } catch { return false; }
+      try { execFileSync("which", ["ffmpeg"], { timeout: 2000 }); return true; } catch { return false; }
     })(),
   });
 });

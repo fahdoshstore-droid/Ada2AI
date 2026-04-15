@@ -95,9 +95,9 @@ let anthropicClient: Anthropic | null = null;
 
 function getAnthropicClient(): Anthropic {
   if (!anthropicClient) {
-    anthropicClient = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY,
-    });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not configured on the server");
+    anthropicClient = new Anthropic({ apiKey });
   }
   return anthropicClient;
 }
@@ -225,7 +225,7 @@ export function registerEyeVisionRoutes(app: Express): void {
 
   // Health check endpoint
   app.get("/api/eye/health", (_req: Request, res: Response) => {
-    const hasApiKey = !!(process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY);
+    const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
     res.json({
       status: "ok",
       vision: hasApiKey ? "configured" : "missing_api_key",

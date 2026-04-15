@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerChatRoutes } from "./chat";
 import { registerScoutAnalysisRoutes } from "../scoutAnalysis";
 import { registerEyeVisionRoutes } from "./eyeVision";
+import { requireAuth, rateLimit, validateUploadSize } from "./auth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -36,6 +37,14 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  // ── Auth + Rate Limit for API routes ────────────────────────────
+  // Protected routes require Supabase Auth + rate limiting + upload size check
+  app.use("/api/chat", requireAuth, rateLimit);
+  app.use("/api/scout", requireAuth, rateLimit, validateUploadSize);
+  app.use("/api/eye", requireAuth, rateLimit);
+  app.use("/api/v1/football", requireAuth, rateLimit);
+
+  // ── Route registrations ──────────────────────────────────────────
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // Chat API with streaming and tool calling

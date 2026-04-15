@@ -65,11 +65,17 @@ const tools = {
     }),
     execute: async ({ expression }) => {
       try {
-        // Simple safe eval for basic math
+        // Safe math evaluator — only allows numbers, operators, parentheses, and whitespace
         const sanitized = expression.replace(/[^0-9+\-*/().%\s]/g, "");
-        const result = Function(
-          `"use strict"; return (${sanitized})`
-        )() as number;
+        // Validate: must contain only safe math tokens (no function calls, no identifiers)
+        if (/[a-zA-Z_$]/.test(sanitized)) {
+          return { expression, error: "Invalid expression: identifiers not allowed" };
+        }
+        // Use a secure parser instead of Function() constructor
+        const result = safeMathEval(sanitized);
+        if (typeof result !== "number" || !isFinite(result)) {
+          return { expression, error: "Invalid expression: result is not a finite number" };
+        }
         return { expression, result };
       } catch {
         return { expression, error: "Invalid expression" };
@@ -77,6 +83,78 @@ const tools = {
     },
   }),
 };
+
+/**
+ * Secure math expression evaluator.
+ * Parses and computes simple arithmetic expressions without Function() or eval().
+ * Supports: +, -, *, /, %, parentheses, and numeric literals (including decimals).
+ */
+function safeMathEval(expr: string): number {
+  const tokens = expr.replace(/\s+/g, "").match(/(\d+\.?\d*|\+|\-|\*|\/|%|\(|\))/g);
+  if (!tokens) throw new Error("Invalid expression");
+
+  const output: (number | string)[] = [];  // RPN output queue
+  const ops: string[] = [];                  // Operator stack
+  const precedence: Record<string, number> = { "+": 1, "-": 1, "*": 2, "/": 2, "%": 2 };
+  const isUnary = (i: number): boolean => {
+    if (i === 0) return true;
+    const prev = tokens[i - 1];
+    return prev === "(" || "+-*/%".includes(prev);
+  };
+
+  // Shunting-yard algorithm
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    if (/^\d+(\.\d+)?$/.test(tok)) {
+      output.push(parseFloat(tok));
+    } else if (tok === "-" && isUnary(i)) {
+      // Unary minus: convert next number to negative
+      if (i + 1 < tokens.length && /^\d+(\.\d+)?$/.test(tokens[i + 1])) {
+        output.push(-parseFloat(tokens[i + 1]));
+        i++;  // skip next token (already consumed)
+      } else {
+        ops.push("!");
+      }
+    } else if ("+-*/%".includes(tok)) {
+      while (ops.length && ops[ops.length - 1] !== "(" && precedence[ops[ops.length - 1]] >= precedence[tok]) {
+        output.push(ops.pop()!);
+      }
+      ops.push(tok);
+    } else if (tok === "(") {
+      ops.push(tok);
+    } else if (tok === ")") {
+      while (ops.length && ops[ops.length - 1] !== "(") output.push(ops.pop()!);
+      if (ops.pop() !== "(") throw new Error("Mismatched parentheses");
+    }
+  }
+  while (ops.length) {
+    const op = ops.pop()!;
+    if (op === "(") throw new Error("Mismatched parentheses");
+    output.push(op);
+  }
+
+  // Evaluate RPN
+  const stack: number[] = [];
+  for (const item of output) {
+    if (typeof item === "number") {
+      stack.push(item);
+    } else {
+      const b = stack.pop(), a = stack.pop();
+      if (a === undefined || b === undefined) throw new Error("Invalid expression");
+      switch (item) {
+        case "+": stack.push(a + b); break;
+        case "-": stack.push(a - b); break;
+        case "*": stack.push(a * b); break;
+        case "/": stack.push(a / b); break;
+        case "%": stack.push(a % b); break;
+        case "!": stack.push(-b); break;
+      }
+    }
+  }
+  const result = stack[0];
+  if (typeof result !== "number" || !isFinite(result)) throw new Error("Invalid result");
+  return result;
+}
 
 /**
  * Registers the /api/chat endpoint for streaming AI responses.

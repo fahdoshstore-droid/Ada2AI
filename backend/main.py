@@ -28,7 +28,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=[
+        os.getenv("CORS_ORIGIN", "http://localhost:3000"),
+        "http://localhost:3000",   # Vite dev server
+        "http://localhost:3001",    # Alternative dev port
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
