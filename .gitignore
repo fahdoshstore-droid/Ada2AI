@@ -126,3 +126,7 @@ __pycache__/
 !.env.example
 venv/
 .uploads/
+content-pipeline/output/*.mp4
+content-pipeline/output/*.mp3
+content-pipeline/output/*.png
+content-pipeline/output/strategy_only_*.json
