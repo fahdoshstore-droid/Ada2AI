@@ -14,7 +14,7 @@ async function verifyAuth(req: Request, supabase: SupabaseClient): Promise<{ use
   const authHeader = req.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   const token = authHeader.slice(7);
-  const { data, error } = await supabase.auth.getUser(token);
+  const { data, error } = await (supabase.auth as any).getUser(token);
   if (error || !data.user) return null;
   return { user: data.user };
 }
