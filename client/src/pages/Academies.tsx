@@ -37,6 +37,7 @@ export default function Academies() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAcademy, setSelectedAcademy] = useState<Academy | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [mapError, setMapError] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -71,6 +72,15 @@ export default function Academies() {
       a.city.includes(searchQuery);
     return cityMatch && sportMatch && searchMatch;
   });
+
+  // Auto-detect map load failure
+  useEffect(() => {
+    if (loading) return;
+    const timer = setTimeout(() => {
+      if (!mapRef.current) setMapError(true);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const handleMapReady = (map: google.maps.Map) => {
     mapRef.current = map;
@@ -340,12 +350,21 @@ export default function Academies() {
             {/* Map */}
             <div className="lg:col-span-3 relative">
               <div className="rounded-2xl overflow-hidden neon-border" style={{ height: "600px" }}>
-                <MapView
-                  className="w-full h-full"
-                  initialCenter={{ lat: 26.35, lng: 50.15 }}
-                  initialZoom={11}
-                  onMapReady={handleMapReady}
-                />
+                {!mapError ? (
+                  <MapView
+                    className="w-full h-full"
+                    initialCenter={{ lat: 26.35, lng: 50.15 }}
+                    initialZoom={11}
+                    onMapReady={handleMapReady}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-[#0A1628] rounded-2xl">
+                    <div className="text-center">
+                      <MapPin size={48} className="mx-auto mb-3 text-[#EEEFEE]/20" />
+                      <p className="text-[#EEEFEE]/40 text-sm" style={{ fontFamily: "'Cairo', sans-serif" }}>الخريطة غير متاحة مؤقتاً</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Selected academy popup */}
