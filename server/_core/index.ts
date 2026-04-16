@@ -122,7 +122,8 @@ async function startServer() {
   // DHEEB Eye Vision — Claude Vision analysis endpoint
   registerEyeVisionRoutes(app);
 
-  // ── Public API routes (rate-limited, no auth required) ──────────
+  // ── Public API routes (rate-limited, no auth required for GET) ──────────
+  // SEC-12: POST/DELETE on players requires authentication (handled in apiPlayers.ts)
   app.use("/api/players", rateLimit);
   app.use("/api/academies", rateLimit);
   app.use("/api/scouts", rateLimit);
@@ -149,6 +150,43 @@ async function startServer() {
       
       if (!videoUrl) {
         return res.status(400).json({ error: "videoUrl is required" });
+      }
+      
+      // SEC-08: SSRF Protection - Validate URL to prevent internal network access
+      let parsedUrl: URL;
+      try {
+        parsedUrl = new URL(videoUrl);
+      } catch {
+        return res.status(400).json({ error: "Invalid video URL format" });
+      }
+      
+      // Only allow HTTPS URLs
+      if (parsedUrl.protocol !== "https:") {
+        return res.status(400).json({ error: "URL must use HTTPS protocol" });
+      }
+      
+      // Block internal IPs and localhost
+      const hostname = parsedUrl.hostname.toLowerCase();
+      const blockedPatterns = [
+        /^localhost$/,
+        /^127\./,
+        /^10\./,
+        /^172\.(1[6-9]|2[0-9]|3[01])\./,
+        /^192\.168\./,
+        /^169\.254\./,
+        /^0\./,
+        /^::1$/,
+        /^fc00:/,
+        /^fe80:/,
+      ];
+      
+      if (blockedPatterns.some(pattern => pattern.test(hostname))) {
+        return res.status(400).json({ error: "Invalid video URL: internal addresses not allowed" });
+      }
+      
+      // Block file protocol and other dangerous schemes
+      if (["file:", "ftp:", "sftp:", "ssh:", "telnet:", "gopher:"].includes(parsedUrl.protocol)) {
+        return res.status(400).json({ error: "Invalid URL protocol" });
       }
       
       console.log("[Football Analysis] Starting analysis for:", team_a_name, "vs", team_b_name);

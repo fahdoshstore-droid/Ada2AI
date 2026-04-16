@@ -5,6 +5,7 @@ import { requireAuth } from './_core/auth';
 const router = Router();
 
 // GET /api/players — list with optional filters ?sport=Football&region=Riyadh&search=keyword
+// SEC-12: GET is public, POST requires auth
 router.get('/', async (req, res) => {
   const supabase = getSupabase();
   if (!supabase) return res.status(503).json({ error: 'Database not configured' });

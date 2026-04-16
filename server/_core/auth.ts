@@ -44,11 +44,8 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
   const token = authHeader.slice(7);
 
-  // Allow anon key as service-level access (publishable key, not a secret)
-  if (token === SUPABASE_ANON_KEY) {
-    (req as any).user = { id: "service-anon", email: "service@ada2ai" };
-    return next();
-  }
+  // SEC-11: Removed ANON_KEY as valid auth token - security risk
+  // ANON_KEY is a public key that should not be used for service authentication
 
   const supabase = getSupabaseClient();
   if (!supabase) {

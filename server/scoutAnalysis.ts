@@ -20,8 +20,26 @@ const execFileAsync = promisify(execFile);
 // Allowed video extensions for ffmpeg processing
 const ALLOWED_VIDEO_EXTENSIONS = ["mp4", "mov", "webm", "avi", "mkv"];
 
+// SEC-10: Path traversal fix - properly sanitize filename to prevent directory traversal
+function sanitizeFilename(fileName: string): string {
+  // Remove path separators and null bytes
+  const sanitized = fileName
+    .replace(/\0/g, '')  // Remove null bytes
+    .replace(/[\/\\]/g, '_');  // Replace path separators with underscore
+  
+  // Get basename and remove any leading dots (hidden files)
+  const basename = path.basename(sanitized).replace(/^\.+/, '');
+  
+  // Limit length to prevent buffer overflow attacks
+  const maxLength = 255;
+  return basename.slice(0, maxLength) || 'unnamed_file';
+}
+
 function sanitizeVideoPath(filePath: string): string {
-  const resolved = path.resolve(filePath);
+  // First sanitize the filename to prevent path traversal
+  const sanitized = sanitizeFilename(path.basename(filePath));
+  const resolved = path.resolve(path.dirname(filePath), sanitized);
+  
   const ext = path.extname(resolved).toLowerCase().slice(1);
   if (!ALLOWED_VIDEO_EXTENSIONS.includes(ext)) {
     throw new Error(`Unsupported video format: .${ext}`);
@@ -178,6 +196,20 @@ async function extractVideoFrames(videoBuffer: Buffer, mimeType: string): Promis
 }
 
 // ─── Upload Endpoint ──────────────────────────────────────────────────────
+// SEC-09: File upload size limits - 10MB max for files, restrict MIME types
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "video/mp4",
+  "video/quicktime",  // mov
+  "video/webm",
+  "video/x-msvideo",  // avi
+  "video/x-matroska", // mkv
+];
+
 router.post("/upload", async (req, res) => {
   try {
     const { fileData, mimeType, fileName } = req.body as {
@@ -185,8 +217,24 @@ router.post("/upload", async (req, res) => {
       mimeType: string;
       fileName: string;
     };
+    
     if (!fileData || !mimeType) {
       return res.status(400).json({ error: "fileData و mimeType مطلوبان" });
+    }
+    
+    // SEC-09: Validate file size (base64 size roughly corresponds to file size)
+    const decodedSize = Math.ceil((fileData.length * 3) / 4);
+    if (decodedSize > MAX_FILE_SIZE) {
+      return res.status(413).json({ 
+        error: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB` 
+      });
+    }
+    
+    // SEC-09: Validate MIME type
+    if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+      return res.status(400).json({ 
+        error: "Invalid file type. Allowed: JPG, PNG, GIF, WEBP, MP4, MOV, WEBM, AVI, MKV" 
+      });
     }
     const buffer = Buffer.from(fileData, "base64");
     const isVideo = mimeType.startsWith("video/");
