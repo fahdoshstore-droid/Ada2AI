@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Search, Star, TrendingUp, Users, Plus, Filter } from "lucide-react";
+import { Search, Star, TrendingUp, Users, Plus, Filter, Brain, Loader2 } from "lucide-react";
+import { useA2AAgent } from "../hooks/useA2AAgent";
+import AgentTracePanel from "@/components/AgentTracePanel";
 
 interface PlayersProps {
   onNavigate: (page: string, context?: unknown) => void;
@@ -23,6 +25,9 @@ export default function Players({ onNavigate, lang = "ar" }: PlayersProps) {
   const isRTL = lang === "ar";
   const [search, setSearch] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState<typeof playersData[0] | null>(null);
+  const a2a = useA2AAgent();
+  const [playerQuestion, setPlayerQuestion] = useState("");
+  const [playerAnswer, setPlayerAnswer] = useState("");
 
   const filtered = playersData.filter(p =>
     (isRTL ? p.nameAr : p.nameEn).toLowerCase().includes(search.toLowerCase())

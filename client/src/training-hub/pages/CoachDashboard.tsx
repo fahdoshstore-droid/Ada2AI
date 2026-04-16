@@ -35,6 +35,8 @@ import {
 import { Link } from "wouter";
 import { allPlayers, type Player as DataPlayer } from "@/data/players";
 import { useTacticalAnimation, BUILTIN_SCENARIOS } from "./useTacticalAnimation";
+import { useA2AAgent } from "../hooks/useA2AAgent";
+import AgentTracePanel from "@/components/AgentTracePanel";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface CoachDashboardProps {
@@ -268,6 +270,7 @@ export default function CoachDashboard(props: any = {}) {
   // ── Tactical Animation ──────────────────────────────────────────────────
   const [tacticalMode, setTacticalMode] = useState(false);
   const tactical = useTacticalAnimation(players);
+  const a2a = useA2AAgent();
 
   // ── VisualGuide State ────────────────────────────────────────────────────────
   const [guideActive, setGuideActive] = useState(false);
@@ -654,6 +657,7 @@ export default function CoachDashboard(props: any = {}) {
               </button>
               <button
                 onClick={() => setTacticalMode(!tacticalMode)}
+                title={isRTL ? "تبديل الوضع التكتيكي" : "Toggle Tactical Mode"}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ms-auto"
                 style={{
                   background: tacticalMode ? "#00A651" : "transparent",
@@ -1003,6 +1007,56 @@ export default function CoachDashboard(props: any = {}) {
                 className="w-full text-sm text-white placeholder-white/25 resize-none focus:outline-none rounded-lg p-3"
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", fontFamily: font, direction: isRTL ? "rtl" : "ltr" }}
               />
+
+            {/* AI Agent Ask */}
+            <div className="rounded-2xl p-4 mt-3" style={{ background: "#0D1220", border: "1px solid rgba(0,212,255,0.12)" }}>
+              <div className="flex items-center gap-2 mb-2">
+                <Brain size={14} style={{ color: "#00D4FF" }} />
+                <h3 className="font-bold text-white text-sm" style={{ fontFamily: font }}>
+                  {isRTL ? "اسأل الذكاء الاصطناعي" : "Ask AI"}
+                </h3>
+                {a2a.isLoading && <Loader2 size={14} className="animate-spin" style={{ color: "#00D4FF" }} />}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={aiQuestion}
+                  onChange={e => setAiQuestion(e.target.value)}
+                  onKeyDown={async e => {
+                    if (e.key === "Enter" && aiQuestion.trim()) {
+                      const res = await a2a.ask(aiQuestion.trim());
+                      setAiAnswer(res.text || res.error || "");
+                      setAiQuestion("");
+                    }
+                  }}
+                  placeholder={isRTL ? "اسأل عن التكتيك، اللاعبين، الأداء..." : "Ask about tactics, players, performance..."}
+                  className="flex-1 text-sm text-white placeholder-white/25 focus:outline-none rounded-lg px-3 py-2"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(0,212,255,0.15)", fontFamily: font, direction: isRTL ? "rtl" : "ltr" }}
+                  disabled={a2a.isLoading}
+                />
+                <button
+                  onClick={async () => {
+                    if (aiQuestion.trim()) {
+                      const res = await a2a.ask(aiQuestion.trim());
+                      setAiAnswer(res.text || res.error || "");
+                      setAiQuestion("");
+                    }
+                  }}
+                  disabled={!aiQuestion.trim() || a2a.isLoading}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold disabled:opacity-40"
+                  style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0A0E1A", fontFamily: font }}
+                >
+                  <Brain size={12} />
+                  {isRTL ? "اسأل" : "Ask"}
+                </button>
+              </div>
+              {(a2a.streamingText || aiAnswer) && (
+                <div className="mt-2 rounded-lg p-3 text-sm" style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.1)", color: "rgba(255,255,255,0.85)", fontFamily: font, direction: isRTL ? "rtl" : "ltr" }}>
+                  {a2a.streamingText || aiAnswer}
+                </div>
+              )}
+              {a2a.lastTrace && <AgentTracePanel trace={a2a.lastTrace} totalDurationMs={a2a.lastDuration ?? undefined} lang={isRTL ? "ar" : "en"} compact />}
+            </div>
               {/* Action Buttons */}
               <div className="flex items-center gap-2 flex-wrap mt-3">
                 {/* Save Formation */}
