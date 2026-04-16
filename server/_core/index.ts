@@ -5,6 +5,7 @@ import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerChatRoutes } from "./chat";
+import { handleRAGQuestion } from "./rag";
 import { registerScoutAnalysisRoutes } from "../scoutAnalysis";
 import { registerEyeVisionRoutes } from "./eyeVision";
 import { registerPlayerRoutes } from "../apiPlayers";
@@ -16,6 +17,7 @@ import { registerAthleteCareerRoutes } from "../apiAthleteCareer";
 import { registerAthletePointsRoutes } from "../apiAthletePoints";
 import { registerMinistryRoutes } from "../apiMinistry";
 import { requireAuth, rateLimit, validateUploadSize } from "./auth";
+import { ttsHandler } from "./tts";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -48,15 +50,54 @@ async function startServer() {
   // ── Auth + Rate Limit for API routes ────────────────────────────
   // Protected routes require Supabase Auth + rate limiting + upload size check
   app.use("/api/chat", requireAuth, rateLimit);
+  app.use("/api/ask", requireAuth, rateLimit);
   app.use("/api/scout", requireAuth, rateLimit, validateUploadSize);
   app.use("/api/eye", requireAuth, rateLimit);
   app.use("/api/v1/football", requireAuth, rateLimit);
+
+  // ── TTS (Text-to-Speech) route ──────────────────────────────────
+  app.post("/api/tts", requireAuth, rateLimit, ttsHandler);
 
   // ── Route registrations ──────────────────────────────────────────
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // Chat API with streaming and tool calling
   registerChatRoutes(app);
+  // RAG Ask API — intent-classified question answering
+  app.post("/api/ask", async (req, res) => {
+    try {
+      const { question } = req.body;
+
+      if (!question || typeof question !== "string") {
+        res.status(400).json({ error: "question (string) is required" });
+        return;
+      }
+
+      const result = await handleRAGQuestion(question);
+
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      res.setHeader("Transfer-Encoding", "chunked");
+
+      const stream = result.textStream;
+      const reader = stream.getReader();
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          res.write(value);
+        }
+      } finally {
+        reader.releaseLock();
+        res.end();
+      }
+    } catch (error) {
+      console.error("[/api/ask] Error:", error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Internal server error" });
+      }
+    }
+  });
   registerScoutAnalysisRoutes(app);
   // DHEEB Eye Vision — Claude Vision analysis endpoint
   registerEyeVisionRoutes(app);
