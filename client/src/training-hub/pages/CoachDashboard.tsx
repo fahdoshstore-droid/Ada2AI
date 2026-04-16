@@ -372,6 +372,10 @@ export default function CoachDashboard(props: any = {}) {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
+  // ── AI Ask State ─────────────────────────────────────────────────────────────
+  const [aiQuestion, setAiQuestion] = useState("");
+  const [aiAnswer, setAiAnswer] = useState("");
+
   // ─── Build players from formation template ───────────────────────────────────
   function buildPlayers(f: Formation): PitchPlayer[] {
     return formationTemplates[f].map((t, i) => ({
