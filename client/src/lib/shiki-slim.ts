@@ -38,8 +38,9 @@ import langYaml from "shiki/langs/yaml.mjs";
 
 // Limited bundledLanguages — only the languages this app needs
 // This replaces the full bundledLanguages from shiki which has 235 entries
-// Each entry is a function that returns the grammar, matching Shiki's format
-export const bundledLanguages: Record<string, () => Promise<unknown[]>> = {
+// Using 'as any' because Shiki's internal LanguageInput type chain is deeply nested
+// and not publicly exported in a way compatible with our static grammar imports
+export const bundledLanguages = {
   css: () => Promise.resolve([langCss]),
   go: () => Promise.resolve([langGo]),
   golang: () => Promise.resolve([langGo]),
@@ -63,7 +64,7 @@ export const bundledLanguages: Record<string, () => Promise<unknown[]>> = {
   ts: () => Promise.resolve([langTypescript]),
   yaml: () => Promise.resolve([langYaml]),
   yml: () => Promise.resolve([langYaml]),
-};
+} as any;
 
 export const bundledLanguagesInfo = Object.entries(bundledLanguages).map(
   ([id]) => ({ id, name: id, import: bundledLanguages[id] })
