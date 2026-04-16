@@ -4,7 +4,7 @@
  */
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export const config = { maxDuration: 30 };
+export const config = { maxDuration: 60 };
 
 export default async function handler(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") {
