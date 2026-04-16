@@ -5,7 +5,7 @@ import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerChatRoutes } from "./chat";
-import { handleRAGQuestion } from "./rag";
+import { orchestratorAgent } from "./agents";
 import { registerScoutAnalysisRoutes } from "../scoutAnalysis";
 import { registerEyeVisionRoutes } from "./eyeVision";
 import { registerPlayerRoutes } from "../apiPlayers";
@@ -63,7 +63,8 @@ async function startServer() {
   registerOAuthRoutes(app);
   // Chat API with streaming and tool calling
   registerChatRoutes(app);
-  // RAG Ask API — intent-classified question answering
+  // ── Multi-Agent API Routes ─────────────────────────────────────────
+  // /api/ask — Streaming text response (Classifier → Query → Synthesizer pipeline)
   app.post("/api/ask", async (req, res) => {
     try {
       const { question } = req.body;
@@ -73,26 +74,45 @@ async function startServer() {
         return;
       }
 
-      const result = await handleRAGQuestion(question);
-
-      res.setHeader("Content-Type", "text/plain; charset=utf-8");
-      res.setHeader("Transfer-Encoding", "chunked");
-
-      const stream = result.textStream;
-      const reader = stream.getReader();
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          res.write(value);
-        }
-      } finally {
-        reader.releaseLock();
-        res.end();
-      }
+      // Use orchestrator's streaming pipeline (A2A architecture)
+      await orchestratorAgent.runStreamPipeline(question, res);
     } catch (error) {
       console.error("[/api/ask] Error:", error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Internal server error" });
+      }
+    }
+  });
+
+  // /api/ask/full — Full pipeline result with trace + metadata (Agenticthon demo)
+  app.post("/api/ask/full", requireAuth, rateLimit, async (req, res) => {
+    try {
+      const { question, voice, language } = req.body;
+
+      if (!question || typeof question !== "string") {
+        res.status(400).json({ error: "question (string) is required" });
+        return;
+      }
+
+      const includeVoice = !!voice;
+      const result = await orchestratorAgent.runPipeline(question, {
+        includeVoice,
+        voiceName: voice,
+        language,
+      });
+
+      // Return structured result with agent trace
+      res.json({
+        traceId: result.traceId,
+        classification: result.classification,
+        query: result.query,
+        synthesis: result.synthesis,
+        voice: result.voice ? { format: result.voice.format, sizeBytes: result.voice.sizeBytes } : undefined,
+        trace: result.trace,
+        totalDurationMs: result.totalDurationMs,
+      });
+    } catch (error) {
+      console.error("[/api/ask/full] Error:", error);
       if (!res.headersSent) {
         res.status(500).json({ error: "Internal server error" });
       }

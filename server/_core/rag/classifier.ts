@@ -11,8 +11,11 @@ import { intents, getIntentById, type Intent } from "./intents";
 
 const SPORT_MAP: Record<string, string> = {
   "كرة القدم": "Football",
+  "كرة قدم": "Football",
   "كرة السلة": "Basketball",
+  "كرة سلة": "Basketball",
   "السباحة": "Swimming",
+  "سباحة": "Swimming",
   "ألعاب القوى": "Athletics",
   "التنس": "Tennis",
 };
