@@ -10,6 +10,15 @@ function getSupabase(): SupabaseClient | null {
   return createClient(url, key);
 }
 
+async function verifyAuth(req: Request, supabase: SupabaseClient): Promise<{ user: any } | null> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+  const token = authHeader.slice(7);
+  const { data, error } = await (supabase.auth as any).getUser(token);
+  if (error || !data.user) return null;
+  return { user: data.user };
+}
+
 // Mock ministry KPI data fallback (ministry_stats table may not exist yet in Supabase)
 const mockMinistryKPI = {
   totalAthletes: 98750,
@@ -54,6 +63,12 @@ export default async function handler(req: Request) {
 
   const supabase = getSupabase();
   if (!supabase) return new Response(JSON.stringify({ error: "Database not configured" }), { status: 503, headers: { "Content-Type": "application/json" } });
+
+  // Auth check — require valid Supabase Bearer token
+  const auth = await verifyAuth(req, supabase);
+  if (!auth) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
 
   try {
     const { data, error } = await supabase.from("ministry_stats").select("*").maybeSingle();

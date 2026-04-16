@@ -32,11 +32,9 @@ function getSupabaseClient() {
  * logs a warning and passes through (for development).
  */
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  // In development without Supabase configured, allow passthrough
+  // Strict auth - no bypass, require Supabase credentials to be configured
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.warn("[Auth] SUPABASE_URL or SUPABASE_ANON_KEY not set — skipping auth (dev mode)");
-    (req as any).user = { id: "dev-user", email: "dev@localhost" };
-    return next();
+    return res.status(500).json({ error: "Auth service not configured" });
   }
 
   const authHeader = req.headers.authorization;
