@@ -1,19 +1,39 @@
 import { useState, useEffect } from 'react';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { mockMinistryKPI } from '@/lib/passport/mock-data';
+import type { MinistryKPI } from '@/lib/passport/types';
 import { useLang, LanguageProvider } from '@/lib/passport/LanguageContext';
 import { t } from '@/lib/passport/i18n';
 
-const kpi = mockMinistryKPI;
+// Ministry KPI data is now fetched from the API inside MinistryDashboardInner
+
 const SPORT_COLORS = ['#00DCC8', '#3B82F6', '#F59E0B', '#8B5CF6', '#EF4444', '#06B6D4'];
 
 function MinistryDashboardInner() {
   const { lang } = useLang();
-  const [liveCount, setLiveCount] = useState(kpi.activeThisMonth);
+
+  const [kpi, setKpi] = useState<MinistryKPI | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/ministry/kpi')
+      .then(r => r.json())
+      .then(d => { setKpi(d); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, []);
+
+  const [liveCount, setLiveCount] = useState(0);
+  useEffect(() => {
+    if (kpi) setLiveCount(kpi.activeThisMonth);
+  }, [kpi]);
   useEffect(() => {
     const interval = setInterval(() => setLiveCount(c => c + Math.floor(Math.random() * 3)), 2000);
     return () => clearInterval(interval);
   }, []);
+
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
+  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
+  if (!kpi) return <div className="text-white/30 text-center p-8">No ministry data available</div>;
 
   return (
     <div className="space-y-6">

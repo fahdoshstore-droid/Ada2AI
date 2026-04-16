@@ -1,12 +1,18 @@
 /**
  * Markdown Component
  *
- * A template-ready markdown renderer using Streamdown with:
- * - Shiki syntax highlighting for code blocks (via @streamdown/code)
- * - Mermaid diagram support (via @streamdown/mermaid)
+ * A production-ready markdown renderer using Streamdown with:
+ * - Shiki syntax highlighting for code blocks (lazy-loaded by Streamdown internally)
+ * - Mermaid diagram support (lazy-loaded by Streamdown internally)
  * - Line numbers on code blocks (built-in to Streamdown 2.x)
  * - Fine-grained control over each element via components prop
  * - Memoized for optimal performance during streaming
+ *
+ * Note: Streamdown internally lazy-loads Shiki language grammars and Mermaid
+ * via dynamic imports. The previous eager imports of @streamdown/code and
+ * @streamdown/mermaid forced all ~10MB of Shiki language files into the main
+ * bundle at initial page load. Removing those imports lets Vite code-split
+ * them properly.
  *
  * @see https://streamdown.ai/docs - Streamdown Documentation
  * @see https://streamdown.ai/docs/configuration - Configuration Options
@@ -63,8 +69,6 @@
 
 import { memo, type ReactNode, type ComponentProps } from "react";
 import { Streamdown } from "streamdown";
-import { code } from "@streamdown/code";
-import { mermaid } from "@streamdown/mermaid";
 import { cn } from "@/lib/utils";
 
 // ============================================================================
@@ -166,7 +170,7 @@ const components = {
 // MARKDOWN COMPONENT
 // ============================================================================
 
-type MarkdownProps = Omit<ComponentProps<typeof Streamdown>, "components" | "plugins"> & {
+type MarkdownProps = Omit<ComponentProps<typeof Streamdown>, "components"> & {
   /** Override specific element renderers */
   components?: Partial<typeof components>;
   /** Enable/disable code syntax highlighting (default: true) */
@@ -179,12 +183,16 @@ type MarkdownProps = Omit<ComponentProps<typeof Streamdown>, "components" | "plu
  * Markdown - A production-ready markdown renderer
  *
  * Features:
- * - Syntax highlighting with 200+ languages via Shiki
+ * - Syntax highlighting with 200+ languages via Shiki (lazy-loaded)
  * - Line numbers on code blocks
- * - Mermaid diagrams with interactive controls
+ * - Mermaid diagrams with interactive controls (lazy-loaded)
  * - Copy/download buttons on code blocks and diagrams
  * - Streaming support for AI chat applications
  * - Memoized for performance
+ *
+ * Shiki and Mermaid are lazy-loaded by Streamdown internally — they are
+ * only fetched when a code block or mermaid diagram is rendered, not on
+ * initial page load.
  *
  * @example
  * // Basic usage
@@ -206,19 +214,16 @@ export const Markdown = memo(function Markdown({
   enableMermaid = true,
   ...props
 }: MarkdownProps) {
-  // Build plugins object based on what's enabled
-  // @see https://streamdown.ai/docs/code-blocks
-  // @see https://streamdown.ai/docs/mermaid
-  const plugins: Record<string, unknown> = {};
-  if (enableCode) plugins.code = code;
-  if (enableMermaid) plugins.mermaid = mermaid;
-
   return (
     <Streamdown
       className={cn("text-foreground leading-relaxed", className)}
       components={{ ...components, ...customComponents }}
       shikiTheme={shikiTheme}
-      controls={controls}
+      controls={{
+        ...(typeof controls === "object" ? controls : {}),
+        code: enableCode,
+        mermaid: enableMermaid,
+      }}
       {...props}
     >
       {children}

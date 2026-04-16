@@ -1,10 +1,12 @@
+import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { mockFacility } from '@/lib/passport/mock-data';
+import type { Facility } from '@/lib/passport/types';
 import { useLang, LanguageProvider } from '@/lib/passport/LanguageContext';
 import { t } from '@/lib/passport/i18n';
 import NavBar from '@/components/passport/NavBar';
 
-const f = mockFacility;
+// Facility data is now fetched from the API inside FacilityAnalyticsInner
+
 const hourlyData = [
   { hour: '6am', checkins: 8 }, { hour: '8am', checkins: 23 }, { hour: '10am', checkins: 31 },
   { hour: '12pm', checkins: 18 }, { hour: '2pm', checkins: 14 }, { hour: '4pm', checkins: 38 },
@@ -17,6 +19,23 @@ const weeklyRevenue = [
 
 function FacilityAnalyticsInner() {
   const { lang } = useLang();
+
+  const [data, setData] = useState<Facility[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/facilities')
+      .then(r => r.json())
+      .then(d => { setData(Array.isArray(d) ? d : [d]); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, []);
+
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
+  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
+  if (!data?.length) return <div className="text-white/30 text-center p-8">No facility data available</div>;
+
+  const f = data[0];
   const sportDistribution = f.checkins.reduce<Record<string, number>>((acc, c) => { acc[c.sport] = (acc[c.sport] || 0) + 1; return acc; }, {});
   return (
     <div className="space-y-6">

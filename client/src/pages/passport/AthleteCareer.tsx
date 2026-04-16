@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { mockAthletes } from '@/lib/passport/mock-data';
+import { useState, useEffect } from 'react';
+import type { Athlete } from '@/lib/passport/types';
 import { useLang, LanguageProvider } from '@/lib/passport/LanguageContext';
 import { t } from '@/lib/passport/i18n';
 import NavBar from '@/components/passport/NavBar';
 
-const athlete = mockAthletes[0];
+// Athlete data is now fetched from the API inside CareerPageInner
 
 /* ── Circular SVG progress ring ── */
 function CircleRing({ score, size = 110, stroke = 9 }: { score: number; size?: number; stroke?: number }) {
@@ -208,6 +208,23 @@ const milestones = [
 function CareerPageInner() {
   const { lang } = useLang();
   const [applied, setApplied] = useState<string | null>(null);
+
+  const [data, setData] = useState<Athlete[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/athletes/0/career')
+      .then(r => r.json())
+      .then(d => { setData(Array.isArray(d) ? d : [d]); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, []);
+
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
+  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
+  if (!data?.length) return <div className="text-white/30 text-center p-8">No athlete data available</div>;
+
+  const athlete = data[0];
 
   const aiRecommendations = [
     { id: 'r1', title: 'Regional U18 Football Trials',    titleAr: 'تجارب كرة القدم تحت 18 إقليمياً', match: 94, deadline: '2026-04-15', type: t('trial', lang),       icon: '⚽', urgent: true  },

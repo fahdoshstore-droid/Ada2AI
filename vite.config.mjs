@@ -19,6 +19,18 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Split shiki core into its own chunk so it can be lazy-loaded
+          // by Streamdown's internal dynamic imports instead of being
+          // bundled into the main chunk via @streamdown/code.
+          if (id.includes("node_modules/shiki/")) {
+            return "shiki";
+          }
+        },
+      },
+    },
   },
   server: {
     host: true,

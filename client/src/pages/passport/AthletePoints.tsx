@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { mockAthletes, getLevelInfo } from '@/lib/passport/mock-data';
+import { useState, useEffect } from 'react';
+import { getLevelInfo } from '@/lib/passport/levels';
+import type { Athlete } from '@/lib/passport/types';
 import { useLang, LanguageProvider } from '@/lib/passport/LanguageContext';
 import { t } from '@/lib/passport/i18n';
 import NavBar from '@/components/passport/NavBar';
 
-const athlete = mockAthletes[0];
+// Athlete data is now fetched from the API inside PointsPageInner
 
 const transactions = [
   { id: 1,  type: 'session',       icon: '⚽', label: 'Football Training',       labelAr: 'تدريب كرة القدم',         sub: 'Prince Faisal Sports Center', subAr: 'مركز الأمير فيصل', pts: 10,  date: '2026-03-10' },
@@ -60,9 +61,26 @@ const typeStyle: Record<string, string> = {
 
 function PointsPageInner() {
   const { lang } = useLang();
-  const levelInfo = getLevelInfo(athlete.sportPoints);
   const [filter, setFilter]     = useState<Filter>('all');
   const [redeemed, setRedeemed] = useState<number | null>(null);
+
+  const [data, setData] = useState<Athlete[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/athletes/0/points')
+      .then(r => r.json())
+      .then(d => { setData(Array.isArray(d) ? d : [d]); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, []);
+
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
+  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
+  if (!data?.length) return <div className="text-white/30 text-center p-8">No athlete data available</div>;
+
+  const athlete = data[0];
+  const levelInfo = getLevelInfo(athlete.sportPoints);
 
   const currentLevelIdx = LEVELS.findIndex(l => l.name === levelInfo.level);
   const progressPct = levelInfo.next

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { mockAthletes, getLevelInfo } from '@/lib/passport/mock-data';
+import { getLevelInfo } from '@/lib/passport/levels';
+import type { Athlete } from '@/lib/passport/types';
 import { useLang, LanguageProvider } from '@/lib/passport/LanguageContext';
 import { t } from '@/lib/passport/i18n';
 import NavBar from '@/components/passport/NavBar';
@@ -95,7 +96,22 @@ function AthletePageInner() {
   const [copied, setCopied]             = useState(false);
   const [showDemoMenu, setShowDemoMenu] = useState(false);
 
-  const athlete = mockAthletes[profileIndex];
+  const [data, setData] = useState<Athlete[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/players')
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, []);
+
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
+  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
+  if (!data?.length) return <div className="text-white/30 text-center p-8">No athlete data available</div>;
+
+  const athlete = data[profileIndex];
 
   // Active sport for radar — default to first sport the athlete plays
   const [activeSport, setActiveSport] = useState<string>(athlete.sports[0]);
@@ -759,7 +775,7 @@ function AthletePageInner() {
           {showDemoMenu && (
             <div className="absolute bottom-14 right-0 bg-[#000A0F] border border-white/10 rounded-2xl p-2 shadow-2xl w-52 space-y-1">
               <div className="text-white/30 text-[10px] px-3 py-1 uppercase tracking-widest">Demo Profiles</div>
-              {mockAthletes.map((a, i) => (
+              {data.map((a, i) => (
                 <button
                   key={a.id}
                   onClick={() => { setProfileIndex(i); setShowDemoMenu(false); }}
@@ -784,7 +800,7 @@ function AthletePageInner() {
           >
             <span>🎭</span>
             <span>Demo</span>
-            <span className="text-white/30">{profileIndex + 1}/{mockAthletes.length}</span>
+            <span className="text-white/30">{profileIndex + 1}/{data.length}</span>
           </button>
         </div>
       </div>

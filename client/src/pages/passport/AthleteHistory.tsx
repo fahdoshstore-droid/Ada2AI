@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { mockAthletes } from '@/lib/passport/mock-data';
+import { useState, useEffect } from 'react';
+import type { Athlete } from '@/lib/passport/types';
 import { useLang, LanguageProvider } from '@/lib/passport/LanguageContext';
 import { t } from '@/lib/passport/i18n';
 import NavBar from '@/components/passport/NavBar';
 
-const athlete = mockAthletes[0];
+// Athlete data is now fetched from the API inside HistoryPageInner
 
 type HistoryItem = {
   id: string;
@@ -22,29 +22,31 @@ type HistoryItem = {
 const SPORT_ICONS: Record<string, string> = { Football: '⚽', Swimming: '🏊', Basketball: '🏀' };
 const SPORT_AR: Record<string, string>    = { Football: 'كرة القدم', Swimming: 'السباحة', Basketball: 'كرة السلة' };
 
-const baseHistory: HistoryItem[] = [
-  ...athlete.sessions.map(s => ({
-    id: `s-${s.id}`, type: 'session' as const,
-    icon: SPORT_ICONS[s.sport] ?? '🏟️',
-    title: `${s.sport} Training`,      titleAr: `تدريب ${SPORT_AR[s.sport] ?? s.sport}`,
-    sub: s.facilityName,               subAr: s.facilityName,
-    pts: s.points, date: s.date,       meta: `${s.duration}min`,
-  })),
-  ...athlete.achievements.map(a => ({
-    id: `a-${a.id}`, type: 'achievement' as const,
-    icon: a.icon,
-    title: a.title,   titleAr: a.title,
-    sub: a.description, subAr: a.description,
-    pts: a.points, date: a.date, meta: '',
-  })),
-  ...athlete.certifications.map(c => ({
-    id: `c-${c.id}`, type: 'certification' as const,
-    icon: '📜',
-    title: c.name,    titleAr: c.name,
-    sub: c.issuedBy,  subAr: c.issuedBy,
-    pts: c.points, date: c.issuedAt, meta: c.sport,
-  })),
-];
+function buildBaseHistory(athlete: Athlete): HistoryItem[] {
+  return [
+    ...athlete.sessions.map(s => ({
+      id: 's-' + s.id, type: 'session' as const,
+      icon: SPORT_ICONS[s.sport] ?? '🏟️',
+      title: s.sport + ' Training',      titleAr: 'تدريب ' + (SPORT_AR[s.sport] ?? s.sport),
+      sub: s.facilityName,               subAr: s.facilityName,
+      pts: s.points, date: s.date,       meta: s.duration + 'min',
+    })),
+    ...athlete.achievements.map(a => ({
+      id: 'a-' + a.id, type: 'achievement' as const,
+      icon: a.icon,
+      title: a.title,   titleAr: a.title,
+      sub: a.description, subAr: a.description,
+      pts: a.points, date: a.date, meta: '',
+    })),
+    ...athlete.certifications.map(c => ({
+      id: 'c-' + c.id, type: 'certification' as const,
+      icon: '📜',
+      title: c.name,    titleAr: c.name,
+      sub: c.issuedBy,  subAr: c.issuedBy,
+      pts: c.points, date: c.issuedAt, meta: c.sport,
+    })),
+  ];
+}
 
 // Extended history for a richer timeline
 const extraHistory: HistoryItem[] = [
@@ -57,8 +59,7 @@ const extraHistory: HistoryItem[] = [
   { id: 'e7', type: 'session' as const, icon: '⚽', title: 'Football Training', titleAr: 'تدريب كرة القدم', sub: 'Prince Faisal Sports Center', subAr: 'مركز الأمير فيصل',   pts: 10, date: '2025-10-14', meta: '90min' },
 ];
 
-const allHistory: HistoryItem[] = [...baseHistory, ...extraHistory]
-  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+// allHistory is now built inside HistoryPageInner after data is fetched
 
 const FILTERS = ['all', 'session', 'achievement', 'certification'] as const;
 type Filter = typeof FILTERS[number];
@@ -106,6 +107,25 @@ function groupByMonth(items: HistoryItem[]) {
 function HistoryPageInner() {
   const { lang } = useLang();
   const [filter, setFilter] = useState<Filter>('all');
+
+  const [data, setData] = useState<Athlete[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/athletes/0/career')
+      .then(r => r.json())
+      .then(d => { setData(Array.isArray(d) ? d : [d]); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, []);
+
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
+  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
+  if (!data?.length) return <div className="text-white/30 text-center p-8">No athlete data available</div>;
+
+  const athlete = data[0];
+  const allHistory: HistoryItem[] = [...buildBaseHistory(athlete), ...extraHistory]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const filtered = filter === 'all' ? allHistory : allHistory.filter(i => i.type === filter);
   const grouped  = groupByMonth(filtered);

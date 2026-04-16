@@ -10,6 +10,11 @@ import { registerEyeVisionRoutes } from "./eyeVision";
 import { registerPlayerRoutes } from "../apiPlayers";
 import { registerAcademyRoutes } from "../apiAcademies";
 import { registerScoutRoutes } from "../apiScouts";
+import { registerTrainingRoutes } from "../apiTrainings";
+import { registerFacilityRoutes } from "../apiFacilities";
+import { registerAthleteCareerRoutes } from "../apiAthleteCareer";
+import { registerAthletePointsRoutes } from "../apiAthletePoints";
+import { registerMinistryRoutes } from "../apiMinistry";
 import { requireAuth, rateLimit, validateUploadSize } from "./auth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -63,6 +68,17 @@ async function startServer() {
   registerPlayerRoutes(app);
   registerAcademyRoutes(app);
   registerScoutRoutes(app);
+  app.use("/api/trainings", rateLimit);
+  registerTrainingRoutes(app);
+  
+  // ── New API routes (mock fallback until Supabase tables exist) ───
+  app.use("/api/facilities", rateLimit);
+  app.use("/api/athletes", rateLimit);
+  app.use("/api/ministry", rateLimit);
+  registerFacilityRoutes(app);
+  registerAthleteCareerRoutes(app);
+  registerAthletePointsRoutes(app);
+  registerMinistryRoutes(app);
   
   // ── Football Video Analysis API ─────────────────────────────────────────────
   // This endpoint is called by CoachDashboard to analyze match videos

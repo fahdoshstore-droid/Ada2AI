@@ -82,13 +82,6 @@ const stats = [
   { value: "RTL", label: "Arabic-First Design", labelAr: "تصميم عربي أولاً", icon: <Star size={18} />, color: "#00DCC8" },
 ];
 
-const demoPlayers = [
-  { name: "أحمد الشمري", pos: "مهاجم", club: "الأهلي", age: 22, speed: 88, strength: 80, technique: 92, endurance: 75, teamwork: 85, progress: 78 },
-  { name: "محمد القحطاني", pos: "وسط", club: "الهلال", age: 25, speed: 82, strength: 80, technique: 88, endurance: 90, teamwork: 92, progress: 85 },
-  { name: "خالد العتيبي", pos: "مدافع", club: "الاتحاد", age: 28, speed: 75, strength: 92, technique: 78, endurance: 85, teamwork: 88, progress: 72 },
-  { name: "عبدالله النصار", pos: "حارس مرمى", club: "النصر", age: 24, speed: 70, strength: 85, technique: 90, endurance: 82, teamwork: 80, progress: 90 },
-];
-
 const trainingTypes = [
   { label: "تدريب السرعة", icon: "⚡", color: "#FFA500" },
   { label: "تدريب تقني", icon: "⚽", color: "#00DCC8" },
@@ -226,6 +219,32 @@ export default function TrainingHub() {
   const [activeTab, setActiveTab] = useState<"overview" | "players" | "training">("overview");
   const [hubOpen, setHubOpen] = useState(false);
   const { isRTL, lang } = useLanguage();
+
+  // Players Data (fetched from API)
+  const [demoPlayers, setDemoPlayers] = useState<{name:string;pos:string;club:string;age:number;speed:number;strength:number;technique:number;endurance:number;teamwork:number;progress:number}[]>([]);
+  const [playersLoading, setPlayersLoading] = useState(true);
+  const [playersError, setPlayersError] = useState<string | null>(null);
+  useEffect(() => {
+    fetch("/api/players?sport=Football")
+      .then(r => { if (!r.ok) throw new Error("Failed to fetch players"); return r.json() })
+      .then((data: {id:string;name:string;name_ar:string;sport:string;position:string;age:number;rating:number;academy_name:string;speed:number;agility:number;technique:number;performance:number;attendance:number;goals:number;assists:number;number:string;status:string}[]) => {
+        const mapped = data.map((p) => ({
+          name: p.name_ar || p.name,
+          pos: p.position || "",
+          club: p.academy_name || "",
+          age: p.age,
+          speed: p.speed || 0,
+          strength: p.agility || 0,
+          technique: p.technique || 0,
+          endurance: p.attendance || 0,
+          teamwork: Math.round((p.rating || 0) * 0.9),
+          progress: p.rating || 0,
+        }))
+        setDemoPlayers(mapped)
+        setPlayersLoading(false)
+      })
+      .catch((e: Error) => { setPlayersError(e.message); setPlayersLoading(false) })
+  }, [])
 
   // Scroll to top on page load
   useEffect(() => {
@@ -707,7 +726,7 @@ export default function TrainingHub() {
               </Link>
             </div>
 
-            {/* Chat UI mockup */}
+            {/* Chat UI preview */}
             <div
               className="ada-card p-5"
               dir="rtl"
