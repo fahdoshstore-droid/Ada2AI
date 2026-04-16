@@ -2,11 +2,9 @@
  * /api/ask/full — A2A Full Pipeline Response (Vercel Serverless)
  * Returns complete trace + metadata for Agenticthon demo
  */
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export const config = {
-  maxDuration: 30,
-};
+export const config = { maxDuration: 30 };
 
 export default async function handler(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") {
@@ -30,7 +28,6 @@ export default async function handler(req: Request): Promise<Response> {
   try {
     const body = await req.json();
     const question = body.question || body.q || "";
-
     if (!question.trim()) {
       return new Response(JSON.stringify({ error: "Question is required" }), {
         status: 400,
@@ -41,8 +38,7 @@ export default async function handler(req: Request): Promise<Response> {
     const isArabic = /[\u0600-\u06FF]/.test(question);
     const lang = isArabic ? "ar" : "en";
     const apiKey = process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
-
-    const traceId = `a2a-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const traceId = "a2a-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
     const pipelineStart = Date.now();
 
     // Step 1: Classifier
@@ -50,37 +46,28 @@ export default async function handler(req: Request): Promise<Response> {
     let classification = { intentId: "general_sport", params: {} as Record<string, string>, confidence: 0.5 };
 
     if (apiKey) {
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenerativeAI(apiKey);
       const classifierPrompt = isArabic
-        ? `صنّف سؤال المستخدم الرياضي إلى واحدة من الفئات وأرجع JSON فقط:
-الفئات: player_search, top_players, count_query, academy_search, facility_search, match_analysis, training_tips, general_sport
-السؤال: "${question}"
-أرجع: {"intentId":"...","params":{...},"confidence":0.0-1.0}`
-        : `Classify this sports question, return JSON only:
-Categories: player_search, top_players, count_query, academy_search, facility_search, match_analysis, training_tips, general_sport
-Question: "${question}"
-Return: {"intentId":"...","params":{...},"confidence":0.0-1.0}`;
+        ? `صنّف سؤال المستخدم الرياضي إلى واحدة من الفئات وأرجع JSON فقط:\nالفئات: player_search, top_players, count_query, academy_search, facility_search, match_analysis, training_tips, general_sport\nالسؤال: "${question}"\nأرجع: {"intentId":"...","params":{...},"confidence":0.0-1.0}`
+        : `Classify this sports question, return JSON only:\nCategories: player_search, top_players, count_query, academy_search, facility_search, match_analysis, training_tips, general_sport\nQuestion: "${question}"\nReturn: {"intentId":"...","params":{...},"confidence":0.0-1.0}`;
 
-      const classifyResult = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: classifierPrompt,
-      });
+      const classifyResult = await ai.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(classifierPrompt);
       try {
-        const jsonMatch = (classifyResult.text || "").match(/\{[\s\S]*\}/);
+        const jsonMatch = classifyResult.response.text().match(/\{[\s\S]*\}/);
         if (jsonMatch) classification = JSON.parse(jsonMatch[0]);
       } catch {}
     }
     const classifyDuration = Date.now() - classifyStart;
 
-    // Step 2: Query (mock for now — real Supabase on server)
+    // Step 2: Query (metadata only in serverless)
     const queryStart = Date.now();
     const queryResult = {
       table: classification.intentId.includes("player") ? "players" :
              classification.intentId.includes("academy") ? "academies" :
              classification.intentId.includes("facility") ? "facilities" : "unknown",
-      data: null as any,
-      count: null as number | null,
-      error: null as string | null,
+      data: null,
+      count: null,
+      error: null,
     };
     const queryDuration = Date.now() - queryStart;
 
@@ -88,22 +75,15 @@ Return: {"intentId":"...","params":{...},"confidence":0.0-1.0}`;
     const synthStart = Date.now();
     let synthesisText = "";
     if (apiKey) {
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenerativeAI(apiKey);
       const synthPrompt = isArabic
-        ? `أنت مساعد رياضي ذكي. أجب على السؤال التالي بشكل مفيد ومفصل باللغة العربية:
-"${question}"`
-        : `You are a smart sports assistant. Answer the following question helpfully in English:
-"${question}"`;
+        ? `أنت مساعد رياضي ذكي. أجب على السؤال التالي بشكل مفيد ومفصل باللغة العربية:\n"${question}"`
+        : `You are a smart sports assistant. Answer the following question helpfully in English:\n"${question}"`;
 
-      const synthResult = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: synthPrompt,
-      });
-      synthesisText = synthResult.text || "";
+      const synthResult = await ai.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(synthPrompt);
+      synthesisText = synthResult.response.text();
     } else {
-      synthesisText = isArabic
-        ? "عذراً، خدمة الذكاء الاصطناعي غير متاحة حالياً."
-        : "Sorry, AI service is not available right now.";
+      synthesisText = isArabic ? "عذراً، خدمة الذكاء الاصطناعي غير متاحة حالياً." : "Sorry, AI service is not available.";
     }
     const synthDuration = Date.now() - synthStart;
     const totalDuration = Date.now() - pipelineStart;
@@ -122,10 +102,7 @@ Return: {"intentId":"...","params":{...},"confidence":0.0-1.0}`;
     };
 
     return new Response(JSON.stringify(result, null, 2), {
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
   } catch (error: any) {
     console.error("[/api/ask/full] Error:", error);
