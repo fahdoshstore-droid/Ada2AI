@@ -135,3 +135,4 @@ content-pipeline/yolo*.pt
 content-pipeline/output/*.mp4
 content-pipeline/output/*.mp3
 content-pipeline/output/*.png
+data/
