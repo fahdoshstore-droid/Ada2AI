@@ -1,13 +1,70 @@
 import { Link } from 'react-router-dom'
 
-const features = [
-  { icon: 'badge', title: 'الهوية الرياضية', desc: 'بطاقة FIFA لكل لاعب مع تقييم شامل', path: '/sport-id', color: 'var(--accent-gold)' },
-  { icon: 'smart_display', title: 'تحليل الفيديو', desc: 'تحليل الأداء بالذكاء الاصطناعي', path: '/video-analysis', color: 'var(--accent-cyan)' },
-  { icon: 'sports', title: 'لوحة المدرب', desc: 'إدارة الفريق والتدريبات', path: '/coach', color: 'var(--accent-gold)' },
-  { icon: 'person_search', title: 'لوحة الكشاف', desc: 'اكتشاف ومقارنة المواهب', path: '/scout', color: 'var(--accent-cyan)' },
-  { icon: 'leaderboard', title: 'ترتيب المواهب', desc: 'تصنيف أفضل اللاعبين', path: '/rankings', color: 'var(--accent-gold)' },
-  { icon: 'psychology', title: 'Dheeb V4', desc: 'عقل ذكي يحلل ويتعلم ويتنبأ', path: '/dheeb', color: 'var(--accent-cyan)' },
+// ════════════════════════════════════════════════════════════════
+// PRODUCTS STRUCTURE — Constitution-compliant
+// ════════════════════════════════════════════════════════════════
+// 4 Main Products + Add-ons (not standalone features)
+
+const mainProducts = [
+  {
+    id: 'sport-identity',
+    icon: 'badge',
+    title: 'الهوية الرياضية',
+    desc: 'بطاقة FIFA لكل لاعب مع تقييم شامل',
+    path: '/sport-id',
+    color: 'var(--accent-gold)',
+    addons: [
+      { title: 'محرك تطوير الأداء', icon: 'trending_up', desc: 'تحليل تطوري مخصص' },
+      { title: 'مساعد افتراضي', icon: 'smart_toy', desc: 'دعم ذكي على مدار الساعة' },
+      { title: 'مركز التطوير', icon: 'school', desc: 'برامج تدريب متقدمة' },
+    ]
+  },
+  {
+    id: 'scout-dashboard',
+    icon: 'person_search',
+    title: 'لوحة الكشافين',
+    desc: 'اكتشاف ومقارنة المواهب',
+    path: '/scout',
+    color: 'var(--accent-cyan)',
+    addons: [
+      { title: 'محرك تطوير الأداء', icon: 'trending_up', desc: 'تحليل تطوري مخصص' },
+      { title: 'مساعد افتراضي', icon: 'smart_toy', desc: 'دعم ذكي على مدار الساعة' },
+      { title: 'مركز التطوير', icon: 'school', desc: 'برامج تدريب متقدمة' },
+    ]
+  },
+  {
+    id: 'coach-dashboard',
+    icon: 'sports',
+    title: 'لوحة المدربين',
+    desc: 'إدارة الفريق والتدريبات',
+    path: '/coach',
+    color: 'var(--accent-gold)',
+    addons: [
+      { title: 'محرك تطوير الأداء', icon: 'trending_up', desc: 'تحليل تطوري مخصص' },
+      { title: 'مساعد افتراضي', icon: 'smart_toy', desc: 'دعم ذكي على مدار الساعة' },
+      { title: 'مركز التطوير', icon: 'school', desc: 'برامج تدريب متقدمة' },
+    ]
+  },
+  {
+    id: 'organizations-dashboard',
+    icon: 'groups',
+    title: 'لوحه المنشئات',
+    desc: 'إدارة اللاعبين والمؤسسات',
+    path: '/club',
+    color: 'var(--accent-cyan)',
+    addons: [
+      // Club dashboard includes ALL players - no add-ons needed for now
+    ]
+  },
 ]
+
+// Standalone features that were moved to add-ons:
+// - تحليل الفيديو (Video Analysis) → now an addon
+// - ترتيب المواهب (Rankings) → integrated into dashboards
+// - Dheeb V4 (AI Brain) → now an addon called "مساعد افتراضي"
+
+
+const features = mainProducts
 
 const stats = [
   { value: '14', label: 'مدينة' },
@@ -70,28 +127,55 @@ function LandingPage() {
 
       {/* Features */}
       <section style={{ marginBottom: '60px' }}>
-        <h2 className="section-title" style={{ textAlign: 'center' }}>المنظومة المتكاملة</h2>
-        <p className="section-subtitle" style={{ textAlign: 'center' }}>كل أدوات اكتشاف المواهب في مكان واحد</p>
+        <h2 className="section-title" style={{ textAlign: 'center' }}>المنتجات</h2>
+        <p className="section-subtitle" style={{ textAlign: 'center' }}>٤ منتجات رئيسية + خيارات إضافية</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-          {features.map((f, i) => (
-            <Link key={i} to={f.path} className="glass-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
-                <div style={{
-                  width: '48px', height: '48px',
-                  background: f.color === 'var(--accent-gold)' ? 'linear-gradient(135deg, var(--accent-gold), #b8962e)' : 'rgba(0, 212, 255, 0.15)',
-                  borderRadius: '12px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: f.color === 'var(--accent-cyan)' ? '1px solid rgba(0, 212, 255, 0.3)' : 'none',
-                }}>
-                  <span className="material-symbols-outlined" style={{
-                    color: f.color === 'var(--accent-gold)' ? 'var(--primary-bg)' : 'var(--accent-cyan)',
-                    fontSize: '24px'
-                  }}>{f.icon}</span>
+          {mainProducts.map((product, i) => (
+            <div key={i} className="glass-card" style={{ cursor: 'pointer' }}>
+              <Link to={product.path} style={{ textDecoration: 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+                  <div style={{
+                    width: '48px', height: '48px',
+                    background: product.color === 'var(--accent-gold)' ? 'linear-gradient(135deg, var(--accent-gold), #b8962e)' : 'rgba(0, 212, 255, 0.15)',
+                    borderRadius: '12px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: product.color === 'var(--accent-cyan)' ? '1px solid rgba(0, 212, 255, 0.3)' : 'none',
+                  }}>
+                    <span className="material-symbols-outlined" style={{
+                      color: product.color === 'var(--accent-gold)' ? 'var(--primary-bg)' : 'var(--accent-cyan)',
+                      fontSize: '24px'
+                    }}>{product.icon}</span>
+                  </div>
+                  <h3 style={{ color: 'var(--text-white)', fontSize: '1.1rem', fontWeight: 700 }}>{product.title}</h3>
                 </div>
-                <h3 style={{ color: 'var(--text-white)', fontSize: '1.1rem', fontWeight: 700 }}>{f.title}</h3>
-              </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6 }}>{f.desc}</p>
-            </Link>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '16px' }}>{product.desc}</p>
+              </Link>
+
+              {/* Add-ons */}
+              {product.addons && product.addons.length > 0 && (
+                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--glass-border)' }}>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '12px', fontWeight: 600 }}>إضافة:</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {product.addons.map((addon, j) => (
+                      <div key={j} style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 12px',
+                        background: 'rgba(0, 212, 255, 0.1)',
+                        border: '1px solid rgba(0, 212, 255, 0.2)',
+                        borderRadius: '8px',
+                        fontSize: '0.8rem',
+                        color: 'var(--accent-cyan)',
+                      }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>{addon.icon}</span>
+                        {addon.title}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </section>
