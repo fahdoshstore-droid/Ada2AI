@@ -1,84 +1,46 @@
 import { useState, useEffect } from 'react'
 import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js'
 import { Radar } from 'react-chartjs-2'
-import { Share2, Printer, Star, MapPin, Calendar, Trophy, Loader2, AlertCircle } from 'lucide-react'
+import { Share2, Star, MapPin, Trophy, Loader2, AlertCircle } from 'lucide-react'
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend)
 
-// ─── Types ───
 interface Player {
-  id: number
+  id: string
   name: string
   name_ar?: string
   age: number | null
-  team: string | null
   position: string | null
   photo_url: string | null
   jersey_number: number | null
-  nationality: string | null
-  dominant_foot: string | null
-}
-
-interface SportPassport {
-  id: number
-  player_id: number
-  overall_score: number
-  pace_score: number
-  shooting_score: number
-  passing_score: number
-  dribbling_score: number
-  defending_score: number
-  physical_score: number
-  total_matches: number
-  total_goals: number
-  total_assists: number
+  sport?: string
+  region?: string
+  rating?: number
+  speed?: number
+  agility?: number
+  technique?: number
+  badge?: string
+  badge_color?: string
 }
 
 interface PlayerWithPassport {
   player: Player
-  passport: SportPassport | null
-}
-
-const MOCK_PLAYER: PlayerWithPassport = {
-  player: {
-    id: 1,
-    name: 'أحمد المحمدي',
-    age: 23,
-    team: 'النصر',
-    position: 'وسط مهاجم',
-    photo_url: null,
-    jersey_number: 10,
-    nationality: 'سعودي',
-    dominant_foot: 'right'
-  },
   passport: {
-    id: 1,
-    player_id: 1,
-    overall_score: 86,
-    pace_score: 88,
-    shooting_score: 82,
-    passing_score: 92,
-    dribbling_score: 85,
-    defending_score: 45,
-    physical_score: 79,
-    total_matches: 47,
-    total_goals: 23,
-    total_assists: 18
-  }
+    overall_score: number
+    pace_score: number
+    shooting_score: number
+    passing_score: number
+    dribbling_score: number
+    defending_score: number
+    physical_score: number
+    total_matches: number
+    total_goals: number
+    total_assists: number
+  } | null
 }
 
 const FALLBACK_PLAYER: PlayerWithPassport = {
-  player: {
-    id: 0,
-    name: 'لم يتم العثور على لاعب',
-    age: null,
-    team: null,
-    position: null,
-    photo_url: null,
-    jersey_number: null,
-    nationality: null,
-    dominant_foot: null
-  },
+  player: { id: '0', name: 'لم يتم العثور على لاعب', age: null, position: null, photo_url: null, jersey_number: null },
   passport: null
 }
 
@@ -86,43 +48,55 @@ function SportID() {
   const [data, setData] = useState<PlayerWithPassport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [allPlayers, setAllPlayers] = useState<Player[]>([])
+  const [selectedIndex, setSelectedIndex] = useState(0)
 
   useEffect(() => {
-    async function fetchPlayer() {
+    async function fetchPlayers() {
       try {
-        const res = await fetch('/api/sportid/players')
+        const res = await fetch('/api/players')
         const json = await res.json()
 
-        if (json.success && json.data?.length > 0) {
-          // Fetch full details + passport for first player
-          const playerId = json.data[0].id
-          const detailRes = await fetch(`/api/sportid/players/${playerId}`)
-          const detailJson = await detailRes.json()
-
-          if (detailJson.success) {
-            setData(detailJson.data)
-          } else {
-            // Use list data with minimal passport
-            setData({
-              player: json.data[0],
-              passport: null
-            })
-          }
+        if (Array.isArray(json) && json.length > 0) {
+          const players: Player[] = json
+          setAllPlayers(players)
+          selectPlayer(players[0])
         } else {
-          // No data — use mock for demo
-          setData(MOCK_PLAYER)
+          setData(FALLBACK_PLAYER)
         }
       } catch (err) {
         console.error('[SportID] Fetch error:', err)
-        // Fallback to mock on network error
-        setData(MOCK_PLAYER)
+        setError('فشل في تحميل البيانات')
+        setData(FALLBACK_PLAYER)
       } finally {
         setLoading(false)
       }
     }
-
-    fetchPlayer()
+    fetchPlayers()
   }, [])
+
+  function selectPlayer(player: Player) {
+    const speed = player.speed || 0
+    const agility = player.agility || 0
+    const technique = player.technique || 0
+    const rating = player.rating || 50
+
+    setData({
+      player,
+      passport: {
+        overall_score: rating,
+        pace_score: speed,
+        shooting_score: Math.round(technique * 0.9),
+        passing_score: technique,
+        dribbling_score: agility,
+        defending_score: Math.round(rating * 0.4),
+        physical_score: Math.round((speed + agility) / 2),
+        total_matches: 0,
+        total_goals: 0,
+        total_assists: 0
+      }
+    })
+  }
 
   const radarData = {
     labels: ['السرعة', 'التسريع', 'الرشاقة', 'التكتيك', 'التحمل', 'التقنية'],
@@ -148,133 +122,155 @@ function SportID() {
   }
 
   const radarOptions = {
+    responsive: true,
     scales: {
       r: {
-        beginAtZero: true,
+        min: 0,
         max: 100,
-        ticks: { display: false },
-        grid: { color: 'rgba(0, 212, 255, 0.1)' },
-        angleLines: { color: 'rgba(0, 212, 255, 0.1)' },
-        pointLabels: { color: '#a8b4c4', font: { family: 'Cairo', size: 12 } }
+        ticks: { stepSize: 20, display: false },
+        grid: { color: 'rgba(255,255,255,0.1)' },
+        angleLines: { color: 'rgba(255,255,255,0.1)' },
+        pointLabels: { color: '#fff', font: { size: 11 } }
       }
     },
-    plugins: { legend: { display: false } },
-    responsive: true,
-    maintainAspectRatio: true,
+    plugins: { legend: { display: false } }
   }
 
-  const getRatingColor = (rating: number) => {
-    if (rating >= 85) return 'from-[#d4af37] to-[#e8c84a]'
-    if (rating >= 70) return 'from-[#00d4ff] to-[#33ddff]'
-    return 'from-gray-400 to-gray-500'
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#00d4ff]" />
-      </div>
-    )
-  }
-
-  if (error || !data) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px] gap-2 text-red-400">
-        <AlertCircle className="w-5 h-5" />
-        <span>حدث خطأ في تحميل البيانات</span>
-      </div>
-    )
-  }
-
-  const { player, passport } = data
-  const overall = passport?.overall_score ?? 0
+  if (loading) return (
+    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <Loader2 className="w-12 h-12 text-[#00d4ff] animate-spin" />
+    </div>
+  )
 
   return (
-    <div className="max-w-2xl mx-auto" dir="rtl">
-      <h1 className="text-3xl font-bold mb-6">
-        <span className="bg-gradient-to-r from-[#d4af37] to-[#e8c84a] bg-clip-text text-transparent">الهوية الرياضية</span>
-      </h1>
-
-      {/* Player Card */}
-      <div className="bg-[#0a1f3d]/50 backdrop-blur-xl border border-[#00d4ff]/15 rounded-2xl overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#0a1f3d] to-[#041329] p-6 flex items-center gap-6">
-          {/* Overall Rating */}
-          <div className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${getRatingColor(overall)} flex items-center justify-center flex-shrink-0`}>
-            <span className="text-4xl font-black text-[#041329]">{overall || '—'}</span>
+    <div className="min-h-screen bg-[#0a0a0f] text-white" dir="rtl">
+      {/* Header */}
+      <div className="bg-gradient-to-l from-[#00d4ff]/20 to-transparent border-b border-[#00d4ff]/20 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[#00d4ff]">SPORT ID</h1>
+            <p className="text-gray-400 text-sm">منصة تحليل المواهب الرياضية</p>
           </div>
-
-          {/* Player Info */}
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white">{player.name}</h2>
-            {player.name_ar && player.name !== player.name_ar && (
-              <p className="text-[#00d4ff] text-sm">{player.name_ar}</p>
-            )}
-            <div className="flex items-center gap-4 mt-2 text-gray-400 text-sm">
-              {player.team && <span className="flex items-center gap-1"><Trophy className="w-4 h-4 text-[#d4af37]" />{player.team}</span>}
-              {player.nationality && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{player.nationality}</span>}
-              {player.age && <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />{player.age} سنة</span>}
-            </div>
-            {player.position && (
-              <span className="inline-block mt-2 px-3 py-1 bg-[#00d4ff]/10 border border-[#00d4ff]/30 rounded-full text-[#00d4ff] text-xs">{player.position}</span>
-            )}
+          <div className="flex gap-2">
+            {allPlayers.slice(0, 5).map((p, i) => (
+              <button
+                key={p.id}
+                onClick={() => { setSelectedIndex(i); selectPlayer(p); }}
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                  selectedIndex === i ? 'bg-[#00d4ff] text-black' : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                {p.name?.charAt(0)}
+              </button>
+            ))}
           </div>
-        </div>
-
-        {/* Stats Summary */}
-        {passport && (
-          <div className="px-6 py-3 border-t border-[#00d4ff]/10 bg-[#041329]/30">
-            <div className="flex flex-wrap gap-4 text-xs text-gray-400">
-              <span>المباريات: <strong className="text-white">{passport.total_matches}</strong></span>
-              <span>الأهداف: <strong className="text-white">{passport.total_goals}</strong></span>
-              <span>التمريرات: <strong className="text-white">{passport.total_assists}</strong></span>
-              {passport.dominant_foot && <span>القدم: <strong className="text-white">{passport.dominant_foot === 'right' ? 'اليمنى' : passport.dominant_foot === 'left' ? 'اليسرى' : passport.dominant_foot}</strong></span>}
-            </div>
-          </div>
-        )}
-
-        {/* Radar Chart */}
-        <div className="p-6">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Star className="w-5 h-5 text-[#d4af37]" />
-            مخطط القدرات
-          </h3>
-          <div className="max-w-sm mx-auto">
-            <Radar data={radarData} options={radarOptions} />
-          </div>
-        </div>
-
-        {/* Stats Grid */}
-        {passport && (
-          <div className="px-6 pb-6">
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { key: 'pace_score', label: 'السرعة', value: passport.pace_score },
-                { key: 'passing_score', label: 'التمرير', value: passport.passing_score },
-                { key: 'dribbling_score', label: 'المراوغة', value: passport.dribbling_score },
-                { key: 'shooting_score', label: 'التسديد', value: passport.shooting_score },
-                { key: 'physical_score', label: 'اللياقة', value: passport.physical_score },
-                { key: 'defending_score', label: 'الدفاع', value: passport.defending_score },
-              ].map(({ key, label, value }) => (
-                <div key={key} className="bg-[#041329]/50 rounded-xl p-3 text-center border border-[#00d4ff]/10">
-                  <div className="text-2xl font-bold text-[#00d4ff]">{value}</div>
-                  <div className="text-xs text-gray-400 mt-1">{label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="px-6 pb-6 flex gap-3">
-          <button className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-[#d4af37] to-[#e8c84a] rounded-xl text-[#041329] font-bold hover:opacity-90 transition">
-            <Share2 className="w-5 h-5" /> مشاركة
-          </button>
-          <button className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#00d4ff]/10 border border-[#00d4ff]/30 rounded-xl text-[#00d4ff] font-bold hover:bg-[#00d4ff]/20 transition">
-            <Printer className="w-5 h-5" /> طباعة
-          </button>
         </div>
       </div>
+
+      {error && (
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="bg-red-500/20 border border-red-500/40 rounded-lg px-4 py-2 flex items-center gap-2 text-red-400">
+            <AlertCircle className="w-4 h-4" />
+            {error}
+          </div>
+        </div>
+      )}
+
+      {data && (
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Player Card */}
+            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+              <div className="w-24 h-24 bg-gradient-to-br from-[#00d4ff] to-[#d4af37] rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <span className="text-4xl font-bold text-black">
+                  {data.player.name?.charAt(0) || '?'}
+                </span>
+              </div>
+              <h2 className="text-xl font-bold text-center mb-1">
+                {data.player.name_ar || data.player.name}
+              </h2>
+              <p className="text-gray-400 text-center text-sm mb-4">{data.player.name}</p>
+
+              <div className="space-y-3">
+                <div className="flex justify-between"><span className="text-gray-400">العمر</span><span className="font-semibold">{data.player.age || '—'}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">المركز</span><span className="font-semibold">{data.player.position || '—'}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">التقييم</span><span className="font-bold text-[#d4af37]">{data.player.rating || 0}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">الرياضة</span><span className="font-semibold">{data.player.sport || '—'}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">المنطقة</span><span className="font-semibold flex items-center gap-1"><MapPin className="w-3 h-3"/>{data.player.region || '—'}</span></div>
+                {data.player.badge && (
+                  <div className="mt-3 pt-3 border-t border-white/10 text-center">
+                    <span className="text-xs px-3 py-1 rounded-full" style={{ backgroundColor: data.player.badge_color + '30', color: data.player.badge_color }}>
+                      {data.player.badge}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Radar Chart */}
+            <div className="bg-white/5 rounded-2xl p-6 border border-white/10 flex flex-col items-center">
+              <h3 className="text-lg font-bold mb-4">التقييم التفصيلي</h3>
+              <Radar data={radarData} options={radarOptions as any} className="w-full max-w-sm" />
+              {data.passport && (
+                <div className="mt-4 bg-[#d4af37]/10 rounded-xl px-4 py-2">
+                  <span className="text-[#d4af37] font-bold text-lg">التقييم العام: {data.passport.overall_score}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Stats */}
+            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Trophy className="w-5 h-5 text-[#d4af37]"/>الإحصائيات</h3>
+              {data.passport ? (
+                <div className="space-y-4">
+                  <div className="bg-white/5 rounded-xl p-4 text-center">
+                    <p className="text-3xl font-bold text-[#00d4ff]">{data.passport.total_matches}</p>
+                    <p className="text-gray-400 text-sm">مباريات</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white/5 rounded-xl p-3 text-center">
+                      <p className="text-xl font-bold text-[#d4af37]">{data.passport.total_goals}</p>
+                      <p className="text-gray-400 text-xs">أهداف</p>
+                    </div>
+                    <div className="bg-white/5 rounded-xl p-3 text-center">
+                      <p className="text-xl font-bold text-[#00d4ff]">{data.passport.total_assists}</p>
+                      <p className="text-gray-400 text-xs">تمريرات</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">لا توجد إحصائيات</p>
+              )}
+            </div>
+          </div>
+
+          {/* Player Selector */}
+          {allPlayers.length > 1 && (
+            <div className="mt-8">
+              <h3 className="text-lg font-bold mb-4">اللاعبون ({allPlayers.length})</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {allPlayers.map((p, i) => (
+                  <button
+                    key={p.id}
+                    onClick={() => { setSelectedIndex(i); selectPlayer(p); }}
+                    className={`p-3 rounded-xl text-center transition-all ${
+                      selectedIndex === i
+                        ? 'bg-[#00d4ff]/20 border border-[#00d4ff]'
+                        : 'bg-white/5 border border-white/10 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="w-12 h-12 bg-gradient-to-br from-[#00d4ff] to-[#d4af37] rounded-full mx-auto mb-2 flex items-center justify-center text-lg font-bold text-black">
+                      {p.name?.charAt(0)}
+                    </div>
+                    <p className="text-sm font-semibold truncate">{p.name_ar || p.name}</p>
+                    <p className="text-xs text-gray-400">{p.position} · {p.rating || 0}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
