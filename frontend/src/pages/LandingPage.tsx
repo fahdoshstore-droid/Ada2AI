@@ -45,17 +45,6 @@ const mainProducts = [
       { title: 'مركز التطوير', icon: 'school', desc: 'برامج تدريب متقدمة' },
     ]
   },
-  {
-    id: 'organizations-dashboard',
-    icon: 'groups',
-    title: 'لوحه المنشئات',
-    desc: 'إدارة اللاعبين والمؤسسات',
-    path: '/club',
-    color: 'var(--accent-cyan)',
-    addons: [
-      // Club dashboard includes ALL players - no add-ons needed for now
-    ]
-  },
 ]
 
 // Standalone features that were moved to add-ons:

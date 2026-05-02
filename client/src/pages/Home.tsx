@@ -189,16 +189,6 @@ export default function Home() {
         { label: "مركز التطوير", icon: "school" },
       ]
     },
-    {
-      id: 'organizations-dashboard',
-      num: "04",
-      icon: <Building2 size={22} />,
-      title: "لوحه المنشئات",
-      desc: "إدارة اللاعبين والمؤسسات",
-      color: "#00DCC8",
-      href: "/organizations",
-      addons: [] // Organizations includes all players
-    },
   ];
 
   // Backwards compatibility

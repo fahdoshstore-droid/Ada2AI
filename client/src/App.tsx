@@ -21,7 +21,6 @@ import DemoVideo      from "./pages/DemoVideo";
 import NahdaDemo     from "./pages/NahdaDemo";
 import Players       from "./pages/Players";
 import Dashboards           from "./pages/Dashboards";
-import OrganizationsDashboard from "./pages/OrganizationsDashboard";
 import SportIDPassport from "./pages/SportIDPassport";
 import AthleteProfile   from "./pages/passport/AthleteProfile";
 import AthleteCareer    from "./pages/passport/AthleteCareer";
@@ -79,7 +78,6 @@ function Router() {
 
       {/* ── Platform Tools ── */}
       <Route path="/dashboards"     component={Dashboards} />
-      <Route path="/organizations" component={OrganizationsDashboard} />
       <Route path="/academies"    component={Academies} />
       <Route path="/sport-id"     component={SportIDPassport} />
       <Route path="/sportid"      component={SportIDPassport} />
@@ -112,7 +110,6 @@ function Router() {
       <Route path="/features/ministry-report" component={MinistryReportPage} />
       {/* ── Standalone Pages ── */}
       <Route path="/coach"           component={CoachDashboard} />
-      <Route path="/organizations"  component={OrganizationsDashboard} />
 
       {/* ── Dashboard sub-routes ── */}
       <Route path="/dashboard"         component={DashboardHome} />

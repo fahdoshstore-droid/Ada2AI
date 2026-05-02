@@ -1,13 +1,9 @@
 /**
  * Supabase Database Client — Ada2AI
- * Unified database layer replacing MySQL/Drizzle.
- * Uses Supabase for users, profiles, and waitlist.
- * 
- * Schema: The `users` table has these columns:
- *   id (UUID PK), open_id (VARCHAR 64 UNIQUE), email, full_name, name,
- *   role (user|admin), sport, login_method, last_signed_in, is_active,
- *   created_at, updated_at
- * The `profiles` table is the auth-related profile table.
+ * Uses Supabase for profiles and waitlist.
+ *
+ * Schema: The `profiles` table has these columns:
+ *   id (UUID PK FK→auth.users), email, full_name, user_type
  * The `waitlist` table stores waitlist entries.
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
@@ -28,28 +24,21 @@ export function getSupabase(): SupabaseClient | null {
 }
 
 // ─── Types ────────────────────────────────────────────────────────────
-export interface User {
+export interface Profile {
   id: string;
-  open_id: string;
-  name: string | null;
-  full_name?: string | null;   // from profiles — mapped to name on read
   email: string | null;
-  login_method: string | null;
-  role: "user" | "admin";
-  sport?: string | null;
-  is_active?: boolean;
-  last_signed_in: string | null;
-  created_at: string;
-  updated_at: string;
+  full_name: string | null;
+  user_type: string | null;
 }
 
-export interface InsertUser {
-  open_id: string;
-  name?: string | null;
+/** @deprecated Use Profile — kept for backward compat with tRPC context */
+export type User = Profile;
+
+export interface InsertProfile {
+  id: string;
   email?: string | null;
-  login_method?: string | null;
-  role?: "user" | "admin";
-  last_signed_in?: string;
+  full_name?: string | null;
+  user_type?: string | null;
 }
 
 export interface WaitlistEntry {
@@ -62,64 +51,56 @@ export interface WaitlistEntry {
   created_at?: string;
 }
 
-// ─── User Operations ─────────────────────────────────────────────────
-export async function upsertUser(user: InsertUser): Promise<void> {
+// ─── Profile Operations ──────────────────────────────────────────────
+export async function upsertProfile(profile: InsertProfile): Promise<void> {
   const supabase = getSupabase();
   if (!supabase) {
-    console.warn("[Database] Cannot upsert user: Supabase not configured");
+    console.warn("[Database] Cannot upsert profile: Supabase not configured");
     return;
   }
 
   const row: Record<string, unknown> = {
-    open_id: user.open_id,
-    name: user.name ?? null,
-    email: user.email ?? null,
-    login_method: user.login_method ?? null,
+    id: profile.id,
+    email: profile.email ?? null,
+    full_name: profile.full_name ?? null,
   };
 
-  if (user.role) {
-    row.role = user.role;
-  } else if (user.open_id === ENV.ownerOpenId) {
-    row.role = "admin";
+  if (profile.user_type) {
+    row.user_type = profile.user_type;
+  } else if (profile.id === ENV.ownerOpenId) {
+    row.user_type = "admin";
   }
-
-  if (user.last_signed_in) {
-    row.last_signed_in = user.last_signed_in;
-  }
-
-  // Ensure updated_at is always refreshed
-  row.updated_at = new Date().toISOString();
 
   const { error } = await supabase
-    .from("users")
-    .upsert(row, { onConflict: "open_id" });
+    .from("profiles")
+    .upsert(row, { onConflict: "id" });
 
   if (error) {
-    console.error("[Database] Failed to upsert user:", error);
+    console.error("[Database] Failed to upsert profile:", error);
     throw error;
   }
 }
 
-export async function getUserByOpenId(openId: string): Promise<User | undefined> {
+export async function getProfileById(id: string): Promise<Profile | undefined> {
   const supabase = getSupabase();
   if (!supabase) {
-    console.warn("[Database] Cannot get user: Supabase not configured");
+    console.warn("[Database] Cannot get profile: Supabase not configured");
     return undefined;
   }
 
   const { data, error } = await supabase
-    .from("users")
+    .from("profiles")
     .select("*")
-    .eq("open_id", openId)
+    .eq("id", id)
     .limit(1)
     .maybeSingle();
 
   if (error) {
-    console.error("[Database] Failed to get user:", error);
+    console.error("[Database] Failed to get profile:", error);
     return undefined;
   }
 
-  return (data as User) ?? undefined;
+  return (data as Profile) ?? undefined;
 }
 
 // ─── Waitlist Operations ──────────────────────────────────────────────
