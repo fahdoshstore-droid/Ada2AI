@@ -20,7 +20,8 @@ import Demo          from "./pages/Demo";
 import DemoVideo      from "./pages/DemoVideo";
 import NahdaDemo     from "./pages/NahdaDemo";
 import Players       from "./pages/Players";
-import Dashboards    from "./pages/Dashboards";
+import Dashboards           from "./pages/Dashboards";
+import OrganizationsDashboard from "./pages/OrganizationsDashboard";
 import SportIDPassport from "./pages/SportIDPassport";
 import AthleteProfile   from "./pages/passport/AthleteProfile";
 import AthleteCareer    from "./pages/passport/AthleteCareer";
@@ -39,6 +40,7 @@ import SubGovernance from "./pages/SubGovernance";
 import TeamMembers   from "./pages/TeamMembers";
 import NotFound      from "./pages/NotFound";
 import ModuleDetail  from "./pages/ModuleDetail";
+import Rankings      from "./pages/Rankings";
 import NafathPage       from "./pages/features/NafathPage";
 import QrCheckinPage    from "./pages/features/QrCheckinPage";
 import SportPointsPage  from "./pages/features/SportPointsPage";
@@ -76,7 +78,8 @@ function Router() {
       <Route path="/yolo"        component={YOLOAnalysis} />
 
       {/* ── Platform Tools ── */}
-      <Route path="/dashboards"   component={Dashboards} />
+      <Route path="/dashboards"     component={Dashboards} />
+      <Route path="/organizations" component={OrganizationsDashboard} />
       <Route path="/academies"    component={Academies} />
       <Route path="/sport-id"     component={SportIDPassport} />
       <Route path="/sportid"      component={SportIDPassport} />
@@ -107,18 +110,24 @@ function Router() {
       <Route path="/features/qr-checkin"      component={QrCheckinPage} />
       <Route path="/features/sport-points"    component={SportPointsPage} />
       <Route path="/features/ministry-report" component={MinistryReportPage} />
+      {/* ── Standalone Pages ── */}
+      <Route path="/coach"           component={CoachDashboard} />
+      <Route path="/organizations"  component={OrganizationsDashboard} />
 
-      {/* ── Dashboard ── */}
+      {/* ── Dashboard sub-routes ── */}
       <Route path="/dashboard"         component={DashboardHome} />
       <Route path="/dashboard/profile"  component={PlayerProfile} />
       <Route path="/dashboard/settings" component={DashboardHome} />
       <Route path="/dashboard/stats"   component={DashboardHome} />
-      <Route path="/dashboard/videos"     component={VideoUpload} />
-      <Route path="/dashboard/team"      component={TeamAnalysis} />
-      <Route path="/dashboard/coach"     component={CoachDashboard} />
-      <Route path="/dashboard/scout"     component={ScoutDashboard} />
-      <Route path="/dashboard/club"      component={ClubDashboard} />
-      <Route path="/dashboard/parent"    component={ParentDashboard} />
+      <Route path="/dashboard/videos"   component={VideoUpload} />
+      <Route path="/dashboard/team"     component={TeamAnalysis} />
+      <Route path="/dashboard/coach"    component={CoachDashboard} />
+      <Route path="/dashboard/scout"    component={ScoutDashboard} />
+      <Route path="/dashboard/club"     component={ClubDashboard} />
+      <Route path="/dashboard/parent"   component={ParentDashboard} />
+
+      {/* ── Rankings ── */}
+      <Route path="/rankings"          component={Rankings} />
 
       {/* ── Fallback ── */}
       <Route path="/404"          component={NotFound} />

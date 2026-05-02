@@ -1,0 +1,2 @@
+-- Remote migration 20260430132617 - schema already exists on remote
+-- This is a placeholder to sync migration history

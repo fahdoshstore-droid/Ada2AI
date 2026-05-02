@@ -143,56 +143,66 @@ export default function Home() {
     },
   ];
 
-  const modules = [
+  // ════════════════════════════════════════════════════════════════
+  // PRODUCTS & ADD-ONS — Constitution-compliant  
+  // ════════════════════════════════════════════════════════════════
+  const mainProducts = [
     {
+      id: 'sport-identity',
       num: "01",
-      icon: <Users size={22} />,
-      title: t("module.scouts.title"),
-      desc: t("module.scouts.desc"),
-      color: "#FFA500",
-      href: "/scouts",
-    },
-    {
-      num: "02",
       icon: <Shield size={22} />,
       title: t("module.sportId.title"),
       desc: t("module.sportId.desc"),
       color: "#00DCC8",
       href: "/sport-id",
+      addons: [
+        { label: "محرك تطوير الأداء", icon: "trending_up" },
+        { label: "مساعد افتراضي", icon: "smart_toy" },
+        { label: "مركز التطوير", icon: "school" },
+      ]
     },
     {
+      id: 'scout-dashboard',
+      num: "02",
+      icon: <Users size={22} />,
+      title: t("module.scouts.title"),
+      desc: t("module.scouts.desc"),
+      color: "#007ABA",
+      href: "/scouts",
+      addons: [
+        { label: "محرك تطوير الأداء", icon: "trending_up" },
+        { label: "مساعد افتراضي", icon: "smart_toy" },
+        { label: "مركز التطوير", icon: "school" },
+      ]
+    },
+    {
+      id: 'coach-dashboard',
       num: "03",
-      icon: <Brain size={22} />,
-      title: t("module.aiEngine.title"),
-      desc: t("module.aiEngine.desc"),
-      color: "#007ABA",
-      href: "/demo",
-    },
-    {
-      num: "04",
-      icon: <Trophy size={22} />,
-      title: t("module.training.title"),
-      desc: t("module.training.desc"),
-      color: "#FFA500",
-      href: "/training",
-    },
-    {
-      num: "05",
       icon: <BarChart3 size={22} />,
-      title: t("module.compare.title"),
-      desc: t("module.compare.desc"),
-      color: "#00DCC8",
-      href: "/compare",
+      title: "لوحة المدربين",
+      desc: "إدارة الفريق والتدريبات",
+      color: "#FFA500",
+      href: "/dashboard/coach",
+      addons: [
+        { label: "محرك تطوير الأداء", icon: "trending_up" },
+        { label: "مساعد افتراضي", icon: "smart_toy" },
+        { label: "مركز التطوير", icon: "school" },
+      ]
     },
     {
-      num: "06",
+      id: 'organizations-dashboard',
+      num: "04",
       icon: <Building2 size={22} />,
-      title: t("module.institutes.title"),
-      desc: t("module.institutes.desc"),
-      color: "#007ABA",
-      href: "/academies",
+      title: "لوحه المنشئات",
+      desc: "إدارة اللاعبين والمؤسسات",
+      color: "#00DCC8",
+      href: "/organizations",
+      addons: [] // Organizations includes all players
     },
   ];
+
+  // Backwards compatibility
+  const modules = mainProducts;
 
   const steps = [
     { num: "01", icon: <IdCard size={20} />, title: t("how.1.title"), desc: t("how.1.desc"), color: "#00DCC8" },
@@ -492,32 +502,45 @@ export default function Home() {
 
           {/* كروت الوحدات */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
-            {modules.map((m, i) => (
-              <Link key={i} href={m.href}>
+            {mainProducts.map((product, i) => (
+              <Link key={product.id} href={product.href}>
                 <div
                   className="group cursor-pointer rounded-2xl border transition-all duration-300 hover:border-[#00DCC8]/30 hover:scale-[1.02] overflow-hidden"
                   style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.07)' }}
                 >
-                  <div style={{ height: '3px', background: `linear-gradient(90deg, ${m.color}, transparent)` }} />
+                  <div style={{ height: '3px', background: `linear-gradient(90deg, ${product.color}, transparent)` }} />
                   <div className="p-6">
                     <div className="flex items-start gap-4 mb-4">
                       <div
                         className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110"
-                        style={{ background: `${m.color}15`, border: `1px solid ${m.color}30` }}
+                        style={{ background: `${product.color}15`, border: `1px solid ${product.color}30` }}
                       >
-                        {m.icon}
+                        {product.icon}
                       </div>
                       <div className="flex-1">
-                        <span className="text-xs font-bold font-orbitron" style={{ color: m.color }}>{m.num}</span>
+                        <span className="text-xs font-bold font-orbitron" style={{ color: product.color }}>{product.num}</span>
                         <h3 className="font-bold text-sm text-[#EEEFEE]" style={{ fontFamily: lang === "ar" ? "'Cairo', sans-serif" : "'Orbitron', sans-serif" }}>
-                          {m.title}
+                          {product.title}
                         </h3>
                       </div>
                     </div>
                     <p className="text-xs mb-4 leading-relaxed" style={{ color: 'rgba(238,239,238,0.45)', fontFamily: "'Cairo', sans-serif" }}>
-                      {m.desc}
+                      {product.desc}
                     </p>
-                    <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: m.color }}>
+
+                    {/* Add-ons */}
+                    {product.addons && product.addons.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                        <span className="text-xs font-semibold" style={{ color: 'rgba(238,239,238,0.4)' }}>إضافة:</span>
+                        {product.addons.map((addon, j) => (
+                          <span key={j} className="px-2 py-1 rounded-lg text-xs" style={{ background: `${product.color}10`, color: product.color, border: `1px solid ${product.color}20` }}>
+                            {addon.label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-1.5 text-xs font-semibold mt-4" style={{ color: product.color }}>
                       <span>{lang === "ar" ? "استكشف" : "Explore"}</span>
                       <ArrowRight size={12} />
                     </div>
