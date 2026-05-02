@@ -7,8 +7,8 @@ import { EmptyState } from '../../components/EmptyState'
 import { ErrorState } from '../../components/ErrorState'
 
 export function CoachDashboard() {
-  const { signOut, organization } = useAuth()
-  const [players, setPlayers] = useState<Array<{ id: string; user_id: string; role: string }>>([])
+  const { signOut } = useAuth()
+  const [players, setPlayers] = useState<Array<{ id: string; user_id: string }>>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [formation, setFormation] = useState('4-3-3')
@@ -20,10 +20,9 @@ export function CoachDashboard() {
       setError(null)
 
       const { data, error: fetchError } = await supabase
-        .from('memberships')
-        .select('*')
-        .eq('organization_id', organization?.id)
-        .eq('role', 'player')
+        .from('players')
+        .select('id, user_id')
+        .eq('is_active', true)
 
       if (fetchError) throw fetchError
       setPlayers(data || [])
@@ -34,7 +33,7 @@ export function CoachDashboard() {
     }
   }
 
-  useEffect(() => { if (organization) fetchPlayers() }, [organization])
+  useEffect(() => { fetchPlayers() }, [])
 
   const handleSignOut = async () => { await signOut() }
 
@@ -46,7 +45,6 @@ export function CoachDashboard() {
       <header style={{ backgroundColor: '#fff', borderBottom: '1px solid #e5e7eb', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '24px', color: '#1e293b' }}>لوحة المدرب</h1>
-          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>{organization?.name}</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <Link to="/app/rankings" style={{ padding: '8px 16px', backgroundColor: '#2563eb', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontSize: '14px' }}>التصنيفات</Link>
@@ -77,7 +75,7 @@ export function CoachDashboard() {
         <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', marginTop: '24px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#1e293b', marginBottom: '16px' }}>اللاعبين ({players.length})</h2>
           {players.length === 0 ? (
-            <EmptyState title="لا يوجد لاعبين" description="لم يتم تسجيل أي لاعب في منظمتك بعد" />
+            <EmptyState title="لا يوجد لاعبين" description="لم يتم تسجيل أي لاعب بعد" />
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
               {players.map(player => (

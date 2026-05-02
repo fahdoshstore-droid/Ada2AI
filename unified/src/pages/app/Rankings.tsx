@@ -22,9 +22,13 @@ export function Rankings() {
     try {
       setLoading(true)
       setError(null)
-      const { data } = await supabase.from('memberships').select('*').eq('role', 'player')
+      const { data } = await supabase
+        .from('players')
+        .select('id, user_id')
+        .eq('is_active', true)
+
       if (data && data.length > 0) {
-        const withScores = data.map((_m, i) => ({
+        const withScores = data.map((_p, i) => ({
           rank: i + 1,
           player_name: `لاعب ${i + 1}`,
           team: 'فريق',

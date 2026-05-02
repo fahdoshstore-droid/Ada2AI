@@ -27,14 +27,14 @@ export function Auth() {
 
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
-          const { data: membership } = await supabase
-            .from('memberships')
-            .select('role')
-            .eq('user_id', user.id)
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('user_type')
+            .eq('id', user.id)
             .maybeSingle()
 
-          if (membership?.role) {
-            navigate(`/app/${membership.role}`, { replace: true })
+          if (profile?.user_type) {
+            navigate(`/app/${profile.user_type}`, { replace: true })
           } else {
             navigate('/app', { replace: true })
           }

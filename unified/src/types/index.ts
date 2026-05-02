@@ -1,27 +1,10 @@
-export type Role = 'admin' | 'coach' | 'player'
-export type OrganizationType = 'club' | 'academy'
+export type UserType = 'admin' | 'coach' | 'player' | 'scout'
 
-export interface Organization {
+export interface Profile {
   id: string
-  name: string
-  type: OrganizationType
-  created_at: string
-}
-
-export interface Membership {
-  id: string
-  user_id: string
-  organization_id: string
-  role: Role
-  organizations?: Organization
-}
-
-export interface User {
-  id: string
-  email: string
-  role?: Role
-  organization?: Organization
-  membership?: Membership
+  email: string | null
+  full_name: string | null
+  user_type: UserType | null
 }
 
 export interface Player {
@@ -30,7 +13,6 @@ export interface Player {
   team?: string
   score: number
   rank?: number
-  organization_id?: string
 }
 
 export interface RankingEntry {
@@ -39,5 +21,4 @@ export interface RankingEntry {
   player_name: string
   team: string
   score: number
-  organization?: string
 }

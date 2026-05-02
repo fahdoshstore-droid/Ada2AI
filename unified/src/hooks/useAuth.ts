@@ -1,34 +1,35 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import type { User, Role, Organization } from '../types'
+
+type Role = 'admin' | 'coach' | 'player' | 'scout'
 
 interface AuthState {
-  user: User | null
+  userId: string | null
+  email: string | null
   loading: boolean
   role: Role | null
-  organization: Organization | null
 }
 
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
-    user: null,
+    userId: null,
+    email: null,
     loading: true,
     role: null,
-    organization: null,
   })
 
-  const fetchRole = useCallback(async (userId: string) => {
+  const fetchRole = useCallback(async (userId: string): Promise<Role | null> => {
     const { data, error } = await supabase
-      .from('memberships')
-      .select('*, organizations(*)')
-      .eq('user_id', userId)
+      .from('profiles')
+      .select('user_type')
+      .eq('id', userId)
       .maybeSingle()
 
     if (error) {
       console.error('Error fetching role:', error)
       return null
     }
-    return data
+    return (data?.user_type as Role) ?? null
   }, [])
 
   const checkAuth = useCallback(async () => {
@@ -36,29 +37,21 @@ export function useAuth() {
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
 
       if (authError || !authUser) {
-        setState({ user: null, loading: false, role: null, organization: null })
+        setState({ userId: null, email: null, loading: false, role: null })
         return
       }
 
-      const membership = await fetchRole(authUser.id)
-
-      const user: User = {
-        id: authUser.id,
-        email: authUser.email || '',
-        membership: membership || undefined,
-        role: membership?.role || undefined,
-        organization: membership?.organizations || undefined,
-      }
+      const role = await fetchRole(authUser.id)
 
       setState({
-        user,
+        userId: authUser.id,
+        email: authUser.email || null,
         loading: false,
-        role: membership?.role || null,
-        organization: membership?.organizations || null,
+        role,
       })
     } catch (err) {
       console.error('Auth check failed:', err)
-      setState({ user: null, loading: false, role: null, organization: null })
+      setState({ userId: null, email: null, loading: false, role: null })
     }
   }, [fetchRole])
 
@@ -67,22 +60,15 @@ export function useAuth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        const membership = await fetchRole(session.user.id)
-        const user: User = {
-          id: session.user.id,
-          email: session.user.email || '',
-          membership: membership || undefined,
-          role: membership?.role || undefined,
-          organization: membership?.organizations || undefined,
-        }
+        const role = await fetchRole(session.user.id)
         setState({
-          user,
+          userId: session.user.id,
+          email: session.user.email || null,
           loading: false,
-          role: membership?.role || null,
-          organization: membership?.organizations || null,
+          role,
         })
       } else if (event === 'SIGNED_OUT') {
-        setState({ user: null, loading: false, role: null, organization: null })
+        setState({ userId: null, email: null, loading: false, role: null })
       }
     })
 
@@ -91,7 +77,7 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut()
-    setState({ user: null, loading: false, role: null, organization: null })
+    setState({ userId: null, email: null, loading: false, role: null })
   }, [])
 
   const refreshRole = useCallback(() => {

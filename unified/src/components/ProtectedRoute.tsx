@@ -4,17 +4,17 @@ import { LoadingState } from './LoadingState'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  allowedRoles?: ('admin' | 'coach' | 'player')[]
+  allowedRoles?: ('admin' | 'coach' | 'player' | 'scout')[]
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, loading, role } = useAuth()
+  const { userId, loading, role } = useAuth()
 
   if (loading) {
     return <LoadingState />
   }
 
-  if (!user) {
+  if (!userId) {
     return <Navigate to="/auth" replace />
   }
 

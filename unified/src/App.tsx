@@ -7,7 +7,6 @@ import { AdminDashboard } from './pages/app/AdminDashboard'
 import { CoachDashboard } from './pages/app/CoachDashboard'
 import { PlayerDashboard } from './pages/app/PlayerDashboard'
 import { Rankings } from './pages/app/Rankings'
-import { Organizations } from './pages/app/Organizations'
 
 export default function App() {
   return (
@@ -38,11 +37,6 @@ export default function App() {
         <Route path="/app/rankings" element={
           <ProtectedRoute>
             <Rankings />
-          </ProtectedRoute>
-        } />
-        <Route path="/app/organizations" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <Organizations />
           </ProtectedRoute>
         } />
         <Route path="*" element={<Navigate to="/" replace />} />
