@@ -15,15 +15,17 @@ export default function Rankings() {
       const { data } = await supabase
         .from('players')
         .select('*, profile:profiles(full_name, region)')
-        .order('created_at', { ascending: false })
         .limit(50)
-      if (data) setRankings(data)
+      if (data) {
+        const sorted = [...data].sort((a, b) => (b.stats?.rating || 0) - (a.stats?.rating || 0))
+        setRankings(sorted)
+      }
       setLoading(false)
     }
     fetchRankings()
   }, [])
 
-  const filtered = rankings.filter((p: any) => posFilter === 'الكل' || p.position === posFilter)
+  const filtered = rankings.filter((p: any) => posFilter === 'الكل' || p.primary_position === posFilter)
   const top3 = filtered.slice(0, 3)
 
   const barData = [
