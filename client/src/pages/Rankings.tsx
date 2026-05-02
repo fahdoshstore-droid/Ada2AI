@@ -1,33 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { Trophy, Medal, TrendingUp, TrendingDown, Minus, Filter } from 'lucide-react'
-
-const mockRankings = [
-  { rank: 1, name: 'أحمد الشمراني', team: 'الاتحاد', position: 'وسط', rating: 87, trend: 'up', region: 'غرب' },
-  { rank: 2, name: 'سعود الدوسري', team: 'الهلال', position: 'حارس', rating: 85, trend: 'up', region: 'وسط' },
-  { rank: 3, name: 'محمد الغامدي', team: 'الاتفاق', position: 'وسط', rating: 81, trend: 'same', region: 'شرق' },
-  { rank: 4, name: 'خالد العتيبي', team: 'النصر', position: 'مهاجم', rating: 82, trend: 'up', region: 'وسط' },
-  { rank: 5, name: 'فهد القحطاني', team: 'الأهلي', position: 'مدافع', rating: 79, trend: 'down', region: 'غرب' },
-  { rank: 6, name: 'عبدالله الشهري', team: 'الشباب', position: 'جناح', rating: 76, trend: 'down', region: 'وسط' },
-  { rank: 7, name: 'يوسف الحربي', team: 'الفتح', position: 'مهاجم', rating: 75, trend: 'up', region: 'شرق' },
-  { rank: 8, name: 'ناصر المالكي', team: 'الرائد', position: 'مدافع', rating: 74, trend: 'same', region: 'وسط' },
-  { rank: 9, name: 'تركي السبيعي', team: 'التعاون', position: 'وسط', rating: 73, trend: 'up', region: 'وسط' },
-  { rank: 10, name: 'بدر الزهراني', team: 'الحزم', position: 'جناح', rating: 72, trend: 'down', region: 'وسط' },
-]
+import { supabase } from '@/lib/supabase'
 
 export default function Rankings() {
+  const [rankings, setRankings] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [posFilter, setPosFilter] = useState('الكل')
   const positions = ['الكل', 'حارس', 'مدافع', 'وسط', 'جناح', 'مهاجم']
 
-  const filtered = mockRankings.filter(p => posFilter === 'الكل' || p.position === posFilter)
+  useEffect(() => {
+    const fetchRankings = async () => {
+      setLoading(true)
+      const { data } = await supabase
+        .from('players')
+        .select('*, profile:profiles(full_name, region)')
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (data) setRankings(data)
+      setLoading(false)
+    }
+    fetchRankings()
+  }, [])
+
+  const filtered = rankings.filter((p: any) => posFilter === 'الكل' || p.position === posFilter)
   const top3 = filtered.slice(0, 3)
 
   const barData = [
-    { range: '90+', count: 1 },
-    { range: '80-89', count: 3 },
-    { range: '70-79', count: 4 },
-    { range: '60-69', count: 2 },
-    { range: '< 60', count: 0 },
+    { range: '90+', count: rankings.filter((p: any) => (p.stats?.rating || 0) >= 90).length },
+    { range: '80-89', count: rankings.filter((p: any) => (p.stats?.rating || 0) >= 80 && (p.stats?.rating || 0) < 90).length },
+    { range: '70-79', count: rankings.filter((p: any) => (p.stats?.rating || 0) >= 70 && (p.stats?.rating || 0) < 80).length },
+    { range: '60-69', count: rankings.filter((p: any) => (p.stats?.rating || 0) >= 60 && (p.stats?.rating || 0) < 70).length },
+    { range: '< 60', count: rankings.filter((p: any) => (p.stats?.rating || 0) < 60).length },
   ]
 
   const barColors = ['#d4af37', '#00d4ff', '#00d4ff80', '#0a1f3d', '#041329']
@@ -48,6 +52,12 @@ export default function Rankings() {
         <span className="bg-gradient-to-r from-[#d4af37] to-[#e8c84a] bg-clip-text text-transparent">ترتيب المواهب</span>
       </h1>
 
+      {loading ? (
+        <div className="text-center py-12 text-gray-400">جاري التحميل...</div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 text-gray-400">لا توجد بيانات</div>
+      ) : (
+      <>
       {top3.length >= 3 && (
         <div className="bg-[#0a1f3d]/50 backdrop-blur-xl border border-[#00d4ff]/10 rounded-2xl p-8">
           <div className="flex items-end justify-center gap-4">
@@ -57,10 +67,10 @@ export default function Rankings() {
               return (
                 <div key={idx} className="flex flex-col items-center">
                   <div className="text-center mb-3">
-                    <div className="text-white font-bold text-sm">{p.name}</div>
-                    <div className="text-gray-400 text-xs">{p.team}</div>
+                    <div className="text-white font-bold text-sm">{p.profile?.full_name || 'لاعب'}</div>
+                    <div className="text-gray-400 text-xs">{p.club_name || p.academy_name || 'فريق'}</div>
                     <div className={`mt-1 inline-block px-3 py-1 rounded-full bg-gradient-to-r ${podiumColors[idx]} text-[#041329] text-sm font-black`}>
-                      {p.rating}
+                      {p.stats?.rating || 0}
                     </div>
                   </div>
                   <div className={`w-24 ${podiumHeights[idx]} bg-gradient-to-t ${podiumColors[idx]} rounded-t-xl flex items-start justify-center pt-3`}>
@@ -97,19 +107,19 @@ export default function Rankings() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((p, i) => (
+            {filtered.map((p: any, i: number) => (
               <tr key={i} className="border-b border-[#00d4ff]/5 hover:bg-white/5 transition">
                 <td className="p-4">
-                  <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${p.rank <= 3 ? 'bg-gradient-to-r from-[#d4af37] to-[#e8c84a] text-[#041329]' : 'bg-[#041329] text-gray-400 border border-[#00d4ff]/10'}`}>
-                    {p.rank}
+                  <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${i + 1 <= 3 ? 'bg-gradient-to-r from-[#d4af37] to-[#e8c84a] text-[#041329]' : 'bg-[#041329] text-gray-400 border border-[#00d4ff]/10'}`}>
+                    {i + 1}
                   </span>
                 </td>
-                <td className="p-4 font-medium text-white">{p.name}</td>
-                <td className="p-4 text-gray-400">{p.team}</td>
-                <td className="p-4"><span className="px-2 py-1 bg-[#00d4ff]/10 border border-[#00d4ff]/20 rounded-full text-[#00d4ff] text-xs">{p.position}</span></td>
-                <td className="p-4 text-gray-400">{p.region}</td>
-                <td className="p-4"><span className="text-[#d4af37] font-bold text-lg">{p.rating}</span></td>
-                <td className="p-4">{trendIcon(p.trend)}</td>
+                <td className="p-4 font-medium text-white">{p.profile?.full_name || 'لاعب'}</td>
+                <td className="p-4 text-gray-400">{p.club_name || p.academy_name || '—'}</td>
+                <td className="p-4"><span className="px-2 py-1 bg-[#00d4ff]/10 border border-[#00d4ff]/20 rounded-full text-[#00d4ff] text-xs">{p.position || '—'}</span></td>
+                <td className="p-4 text-gray-400">{p.profile?.region || '—'}</td>
+                <td className="p-4"><span className="text-[#d4af37] font-bold text-lg">{p.stats?.rating || 0}</span></td>
+                <td className="p-4"><Minus className="w-4 h-4 text-gray-500" /></td>
               </tr>
             ))}
           </tbody>
@@ -134,6 +144,8 @@ export default function Rankings() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+      </>
+      )}
     </div>
   )
 }
