@@ -1,8 +1,14 @@
 /**
  * Custom hook for Coach Dashboard data fetching and state management
+ * REFACTORED: Uses Supabase directly instead of /api/ fetch calls
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase, createEvaluation } from '@/lib/supabase'
+import { useCoachPlayers } from '@/hooks/useCoachPlayers'
+import { useAllEvaluations, type EvaluationWithPlayer } from '@/hooks/useAllEvaluations'
+import { useMatches } from '@/hooks/useMatches'
 import type { Player, Training, Evaluation, NewTraining, GuideSession } from './types'
 
 // VisualGuide
@@ -10,6 +16,7 @@ import { createFormationGuide } from '@/components/VisualGuide'
 
 export function useCoachDashboard() {
   const { isRTL } = useLanguage()
+  const { user } = useAuth()
 
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'players' | 'training' | 'stats' | 'attendance'>('players')
@@ -21,37 +28,100 @@ export function useCoachDashboard() {
   const [showEvaluationModal, setShowEvaluationModal] = useState(false)
   const [selectedTrainingForAttendance, setSelectedTrainingForAttendance] = useState<number | null>(null)
 
-  // Players Data (fetched from API)
-  const [players, setPlayers] = useState<Player[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // ─── Fetch coach's players via Supabase ─────────────────────────────────
+  const { players: coachPlayers, isLoading: playersLoading, isError: playersError } = useCoachPlayers(user?.id || null)
 
-  useEffect(() => {
-    fetch('/api/players?sport=Football')
-      .then(r => r.json())
-      .then((data: Player[]) => {
-        setPlayers(data)
-        setLoading(false)
-      })
-      .catch((e: Error) => { setError(e.message); setLoading(false) })
-  }, [])
+  // ─── Fetch all evaluations (for the coach's club) ───────────────────────
+  const { evaluations: allEvaluations, isLoading: evalsLoading } = useAllEvaluations()
 
-  // Training Sessions (fetched from API)
+  // ─── Fetch upcoming matches ─────────────────────────────────────────────
+  const { matches, isLoading: matchesLoading } = useMatches()
+
+  // ─── Fetch trainings from Supabase ─────────────────────────────────────
   const [trainings, setTrainings] = useState<Training[]>([])
   const [trainingsLoading, setTrainingsLoading] = useState(true)
-  const [trainingsError, setTrainingsError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/trainings')
-      .then(r => { if (!r.ok) throw new Error('Failed to fetch trainings'); return r.json() })
-      .then((data: Training[]) => {
-        setTrainings(data)
+    const fetchTrainings = async () => {
+      setTrainingsLoading(true)
+      const { data, error } = await supabase
+        .from('trainings')
+        .select('*')
+        .order('date', { ascending: true })
+
+      if (error) {
+        console.error('Failed to fetch trainings:', error)
         setTrainingsLoading(false)
-      })
-      .catch((e: Error) => { setTrainingsError(e.message); setTrainingsLoading(false) })
+        return
+      }
+
+      const mapped: Training[] = (data || []).map((t: any) => ({
+        id: t.id,
+        title: t.title_ar || t.title || '',
+        titleEn: t.title || t.title_en || '',
+        date: t.date || '',
+        time: t.time || '',
+        attendance: t.attendance || [],
+        maxAttendance: t.max_attendance || 25,
+      }))
+
+      setTrainings(mapped)
+      setTrainingsLoading(false)
+    }
+
+    fetchTrainings()
   }, [])
 
-  // Attendance Records (derived from players API data)
+  // ─── Map Supabase CoachPlayer[] → UI Player[] ───────────────────────────
+  const players: Player[] = useMemo(() => {
+    // Create a map of latest evaluations per player
+    const evalMap = new Map<string, EvaluationWithPlayer>()
+    for (const ev of allEvaluations) {
+      const existing = evalMap.get(ev.player_id)
+      if (!existing || (ev.evaluation_date && existing.evaluation_date && ev.evaluation_date > existing.evaluation_date)) {
+        evalMap.set(ev.player_id, ev)
+      }
+    }
+
+    return coachPlayers.map((cp) => {
+      const profile = cp.profile
+      const latestEval = evalMap.get(cp.id)
+      const name = profile?.full_name || '—'
+      const jerseyNum = cp.jersey_number != null ? String(cp.jersey_number) : '0'
+
+      return {
+        id: cp.id,
+        profile_id: cp.profile_id,
+        name,
+        sport: profile?.sport || '',
+        position: cp.position || '',
+        age: cp.age || 0,
+        rating: latestEval?.overall || 0,
+        academy_name: '',
+        performance: latestEval?.overall || 0,
+        attendance: 80, // TODO: derive from attendance records when available
+        goals: 0,      // TODO: sum from match_stats
+        assists: 0,
+        number: jerseyNum,
+        status: 'active',
+        region: profile?.region || '',
+        photo_url: cp.photo_url || '',
+        video_url: cp.video_url || '',
+        height_cm: cp.height_cm,
+        weight_kg: cp.weight_kg,
+        dominant_foot: cp.dominant_foot,
+        technical: latestEval?.technical || 0,
+        tactical: latestEval?.tactical || 0,
+        physical: latestEval?.physical || 0,
+        mental: latestEval?.mental || 0,
+      }
+    })
+  }, [coachPlayers, allEvaluations])
+
+  const loading = playersLoading || evalsLoading
+  const error = playersError ? 'Failed to load players' : null
+
+  // ─── Attendance Records (derived from players) ─────────────────────────
   const attendanceRecords = players.map((p) => {
     const totalSessions = 20
     const present = Math.round((p.attendance / 100) * totalSessions)
@@ -63,7 +133,7 @@ export function useCoachDashboard() {
     }
   })
 
-  // Stats Data for Charts
+  // ─── Stats Data for Charts ──────────────────────────────────────────────
   const performanceData = players.map(p => ({
     name: p.name.substring(0, 3),
     performance: p.rating,
@@ -85,10 +155,10 @@ export function useCoachDashboard() {
       ]
     : []
 
-  // New Training Form
+  // ─── New Training Form ──────────────────────────────────────────────────
   const [newTraining, setNewTraining] = useState<NewTraining>({ title: '', titleEn: '', date: '', time: '' })
 
-  // Evaluation Form
+  // ─── Evaluation Form ────────────────────────────────────────────────────
   const [evaluation, setEvaluation] = useState<Evaluation>({
     playerId: null,
     technical: 0,
@@ -98,24 +168,55 @@ export function useCoachDashboard() {
     notes: '',
   })
 
-  // Handle Add Training
-  const handleAddTraining = () => {
+  // ─── Handle Add Training (saves to Supabase) ────────────────────────────
+  const handleAddTraining = useCallback(async () => {
     if (!newTraining.title || !newTraining.date || !newTraining.time) return
-    const training: Training = {
-      id: trainings.length + 1,
-      title: newTraining.title,
-      titleEn: newTraining.titleEn || newTraining.title,
-      date: newTraining.date,
-      time: newTraining.time,
-      attendance: [],
-      maxAttendance: 25,
+
+    // Save to Supabase
+    const { data, error: insertErr } = await supabase
+      .from('trainings')
+      .insert({
+        title: newTraining.titleEn || newTraining.title,
+        title_ar: newTraining.title,
+        date: newTraining.date,
+        time: newTraining.time,
+        max_attendance: 25,
+        attendance: [],
+      })
+      .select()
+      .single()
+
+    if (insertErr) {
+      console.error('Failed to create training:', insertErr)
+      // Fallback: add locally
+      const training: Training = {
+        id: trainings.length + 1,
+        title: newTraining.title,
+        titleEn: newTraining.titleEn || newTraining.title,
+        date: newTraining.date,
+        time: newTraining.time,
+        attendance: [],
+        maxAttendance: 25,
+      }
+      setTrainings([...trainings, training])
+    } else if (data) {
+      const training: Training = {
+        id: data.id,
+        title: data.title_ar || data.title || '',
+        titleEn: data.title || '',
+        date: data.date || '',
+        time: data.time || '',
+        attendance: data.attendance || [],
+        maxAttendance: data.max_attendance || 25,
+      }
+      setTrainings([...trainings, training])
     }
-    setTrainings([...trainings, training])
+
     setNewTraining({ title: '', titleEn: '', date: '', time: '' })
     setShowTrainingModal(false)
-  }
+  }, [newTraining, trainings])
 
-  // VisualGuide Handler
+  // ─── VisualGuide Handler ────────────────────────────────────────────────
   const startGuide = () => {
     const formation = '4-4-2'
     const session = createFormationGuide(formation, isRTL)
@@ -123,30 +224,52 @@ export function useCoachDashboard() {
     setGuideActive(true)
   }
 
-  // Handle Attendance Toggle
-  const toggleAttendance = (trainingId: number, playerId: string | number) => {
+  // ─── Handle Attendance Toggle ──────────────────────────────────────────
+  const toggleAttendance = useCallback((trainingId: number, playerId: string | number) => {
     setTrainings(trainings.map(t => {
       if (t.id === trainingId) {
         const hasAttendance = t.attendance.some(a => String(a) === String(playerId))
-        return {
+        const updated = {
           ...t,
           attendance: hasAttendance
             ? t.attendance.filter(id => id !== playerId)
             : [...t.attendance, playerId],
         }
+        // Persist to Supabase in background
+        supabase
+          .from('trainings')
+          .update({ attendance: updated.attendance })
+          .eq('id', trainingId)
+          .then(({ error }) => {
+            if (error) console.error('Failed to update attendance:', error)
+          })
+        return updated
       }
       return t
     }))
-  }
+  }, [trainings])
 
-  // Handle Evaluation Submit
-  const handleSubmitEvaluation = () => {
-    if (!evaluation.playerId) return
-    // In real app: save to Supabase
-    console.log('Evaluation submitted:', evaluation)
+  // ─── Handle Evaluation Submit (saves to Supabase) ──────────────────────
+  const handleSubmitEvaluation = useCallback(async () => {
+    if (!evaluation.playerId || !user?.id) return
+
+    const { error: evalErr } = await createEvaluation({
+      player_id: evaluation.playerId,
+      coach_id: user.id,
+      technical: evaluation.technical,
+      tactical: evaluation.tactical,
+      physical: evaluation.physical,
+      mental: evaluation.mental,
+      notes: evaluation.notes,
+    })
+
+    if (evalErr) {
+      console.error('Failed to submit evaluation:', evalErr)
+    }
+
     setShowEvaluationModal(false)
     setEvaluation({ playerId: null, technical: 0, tactical: 0, physical: 0, mental: 0, notes: '' })
-  }
+  }, [evaluation, user?.id])
 
   const COLORS = ['#00DCC8', '#007ABA', '#10B981', '#F59E0B', '#EF4444']
 
@@ -160,12 +283,14 @@ export function useCoachDashboard() {
     showEvaluationModal, setShowEvaluationModal,
     selectedTrainingForAttendance, setSelectedTrainingForAttendance,
     players, loading, error,
-    trainings, trainingsLoading, trainingsError,
+    trainings, trainingsLoading,
     attendanceRecords,
     performanceData, goalsData, monthlyPerformance,
     newTraining, setNewTraining,
     evaluation, setEvaluation,
     handleAddTraining, startGuide, toggleAttendance, handleSubmitEvaluation,
     COLORS,
+    // Expose matches for upcoming match display
+    matches,
   }
 }

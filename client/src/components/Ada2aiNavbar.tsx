@@ -287,7 +287,7 @@ export default function Ada2aiNavbar() {
                     className="text-sm"
                     style={{ color: "rgba(238,239,238,0.6)", fontFamily: "'Cairo', sans-serif" }}
                   >
-                    {user?.name || user?.email}
+                    {user?.full_name || user?.email}
                   </span>
                   <button
                     onClick={logout}

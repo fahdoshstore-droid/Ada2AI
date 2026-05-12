@@ -1,79 +1,56 @@
 /**
  * ScoutDashboard - Player Discovery System
- * STEP 1: Fetch from Supabase (profile_complete=true, is_public=true)
- * STEP 2: Compute score = (speed*0.25 + stamina*0.25 + technique*0.25 + rating*0.25)
- * STEP 3: Sort by score DESC
- * STEP 4: Filters (position, rating range, age range, name search)
+ * REFACTORED: Uses Supabase via useScoutPlayers hook
+ * 
+ * STEP 1: Fetch from Supabase (profile_complete=true, is_public=true) via useScoutPlayers
+ * STEP 2: Score computed in useScoutPlayers hook
+ * STEP 3: Filters (position, region, rating range, age range, name search)
+ * STEP 4: Compare panel (side-by-side stats from evaluations + match_stats)
  * STEP 5: Send Invite button (coach_players insert)
  */
 import React, { useState, useEffect, useMemo } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useAuth } from '@/contexts/AuthContext'
 import DashboardLayout from '@/components/DashboardLayout'
 import BackButton from '@/components/BackButton'
 import { supabase } from '@/lib/supabase'
+import { useScoutPlayers, computeScore, type ScoutPlayer } from '@/hooks/useScoutPlayers'
 import {
   Search, Star, MapPin, Filter, Heart, Eye, Video,
   TrendingUp, Bell, X, Check, UserPlus, BarChart3,
   GitCompare, FileText, MessageSquare, Send, ChevronDown,
-  Loader2, AlertCircle, UserCheck
+  Loader2, AlertCircle, UserCheck, Globe, Trophy, Target,
+  Activity, Users
 } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface Player {
-  id: string
-  name: string
-  name_ar?: string
-  age?: number
-  position?: string
-  sport?: string
-  region?: string
-  rating?: number   // 0-100
-  speed?: number    // 0-100
-  stamina?: number  // 0-100
-  technique?: number // 0-100
-  agility?: number  // 0-100
-  club?: string
-  academy_name?: string
-  badge?: string
-  badge_color?: string
-  photo_url?: string
-  video_url?: string
-  is_public?: boolean
-  profile_complete?: boolean
-  score?: number
-}
-
 interface InviteState {
   [playerId: string]: 'idle' | 'sending' | 'sent' | 'error'
-}
-
-// ─── Score computation ─────────────────────────────────────────────────────────
-function computeScore(p: Player): number {
-  const speed = p.speed ?? 0
-  const stamina = p.stamina ?? 0
-  const technique = p.technique ?? 0
-  const rating = p.rating ?? 0
-  // Fallback: if all 0, use rating
-  const total = speed + stamina + technique + rating
-  if (total === 0) return rating
-  return Math.round((speed * 0.25 + stamina * 0.25 + technique * 0.25 + rating * 0.25) * 10) / 10
 }
 
 // ─── Positions ─────────────────────────────────────────────────────────────────
 const POSITIONS = ['all', 'GK', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CAM', 'LW', 'RW', 'ST', 'CF']
 
+// ─── Regions (common Saudi regions) ───────────────────────────────────────────
+const REGIONS = [
+  'all',
+  'الرياض', 'جدة', 'مكة المكرمة', 'المدينة المنورة',
+  'الدمام', 'الخبر', 'تبوك', 'أبها', 'جازان', 'نجران',
+  'القصيم', 'حائل', 'الجوف', 'الباحة', 'ينبع',
+]
+
 export default function ScoutDashboard() {
   const { isRTL, lang } = useLanguage()
+  const { user } = useAuth()
 
-  // ─── State ──────────────────────────────────────────────────────────────────
-  const [players, setPlayers] = useState<Player[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [currentUser, setCurrentUser] = useState<any>(null)
+  // ─── Data from Supabase hook ─────────────────────────────────────────────
+  const { players, isLoading, isError } = useScoutPlayers()
 
+  // ─── State ──────────────────────────────────────────────────────────────
   // Filters
   const [search, setSearch] = useState('')
   const [positionFilter, setPositionFilter] = useState('all')
+  const [regionFilter, setRegionFilter] = useState('all')
   const [minRating, setMinRating] = useState(0)
   const [maxRating, setMaxRating] = useState(100)
   const [minAge, setMinAge] = useState(10)
@@ -87,67 +64,36 @@ export default function ScoutDashboard() {
   const [playerNotes, setPlayerNotes] = useState<Record<string, string>>({})
   const [inviteState, setInviteState] = useState<InviteState>({})
   const [invitesSent, setInvitesSent] = useState<Set<string>>(new Set())
-  const [notifications, setNotifications] = useState<Array<{ id: number; message: string; time: string; read: boolean }>>([
-    { id: 1, message: isRTL ? 'لاعب جديد: أحمد صلاح' : 'New player: Ahmed Salah', time: '2h ago', read: false },
-  ])
+  const [notifications, setNotifications] = useState<Array<{ id: number; message: string; time: string; read: boolean }>>([])
   const [showNotifications, setShowNotifications] = useState(false)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
 
-  // ─── Auth ───────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setCurrentUser(data.user)
-    })
-  }, [])
-
-  // ─── STEP 1: Fetch Players ─────────────────────────────────────────────────
-  useEffect(() => {
-    const fetchPlayers = async () => {
-      setLoading(true)
-      setError(null)
-
-      const { data, error: err } = await supabase
-        .from('players')
-        .select('*')
-        .eq('profile_complete', true)
-        .eq('is_public', true)
-        .eq('is_active', true)
-
-      if (err) {
-        setError(err.message)
-        setLoading(false)
-        return
-      }
-
-      // Compute score
-      const scored = (data || []).map((p: Player) => ({
-        ...p,
-        score: computeScore(p)
-      }))
-
-      // Sort by score
-      scored.sort((a, b) => b.score - a.score)
-
-      setPlayers(scored)
-      setLoading(false)
-    }
-
-    fetchPlayers()
-  }, [])
-
-  // ─── STEP 4: Filters ─────────────────────────────────────────────────────────
+  // ─── STEP 3: Filters (position, region, rating, age, name) ────────────────
   const filteredPlayers = useMemo(() => {
-    return players.filter(p => {
+    let result = players.filter(p => {
       const name = lang === 'ar' && p.name_ar ? p.name_ar : (p.name || '')
       if (search && !name.toLowerCase().includes(search.toLowerCase())) return false
       if (positionFilter !== 'all' && p.position !== positionFilter) return false
-      if (p.rating !== undefined && (p.rating < minRating || p.rating > maxRating)) return false
-      if (p.age !== undefined && (p.age < minAge || p.age > maxAge)) return false
+      if (regionFilter !== 'all') {
+        const playerRegion = p.profile?.region || p.region || ''
+        if (playerRegion !== regionFilter) return false
+      }
+      if (p.rating !== undefined && p.rating !== null && (p.rating < minRating || p.rating > maxRating)) return false
+      if (p.age !== undefined && p.age !== null && (p.age < minAge || p.age > maxAge)) return false
       return true
     })
-  }, [players, search, positionFilter, minRating, maxRating, minAge, maxAge, lang])
 
-  // ─── Actions ────────────────────────────────────────────────────────────────
+    // Apply sort direction
+    if (sortDir === 'asc') {
+      result = [...result].sort((a, b) => (a.score || 0) - (b.score || 0))
+    }
+    // Default is DESC (already sorted by useScoutPlayers)
+
+    return result
+  }, [players, search, positionFilter, regionFilter, minRating, maxRating, minAge, maxAge, lang, sortDir])
+
+  // ─── Actions ────────────────────────────────────────────────────────────
   const toggleFavorite = (id: string) => {
     setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
   }
@@ -161,9 +107,9 @@ export default function ScoutDashboard() {
 
   const unreadNotifications = notifications.filter(n => !n.read).length
 
-  // ─── STEP 5: Send Invite ────────────────────────────────────────────────────
+  // ─── STEP 5: Send Invite ─────────────────────────────────────────────────
   const sendInvite = async (playerId: string) => {
-    if (!currentUser) {
+    if (!user) {
       alert(isRTL ? 'يجب تسجيل الدخول أولاً' : 'Please login first')
       return
     }
@@ -173,7 +119,7 @@ export default function ScoutDashboard() {
     const { error: err } = await supabase
       .from('coach_players')
       .insert({
-        coach_id: currentUser.id,
+        coach_id: user.id,
         player_id: playerId,
         status: 'pending'
       })
@@ -185,24 +131,24 @@ export default function ScoutDashboard() {
     }
 
     setInviteState(prev => ({ ...prev, [playerId]: 'sent' }))
-    setInvitesSent(prev => new Set([...prev, playerId]))
+    setInvitesSent(prev => new Set(Array.from(prev).concat(playerId)))
     setTimeout(() => setInviteState(prev => ({ ...prev, [playerId]: 'idle' })), 3000)
   }
 
-  // ─── Compare panel ───────────────────────────────────────────────────────────
-  const comparePlayers = compareList.map(id => players.find(p => p.id === id)).filter(Boolean) as Player[]
+  // ─── Compare panel ───────────────────────────────────────────────────────
+  const comparePlayers = compareList.map(id => players.find(p => p.id === id)).filter(Boolean) as ScoutPlayer[]
 
-  const getScore = (p: Player) => p.score ?? computeScore(p)
+  const getScore = (p: ScoutPlayer) => p.score ?? computeScore(p)
 
   const maxScore = comparePlayers.length > 0 ? Math.max(...comparePlayers.map(getScore)) : 0
 
-  // ─── Stats ───────────────────────────────────────────────────────────────────
-  const topPlayer = players[0]
-  const avgScore = players.length > 0
-    ? (players.reduce((s, p) => s + (p.score ?? 0), 0) / players.length).toFixed(1)
+  // ─── Stats ───────────────────────────────────────────────────────────────
+  const topPlayer = filteredPlayers[0]
+  const avgScore = filteredPlayers.length > 0
+    ? (filteredPlayers.reduce((s, p) => s + (p.score ?? 0), 0) / filteredPlayers.length).toFixed(1)
     : '0'
 
-  // ─── Position label ──────────────────────────────────────────────────────────
+  // ─── Position label ──────────────────────────────────────────────────────
   const positionLabels: Record<string, string> = {
     GK: isRTL ? 'حارس' : 'GK',
     CB: isRTL ? 'مدافع مركزي' : 'CB',
@@ -220,24 +166,24 @@ export default function ScoutDashboard() {
 
   const getPositionLabel = (pos?: string) => pos ? (positionLabels[pos] ?? pos) : '—'
 
-  // ─── Render ─────────────────────────────────────────────────────────────────
+  // ─── Render ─────────────────────────────────────────────────────────────
   return (
     <DashboardLayout>
       <div>
         <BackButton fallbackRoute="/dashboards" />
 
         {/* ─── Header ──────────────────────────────────────────────────────── */}
-        {loading ? (
+        {isLoading ? (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '60px', gap: '12px', color: '#9CA3AF' }}>
             <Loader2 size={24} style={{ animation: 'spin' }} />
             <span style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : 'inherit' }}>
               {isRTL ? 'جاري التحميل...' : 'Loading players...'}
             </span>
           </div>
-        ) : error ? (
+        ) : isError ? (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '60px', gap: '12px', color: '#EF4444' }}>
             <AlertCircle size={24} />
-            <span>{error}</span>
+            <span>{isRTL ? 'خطأ في تحميل البيانات' : 'Failed to load player data'}</span>
           </div>
         ) : (
           <>
@@ -324,18 +270,24 @@ export default function ScoutDashboard() {
                       <X size={18} color="#6B7280" />
                     </button>
                   </div>
-                  {notifications.map(notif => (
-                    <div key={notif.id} style={{
-                      padding: '12px',
-                      backgroundColor: notif.read ? 'transparent' : 'rgba(0,220,200,0.05)',
-                      borderRadius: '8px', marginBottom: '8px',
-                      border: '1px solid',
-                      borderColor: notif.read ? 'transparent' : '#00DCC830'
-                    }}>
-                      <p style={{ color: '#EEEFEE', fontSize: '14px', marginBottom: '4px' }}>{notif.message}</p>
-                      <p style={{ color: '#6B7280', fontSize: '12px' }}>{notif.time}</p>
-                    </div>
-                  ))}
+                  {notifications.length === 0 ? (
+                    <p style={{ color: '#6B7280', fontSize: '13px', textAlign: 'center', padding: '16px' }}>
+                      {isRTL ? 'لا توجد إشعارات' : 'No notifications'}
+                    </p>
+                  ) : (
+                    notifications.map(notif => (
+                      <div key={notif.id} style={{
+                        padding: '12px',
+                        backgroundColor: notif.read ? 'transparent' : 'rgba(0,220,200,0.05)',
+                        borderRadius: '8px', marginBottom: '8px',
+                        border: '1px solid',
+                        borderColor: notif.read ? 'transparent' : '#00DCC830'
+                      }}>
+                        <p style={{ color: '#EEEFEE', fontSize: '14px', marginBottom: '4px' }}>{notif.message}</p>
+                        <p style={{ color: '#6B7280', fontSize: '12px' }}>{notif.time}</p>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>
@@ -382,7 +334,7 @@ export default function ScoutDashboard() {
           </div>
         </div>
 
-        {/* ─── Compare Panel ──────────────────────────────────────────────── */}
+        {/* ─── Compare Panel (Enhanced with match_stats) ──────────────────── */}
         {compareMode && comparePlayers.length >= 2 && (
           <div style={{
             backgroundColor: '#0A0E1A', borderRadius: '12px',
@@ -418,33 +370,45 @@ export default function ScoutDashboard() {
                   <p style={{ color: '#6B7280', fontSize: '11px' }}>{getPositionLabel(p.position)}</p>
                 </div>
               ))}
-              {(['score', 'rating', 'speed', 'stamina', 'technique'] as const).map(stat => {
-                const statLabel = stat === 'score' ? (isRTL ? 'النتيجة' : 'Score') :
-                  stat === 'rating' ? (isRTL ? 'التقييم' : 'Rating') :
-                  stat === 'speed' ? (isRTL ? 'السرعة' : 'Speed') :
-                  stat === 'stamina' ? (isRTL ? 'التحمل' : 'Stamina') :
-                  (isRTL ? 'التقنية' : 'Technique')
-                const statMax = stat === 'score' ? maxScore : 100
+              {([
+                { key: 'score', label: isRTL ? 'النتيجة' : 'Score', max: maxScore },
+                { key: 'rating', label: isRTL ? 'التقييم' : 'Rating', max: 100 },
+                { key: 'speed', label: isRTL ? 'السرعة' : 'Speed', max: 100 },
+                { key: 'stamina', label: isRTL ? 'التحمل' : 'Stamina', max: 100 },
+                { key: 'technique', label: isRTL ? 'التقنية' : 'Technique', max: 100 },
+                { key: 'totalGoals', label: isRTL ? 'الأهداف' : 'Goals', max: Math.max(...comparePlayers.map(cp => cp.totalGoals || 0), 1) },
+                { key: 'totalAssists', label: isRTL ? 'التمريرات' : 'Assists', max: Math.max(...comparePlayers.map(cp => cp.totalAssists || 0), 1) },
+                { key: 'totalMatchesPlayed', label: isRTL ? 'المباريات' : 'Matches', max: Math.max(...comparePlayers.map(cp => cp.totalMatchesPlayed || 0), 1) },
+              ] as const).map(stat => {
                 const allVals = comparePlayers.map(cp => {
-                  if (stat === 'score') return getScore(cp)
-                  if (stat === 'rating') return cp.rating
-                  if (stat === 'speed') return cp.speed
-                  if (stat === 'stamina') return cp.stamina
-                  return cp.technique
+                  switch (stat.key) {
+                    case 'score': return getScore(cp)
+                    case 'rating': return cp.rating
+                    case 'speed': return cp.speed
+                    case 'stamina': return cp.stamina
+                    case 'technique': return cp.technique
+                    case 'totalGoals': return cp.totalGoals
+                    case 'totalAssists': return cp.totalAssists
+                    case 'totalMatchesPlayed': return cp.totalMatchesPlayed
+                    default: return 0
+                  }
                 })
-                const maxVal = Math.max(...allVals.filter((v): v is number => v !== undefined))
+                const maxVal = Math.max(...allVals.filter((v): v is number => v !== undefined && v !== null))
                 return (
-                  <div key={stat} style={{ display: 'contents' }}>
+                  <div key={stat.key} style={{ display: 'contents' }}>
                     <div style={{ color: '#9CA3AF', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '8px' }}>
-                      {statLabel}
+                      {stat.label}
                     </div>
                     {comparePlayers.map(p => {
-                      const val = stat === 'score' ? getScore(p) :
-                        stat === 'rating' ? p.rating :
-                        stat === 'speed' ? p.speed :
-                        stat === 'stamina' ? p.stamina :
-                        p.technique
-                      const isMax = val !== undefined && val === maxVal && comparePlayers.length > 1
+                      const val = stat.key === 'score' ? getScore(p) :
+                        stat.key === 'rating' ? p.rating :
+                        stat.key === 'speed' ? p.speed :
+                        stat.key === 'stamina' ? p.stamina :
+                        stat.key === 'technique' ? p.technique :
+                        stat.key === 'totalGoals' ? p.totalGoals :
+                        stat.key === 'totalAssists' ? p.totalAssists :
+                        p.totalMatchesPlayed
+                      const isMax = val !== undefined && val !== null && val === maxVal && comparePlayers.length > 1
                       return (
                         <div key={p.id} style={{ textAlign: 'center' }}>
                           <div style={{
@@ -454,10 +418,10 @@ export default function ScoutDashboard() {
                           }}>
                             {val ?? '-'}
                           </div>
-                          {val !== undefined && (
+                          {val !== undefined && val !== null && (
                             <div style={{ width: '60px', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', margin: '4px auto 0' }}>
                               <div style={{
-                                width: `${Math.min((val / statMax) * 100, 100)}%`,
+                                width: `${Math.min(((val as number) / stat.max) * 100, 100)}%`,
                                 height: '100%', borderRadius: '2px',
                                 background: isMax ? '#00DCC8' : '#007ABA'
                               }} />
@@ -539,10 +503,37 @@ export default function ScoutDashboard() {
                 </div>
               </div>
 
+              {/* Region Filter (NEW) */}
+              <div>
+                <label style={{ color: '#9CA3AF', fontSize: '12px', marginBottom: '6px', display: 'block', fontFamily: "'Cairo', sans-serif" }}>
+                  {isRTL ? 'المنطقة' : 'Region'}
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <select
+                    value={regionFilter}
+                    onChange={(e) => setRegionFilter(e.target.value)}
+                    style={{
+                      padding: '10px 36px 10px 14px',
+                      backgroundColor: '#000A0F', border: '1px solid #374151',
+                      borderRadius: '8px', color: '#EEEFEE', fontSize: '13px',
+                      cursor: 'pointer', fontFamily: "'Cairo', sans-serif",
+                      appearance: 'none',
+                    }}
+                  >
+                    {REGIONS.map(region => (
+                      <option key={region} value={region}>
+                        {region === 'all' ? (isRTL ? 'كل المناطق' : 'All Regions') : region}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
+                </div>
+              </div>
+
               {/* Rating Range */}
               <div>
                 <label style={{ color: '#9CA3AF', fontSize: '12px', marginBottom: '6px', display: 'block', fontFamily: "'Cairo', sans-serif" }}>
-                  {isRTL ? 'التقييم: ${minRating} - ${maxRating}' : `Rating: ${minRating} - ${maxRating}`}
+                  {isRTL ? `التقييم: ${minRating} - ${maxRating}` : `Rating: ${minRating} - ${maxRating}`}
                 </label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <input
@@ -566,7 +557,7 @@ export default function ScoutDashboard() {
               {/* Age Range */}
               <div>
                 <label style={{ color: '#9CA3AF', fontSize: '12px', marginBottom: '6px', display: 'block', fontFamily: "'Cairo', sans-serif" }}>
-                  {isRTL ? 'العمر: ${minAge} - ${maxAge}' : `Age: ${minAge} - ${maxAge}`}
+                  {isRTL ? `العمر: ${minAge} - ${maxAge}` : `Age: ${minAge} - ${maxAge}`}
                 </label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <input
@@ -590,7 +581,8 @@ export default function ScoutDashboard() {
               {/* Reset */}
               <button
                 onClick={() => {
-                  setPositionFilter('all'); setMinRating(0); setMaxRating(100)
+                  setPositionFilter('all'); setRegionFilter('all')
+                  setMinRating(0); setMaxRating(100)
                   setMinAge(10); setMaxAge(40); setSearch('')
                 }}
                 style={{
@@ -655,6 +647,7 @@ export default function ScoutDashboard() {
                 const isInvited = invitesSent.has(player.id)
                 const playerName = lang === 'ar' && player.name_ar ? player.name_ar : (player.name || '—')
                 const badgeColor = player.badge_color || '#00DCC8'
+                const playerRegion = player.profile?.region || player.region || ''
 
                 return (
                   <div key={player.id} style={{
@@ -697,7 +690,7 @@ export default function ScoutDashboard() {
                       </div>
                     </div>
 
-                    {/* Stats row */}
+                    {/* Tags row */}
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
                       {player.academy_name && (
                         <span style={{
@@ -709,14 +702,14 @@ export default function ScoutDashboard() {
                           {player.academy_name}
                         </span>
                       )}
-                      {player.region && (
+                      {playerRegion && (
                         <span style={{
                           backgroundColor: 'rgba(139,92,246,0.1)', color: '#8B5CF6',
                           padding: '4px 8px', borderRadius: '4px', fontSize: '11px',
                           display: 'flex', alignItems: 'center', gap: '4px',
                         }}>
                           <MapPin size={10} />
-                          {player.region}
+                          {playerRegion}
                         </span>
                       )}
                       {player.badge && (
@@ -736,7 +729,7 @@ export default function ScoutDashboard() {
                           {isRTL ? 'النتيجة' : 'Score'}
                         </span>
                         <span style={{
-                          color: '#EEEFEE', fontWeight: '700', fontSize: '18px',
+                          fontWeight: '700', fontSize: '18px',
                           fontFamily: "'Orbitron', sans-serif",
                           color: score >= 80 ? '#00DCC8' : score >= 60 ? '#F59E0B' : '#9CA3AF'
                         }}>
@@ -756,13 +749,13 @@ export default function ScoutDashboard() {
                     </div>
 
                     {/* Attribute pills */}
-                    <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
                       {[
-                        { label: isRTL ? 'ت' : 'SPD', val: player.speed, color: '#00DCC8' },
+                        { label: isRTL ? 'س' : 'SPD', val: player.speed, color: '#00DCC8' },
                         { label: isRTL ? 'ت' : 'STA', val: player.stamina, color: '#F59E0B' },
-                        { label: isRTL ? 'ت' : 'TEC', val: player.technique, color: '#007ABA' },
-                        { label: isRTL ? 'ت' : 'RAT', val: player.rating, color: '#8B5CF6' },
-                      ].filter(attr => attr.val !== undefined).map(attr => (
+                        { label: isRTL ? 'ف' : 'TEC', val: player.technique, color: '#007ABA' },
+                        { label: isRTL ? 'ق' : 'RAT', val: player.rating, color: '#8B5CF6' },
+                      ].filter(attr => attr.val !== undefined && attr.val !== null).map(attr => (
                         <div key={attr.label} style={{
                           display: 'flex', alignItems: 'center', gap: '4px',
                           background: `${attr.color}10`, border: `1px solid ${attr.color}25`,
@@ -773,6 +766,27 @@ export default function ScoutDashboard() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Match Stats row (NEW) */}
+                    {(player.totalGoals || 0) + (player.totalAssists || 0) + (player.totalMatchesPlayed || 0) > 0 && (
+                      <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                        {[
+                          { icon: <Target size={10} />, val: player.totalGoals, label: isRTL ? 'أهداف' : 'Goals', color: '#10B981' },
+                          { icon: <Activity size={10} />, val: player.totalAssists, label: isRTL ? 'تمريرات' : 'Assists', color: '#F59E0B' },
+                          { icon: <Users size={10} />, val: player.totalMatchesPlayed, label: isRTL ? 'مباريات' : 'Matches', color: '#007ABA' },
+                        ].filter(s => s.val && s.val > 0).map(stat => (
+                          <div key={stat.label} style={{
+                            display: 'flex', alignItems: 'center', gap: '4px',
+                            background: `${stat.color}10`, border: `1px solid ${stat.color}20`,
+                            borderRadius: '4px', padding: '3px 6px',
+                          }}>
+                            <span style={{ color: stat.color, display: 'flex' }}>{stat.icon}</span>
+                            <span style={{ color: '#EEEFEE', fontSize: '11px', fontWeight: '600' }}>{stat.val}</span>
+                            <span style={{ color: '#6B7280', fontSize: '9px' }}>{stat.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Notes */}
                     {playerNotes[player.id] && (

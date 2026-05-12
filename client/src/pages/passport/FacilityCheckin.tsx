@@ -4,10 +4,11 @@ import type { Athlete } from '@/lib/passport/types';
 import { useLang, LanguageProvider } from '@/lib/passport/LanguageContext';
 import { t } from '@/lib/passport/i18n';
 import NavBar from '@/components/passport/NavBar';
+import { usePlayers } from '@/hooks/usePlayers';
+import { useEvaluations } from '@/hooks/useEvaluations';
+import { mapPlayerToAthlete } from '@/lib/passport/supabase-mappers';
 
 type ScanState = 'idle' | 'scanning' | 'success' | 'error';
-
-// Athlete data is now fetched from the API inside CheckInPageInner
 
 function CheckInPageInner() {
   const { lang } = useLang();
@@ -16,20 +17,28 @@ function CheckInPageInner() {
   const [manualId, setManualId] = useState('');
   const [logs, setLogs] = useState<Array<{name: string, time: string, sport: string}>>([]);
 
-  const [data, setData] = useState<Athlete[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Fetch real data from Supabase
+  const { players: playersData, isLoading: loading, error: fetchError } = usePlayers();
+  const currentPlayerId = playersData?.[0]?.id;
+  const { evaluations: evaluationsData } = useEvaluations(currentPlayerId || '');
 
-  useEffect(() => {
-    fetch('/api/players')
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
-  }, []);
+  // Map Supabase data to Athlete shape
+  const data: Athlete[] = (playersData && playersData.length > 0)
+    ? playersData.map((p: any) => {
+        const evals = (p.id === currentPlayerId && evaluationsData) ? evaluationsData : [];
+        return mapPlayerToAthlete(p, evals);
+      })
+    : [];
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
-  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
-  if (!data?.length) return <div className="text-white/30 text-center p-8">No athlete data available</div>;
+  if (fetchError) return <div className="text-red-500 text-center p-8">{lang === 'ar' ? 'خطأ في تحميل البيانات' : 'Error loading data'}: {fetchError.message}</div>;
+  if (!data.length) return (
+    <div className="text-center p-12">
+      <div className="text-5xl mb-4">📱</div>
+      <h2 className="text-xl font-bold text-white mb-2">{lang === 'ar' ? 'لا توجد بيانات رياضي' : 'No Athlete Data'}</h2>
+      <p className="text-white/40 text-sm">{lang === 'ar' ? 'لا يوجد رياضيون متاحون للحضور.' : 'No athletes available for check-in.'}</p>
+    </div>
+  );
 
   const sampleAthletes = data;
 

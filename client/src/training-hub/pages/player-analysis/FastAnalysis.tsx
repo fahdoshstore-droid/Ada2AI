@@ -34,55 +34,48 @@ const ANALYSIS_STEPS: AnalysisStep[] = [
   { id: 'generate', label: 'إنشاء التقرير', icon: BarChart3, status: 'pending' },
 ]
 
-const generateMockResult = (fileName: string): PlayerAnalysisResult => ({
-  playerName: 'أحمد الشمراني',
-  jerseyNumber: '10',
-  position: 'وسط',
-  overallRating: 87,
-  metrics: {
-    speed: 88,
-    acceleration: 85,
-    agility: 82,
-    technique: 90,
-    passing: 86,
-    vision: 89,
-    physical: 84,
-    stamina: 87,
-  },
-  highlights: [
-    {
-      timestamp: '02:15',
-      description: 'تمريرة طولية ممتازة لمهاجم في موقف هجومي',
-      type: 'strength',
+/**
+ * Call the real video analysis backend and return structured results.
+ * Falls back to an error indicator if the API is unavailable.
+ */
+async function callAnalysisAPI(file: File): Promise<PlayerAnalysisResult> {
+  const formData = new FormData()
+  formData.append('video', file)
+
+  const res = await fetch('/api/scout/analyze', {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!res.ok) {
+    throw new Error(`Analysis API returned ${res.status}`)
+  }
+
+  const data = await res.json()
+
+  // The API may return results in various shapes — normalise to PlayerAnalysisResult
+  return {
+    playerName: data.playerName ?? data.player_name ?? 'Unknown',
+    jerseyNumber: data.jerseyNumber ?? data.jersey_number,
+    position: data.position,
+    overallRating: data.overallRating ?? data.overall_rating ?? data.score ?? 0,
+    metrics: {
+      speed: data.metrics?.speed ?? data.speed ?? 0,
+      acceleration: data.metrics?.acceleration ?? data.acceleration ?? 0,
+      agility: data.metrics?.agility ?? data.agility ?? 0,
+      technique: data.metrics?.technique ?? data.technique ?? 0,
+      passing: data.metrics?.passing ?? data.passing ?? 0,
+      vision: data.metrics?.vision ?? data.vision ?? 0,
+      physical: data.metrics?.physical ?? data.physical ?? 0,
+      stamina: data.metrics?.stamina ?? data.stamina ?? 0,
     },
-    {
-      timestamp: '05:30',
-      description: 'استعادة كرة ناجحة في منطقة الوسط',
-      type: 'strength',
-    },
-    {
-      timestamp: '08:45',
-      description: 'فرصة تحسين: يمكن الضغط بشكل أسرع على حامل الكرة',
-      type: 'improvement',
-    },
-    {
-      timestamp: '12:20',
-      description: 'تسديدة قوية من خارج المنطقة مع محاولة تسديد مباشرة',
-      type: 'notable',
-    },
-    {
-      timestamp: '15:10',
-      description: 'مراوغة ناجحة واختراق من الجنب الأيمن',
-      type: 'strength',
-    },
-  ],
-  aiInsights: [
-    'اللاعب يظهر أداءً متميزاً في التمريرات القصيرة والمتوسطة مع دقة 89%',
-    'سرعة استجابة اللاعب ممتازة في التحول من الدفاع للهجوم',
-    'يحتاج اللاعب لتحسين التغطية الدفاعية في آخر 15 دقيقة من الشوط',
-    'تمركز اللاعب ممتاز في منطقة الوسط مع القدرة على اختراق الخطوط',
-  ],
-})
+    highlights: data.highlights ?? [],
+    aiInsights: data.aiInsights ?? data.ai_insights ?? [],
+    heatmapData: data.heatmapData ?? data.heatmap_data,
+    movementData: data.movementData ?? data.movement_data,
+    extractedFrames: data.extractedFrames ?? data.extracted_frames,
+  }
+}
 
 function FastAnalysis({ file, onProgress, onComplete }: FastAnalysisProps) {
   const [steps, setSteps] = useState<AnalysisStep[]>(ANALYSIS_STEPS)
@@ -118,10 +111,20 @@ function FastAnalysis({ file, onProgress, onComplete }: FastAnalysisProps) {
         onProgress(((i + 1) / ANALYSIS_STEPS.length) * 100)
       }
 
-      setTimeout(() => {
-        const result = generateMockResult(file.name)
+      try {
+        const result = await callAnalysisAPI(file)
         onComplete(result)
-      }, 500)
+      } catch (err) {
+        console.error('Analysis API error:', err)
+        // Fallback: return an empty/minimal result so the UI doesn't break
+        onComplete({
+          playerName: '—',
+          overallRating: 0,
+          metrics: { speed: 0, acceleration: 0, agility: 0, technique: 0, passing: 0, vision: 0, physical: 0, stamina: 0 },
+          highlights: [],
+          aiInsights: [err instanceof Error ? err.message : 'Analysis unavailable — API error'],
+        })
+      }
     }
 
     processSteps()

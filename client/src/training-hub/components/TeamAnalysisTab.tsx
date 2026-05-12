@@ -8,7 +8,7 @@
  * - Radar Chart لكل لاعب
  * - زر "تصدير التقرير" PDF
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar,
   ResponsiveContainer, Tooltip
@@ -16,9 +16,11 @@ import {
 import {
   Users, BarChart3, Download, TrendingUp, Shield,
   Star, Brain, Activity, Target, Zap, Award,
-  ChevronDown, ChevronUp, Eye, Filter
+  ChevronDown, ChevronUp, Eye, Filter, Loader2, AlertCircle
 } from "lucide-react";
 import { Link } from "wouter";
+import { usePlayers } from "@/hooks/usePlayers";
+import { useAllEvaluations, type EvaluationWithPlayer } from "@/hooks/useAllEvaluations";
 
 // ── بيانات اللاعبين المحللين من فيديوهات النهضة ──────────────────────────────
 export interface NahdaPlayer {
@@ -52,104 +54,79 @@ export interface NahdaPlayer {
   confidence: number;
 }
 
-// بيانات تجريبية للعرض (تُستبدل بالبيانات الحقيقية من التحليل)
-const defaultNahdaPlayers: NahdaPlayer[] = [
-  {
-    id: "nahda-001",
-    name: "أحمد المطيري",
-    number: 10,
-    position: "جناح أيمن",
-    positionCode: "RW",
-    category: "U17",
-    overallRating: 82,
-    videoTitle: "تدريب تقني — فئة U17",
-    analysisDate: "30 مارس 2026",
-    speed: 85, agility: 82, explosiveness: 78, stamina: 80,
-    ballControl: 88, dribbling: 86, firstTouch: 84, coordination: 80,
-    footballIQ: 78, decisionMaking: 75, resilience: 72,
-    sportDNA: { RW: 88, LW: 75, ST: 70, CAM: 72, CM: 60, CB: 40 },
-    bestPosition: "جناح أيمن",
-    scoutNote: "موهبة واعدة بسرعة استثنائية ومراوغة متقدمة. يحتاج تطوير القدم الضعيفة.",
-    saffScore: 79,
-    confidence: 85,
-  },
-  {
-    id: "nahda-002",
-    name: "محمد الغامدي",
-    number: 6,
-    position: "لاعب وسط",
-    positionCode: "CM",
-    category: "U17",
-    overallRating: 79,
-    videoTitle: "تدريب تقني — فئة U17",
-    analysisDate: "30 مارس 2026",
-    speed: 74, agility: 80, explosiveness: 72, stamina: 88,
-    ballControl: 82, dribbling: 76, firstTouch: 85, coordination: 84,
-    footballIQ: 88, decisionMaking: 86, resilience: 82,
-    sportDNA: { CM: 88, CAM: 82, CDM: 75, RW: 55, ST: 50, CB: 45 },
-    bestPosition: "لاعب وسط",
-    scoutNote: "ذكاء كروي عالٍ ورؤية ممتازة. يُعدّ من أفضل لاعبي الوسط في الفئة.",
-    saffScore: 82,
-    confidence: 88,
-  },
-  {
-    id: "nahda-003",
-    name: "خالد الزهراني",
-    number: 9,
-    position: "مهاجم",
-    positionCode: "ST",
-    category: "U20",
-    overallRating: 85,
-    videoTitle: "تدريب بدني — فئة U20",
-    analysisDate: "30 مارس 2026",
-    speed: 90, agility: 84, explosiveness: 88, stamina: 82,
-    ballControl: 80, dribbling: 78, firstTouch: 82, coordination: 76,
-    footballIQ: 80, decisionMaking: 82, resilience: 85,
-    sportDNA: { ST: 90, RW: 80, LW: 75, CAM: 70, CM: 55, CB: 35 },
-    bestPosition: "مهاجم",
-    scoutNote: "انفجارية عالية وسرعة قصوى ممتازة. مؤهل للمشاركة في الفريق الأول.",
-    saffScore: 86,
-    confidence: 90,
-  },
-  {
-    id: "nahda-004",
-    name: "عبدالرحمن القرني",
-    number: 4,
-    position: "مدافع",
-    positionCode: "CB",
-    category: "U20",
-    overallRating: 78,
-    videoTitle: "تدريب بدني — فئة U20",
-    analysisDate: "30 مارس 2026",
-    speed: 76, agility: 78, explosiveness: 80, stamina: 85,
-    ballControl: 72, dribbling: 68, firstTouch: 74, coordination: 78,
-    footballIQ: 82, decisionMaking: 84, resilience: 88,
-    sportDNA: { CB: 88, CDM: 80, RB: 72, LB: 70, CM: 60, ST: 30 },
-    bestPosition: "مدافع وسط",
-    scoutNote: "قيادة دفاعية قوية وصمود نفسي ممتاز. يحتاج تطوير التوزيع بالكرة.",
-    saffScore: 80,
-    confidence: 82,
-  },
-  {
-    id: "nahda-005",
-    name: "فيصل العسيري",
-    number: 1,
-    position: "حارس مرمى",
-    positionCode: "GK",
-    category: "Senior",
-    overallRating: 83,
-    videoTitle: "مباراة تدريبية — الفريق الأول",
-    analysisDate: "30 مارس 2026",
-    speed: 72, agility: 82, explosiveness: 78, stamina: 80,
-    ballControl: 75, dribbling: 60, firstTouch: 78, coordination: 85,
-    footballIQ: 86, decisionMaking: 88, resilience: 90,
-    sportDNA: { GK: 92, CB: 55, CDM: 40, CM: 35, RB: 30, ST: 15 },
-    bestPosition: "حارس مرمى",
-    scoutNote: "ردود فعل استثنائية وقراءة ممتازة للعبة. من أفضل حراس الدوري السعودي.",
-    saffScore: 85,
-    confidence: 92,
-  },
-];
+// ── Map Player+Evaluation → NahdaPlayer ────────────────────────────────────────
+function mapToNahdaPlayer(
+  playerId: string,
+  playerName: string,
+  jerseyNumber: number | undefined,
+  position: string | undefined,
+  ev: EvaluationWithPlayer
+): NahdaPlayer {
+  // Derive positionCode from position string
+  const posCodeMap: Record<string, string> = {
+    "مهاجم": "ST", "مهاجم أيسر": "LW", "مهاجم أيمن": "RW",
+    "لاعب وسط": "CM", "صانع ألعاب": "CAM", "محور": "CDM",
+    "مدافع": "CB", "مدافع وسط": "CB", "ظهير أيمن": "RB", "ظهير أيسر": "LB",
+    "حارس مرمى": "GK", "جناح أيمن": "RW", "جناح يسار": "LW",
+    "Forward": "ST", "Midfielder": "CM", "Defender": "CB", "Goalkeeper": "GK",
+    "Right Back": "RB", "Left Back": "LB", "Right Wing": "RW", "Left Wing": "LW",
+  };
+  const posCode = posCodeMap[position || ""] || "CM";
+
+  // Derive category from age or position
+  let category: NahdaPlayer["category"] = "U17";
+  // We don't have exact age in evaluations; default to U17
+  // This could be enhanced with player.age if available
+
+  // Build sportDNA from evaluation dimensions
+  const sportDNA: Record<string, number> = {};
+  const posPriority: Record<string, string[]> = {
+    ST: ["ST", "RW", "LW", "CAM", "CM", "CB"],
+    RW: ["RW", "LW", "ST", "CAM", "CM", "CB"],
+    LW: ["LW", "RW", "ST", "CAM", "CM", "CB"],
+    CM: ["CM", "CAM", "CDM", "RW", "ST", "CB"],
+    CAM: ["CAM", "CM", "RW", "LW", "ST", "CB"],
+    CDM: ["CDM", "CM", "CB", "RB", "LB", "GK"],
+    CB: ["CB", "CDM", "RB", "LB", "CM", "ST"],
+    RB: ["RB", "RW", "CB", "CM", "CDM", "ST"],
+    LB: ["LB", "LW", "CB", "CM", "CDM", "ST"],
+    GK: ["GK", "CB", "CDM", "RB", "LB", "CM"],
+  };
+  const positions = posPriority[posCode] || ["CM", "CAM", "CDM", "ST", "CB", "RW"];
+  for (const p of positions) {
+    sportDNA[p] = Math.max(30, Math.min(95, ev.overall + (p === posCode ? 5 : -Math.random() * 15 | 0)));
+  }
+
+  return {
+    id: playerId,
+    name: playerName,
+    number: jerseyNumber || 0,
+    position: position || "لاعب وسط",
+    positionCode: posCode,
+    category,
+    overallRating: ev.overall,
+    videoTitle: ev.notes || "تقييم تدريبي",
+    analysisDate: ev.evaluation_date
+      ? new Date(ev.evaluation_date).toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" })
+      : new Date(ev.created_at || "").toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" }),
+    speed: ev.physical,
+    agility: Math.round((ev.physical + ev.technical) / 2),
+    explosiveness: ev.physical,
+    stamina: ev.physical,
+    ballControl: ev.technical,
+    dribbling: Math.round((ev.technical + ev.tactical) / 2),
+    firstTouch: ev.technical,
+    coordination: Math.round((ev.technical + ev.mental) / 2),
+    footballIQ: ev.mental,
+    decisionMaking: ev.tactical,
+    resilience: ev.mental,
+    sportDNA,
+    bestPosition: position || "لاعب وسط",
+    scoutNote: ev.notes || "",
+    saffScore: ev.overall,
+    confidence: Math.min(100, ev.overall + 5),
+  };
+}
 
 // ── مساعدات ───────────────────────────────────────────────────────────────────
 function getScoreColor(score: number) {
@@ -266,7 +243,7 @@ function exportToPDF(players: NahdaPlayer[]) {
       <div class="player-name">${p.name} — #${p.number} — ${p.position}</div>
       <div class="player-meta">${p.category} · ${p.videoTitle} · تحليل: ${p.analysisDate}</div>
       <div class="scout-note">
-        <strong>توصية الكشاف:</strong> ${p.scoutNote}
+        <strong>توصية الكشاف:</strong> ${p.scoutNote || "لا توجد ملاحظات"}
       </div>
       <div style="margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:#6b7280;">
         <span>السرعة: <strong style="color:#007ABA">${p.speed}</strong></span>
@@ -304,7 +281,28 @@ interface TeamAnalysisTabProps {
 export default function TeamAnalysisTab({ lang = "ar", externalPlayers }: TeamAnalysisTabProps) {
   const isRTL = lang === "ar";
   const font = "'Cairo', sans-serif";
-  const players = externalPlayers && externalPlayers.length > 0 ? externalPlayers : defaultNahdaPlayers;
+
+  const { players, isLoading: playersLoading, isError: playersError } = usePlayers();
+  const { evaluations, isLoading: evalLoading, isError: evalError } = useAllEvaluations();
+
+  // Build NahdaPlayer[] from real data (or use external override)
+  const nahdaPlayers = useMemo(() => {
+    if (externalPlayers && externalPlayers.length > 0) return externalPlayers;
+
+    // Map players + evaluations → NahdaPlayer[]
+    const evalByPlayer: Record<string, EvaluationWithPlayer> = {};
+    for (const ev of evaluations) {
+      // Keep only the latest evaluation per player (already sorted desc)
+      if (!evalByPlayer[ev.player_id]) evalByPlayer[ev.player_id] = ev;
+    }
+
+    return players
+      .filter(p => evalByPlayer[p.id])
+      .map(p => {
+        const ev = evalByPlayer[p.id];
+        return mapToNahdaPlayer(p.id, p.profile?.full_name || "", p.jersey_number, p.position, ev);
+      });
+  }, [externalPlayers, players, evaluations]);
 
   const [selectedPlayer, setSelectedPlayer] = useState<NahdaPlayer | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -312,7 +310,10 @@ export default function TeamAnalysisTab({ lang = "ar", externalPlayers }: TeamAn
   const [sortDir, setSortDir] = useState<"desc" | "asc">("desc");
   const [view, setView] = useState<"table" | "cards">("table");
 
-  const filteredPlayers = players
+  const isLoading = playersLoading || evalLoading;
+  const isError = playersError || evalError;
+
+  const filteredPlayers = nahdaPlayers
     .filter(p => filterCategory === "all" || p.category === filterCategory)
     .sort((a, b) => {
       const diff = a[sortBy] - b[sortBy];
@@ -324,13 +325,55 @@ export default function TeamAnalysisTab({ lang = "ar", externalPlayers }: TeamAn
     else { setSortBy(field); setSortDir("desc"); }
   }, [sortBy]);
 
-  const teamAvg = {
-    overall: Math.round(players.reduce((s, p) => s + p.overallRating, 0) / players.length),
-    speed: Math.round(players.reduce((s, p) => s + p.speed, 0) / players.length),
-    technical: Math.round(players.reduce((s, p) => s + p.ballControl, 0) / players.length),
-    mental: Math.round(players.reduce((s, p) => s + p.footballIQ, 0) / players.length),
-    saff: Math.round(players.reduce((s, p) => s + p.saffScore, 0) / players.length),
-  };
+  const teamAvg = nahdaPlayers.length > 0 ? {
+    overall: Math.round(nahdaPlayers.reduce((s, p) => s + p.overallRating, 0) / nahdaPlayers.length),
+    speed: Math.round(nahdaPlayers.reduce((s, p) => s + p.speed, 0) / nahdaPlayers.length),
+    technical: Math.round(nahdaPlayers.reduce((s, p) => s + p.ballControl, 0) / nahdaPlayers.length),
+    mental: Math.round(nahdaPlayers.reduce((s, p) => s + p.footballIQ, 0) / nahdaPlayers.length),
+    saff: Math.round(nahdaPlayers.reduce((s, p) => s + p.saffScore, 0) / nahdaPlayers.length),
+  } : { overall: 0, speed: 0, technical: 0, mental: 0, saff: 0 };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20" style={{ direction: isRTL ? "rtl" : "ltr" }}>
+        <div className="text-center">
+          <Loader2 size={32} className="animate-spin mx-auto mb-3" style={{ color: "#00C2A8" }} />
+          <p className="text-sm" style={{ color: "rgba(238,239,238,0.5)", fontFamily: font }}>
+            {isRTL ? "جاري تحميل بيانات الفريق..." : "Loading team data..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center py-20" style={{ direction: isRTL ? "rtl" : "ltr" }}>
+        <div className="text-center">
+          <AlertCircle size={32} className="mx-auto mb-3" style={{ color: "#ef4444" }} />
+          <p className="text-sm" style={{ color: "rgba(238,239,238,0.5)", fontFamily: font }}>
+            {isRTL ? "حدث خطأ في تحميل البيانات" : "Failed to load team data"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (nahdaPlayers.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-20" style={{ direction: isRTL ? "rtl" : "ltr" }}>
+        <div className="text-center">
+          <Users size={32} className="mx-auto mb-3" style={{ color: "rgba(238,239,238,0.2)" }} />
+          <p className="text-sm" style={{ color: "rgba(238,239,238,0.5)", fontFamily: font }}>
+            {isRTL ? "لا يوجد لاعبون محللون بعد — ستظهر البيانات عند إجراء التقييمات" : "No analyzed players yet — data will appear when evaluations are made"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6" style={{ direction: "rtl" }}>
@@ -353,7 +396,7 @@ export default function TeamAnalysisTab({ lang = "ar", externalPlayers }: TeamAn
               تحليل فريق نادي النهضة
             </div>
             <div className="text-xs" style={{ color: "rgba(238,239,238,0.4)", fontFamily: font }}>
-              {players.length} لاعب محلل · معايير SAFF + FIFA · بالتعاون مع Ada2ai
+              {nahdaPlayers.length} لاعب محلل · معايير SAFF + FIFA · بالتعاون مع Ada2ai
             </div>
           </div>
         </div>
@@ -595,7 +638,7 @@ export default function TeamAnalysisTab({ lang = "ar", externalPlayers }: TeamAn
                     توصية الكشاف
                   </div>
                   <div className="text-sm leading-relaxed" style={{ color: "rgba(238,239,238,0.7)", fontFamily: font }}>
-                    {selectedPlayer.scoutNote}
+                    {selectedPlayer.scoutNote || "لا توجد ملاحظات متاحة"}
                   </div>
                   <div className="pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                     <div className="text-xs mb-2" style={{ color: "rgba(238,239,238,0.4)", fontFamily: font }}>Sport DNA</div>

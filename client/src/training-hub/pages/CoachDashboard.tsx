@@ -3,7 +3,7 @@
  * Features:
  *  - Drag-and-drop players on a realistic football pitch
  *  - Formation presets (4-3-3, 4-4-2, 3-5-2, 4-2-3-1)
- *  - Real player assignment from /data/players.ts
+ *  - Real player assignment from Supabase (via usePlayers hook)
  *  - Save/load formations (localStorage + ready for DB)
  *  - Team performance chart (last 5 matches)
  *  - Opponent analysis panel (presets + custom opponent form)
@@ -33,7 +33,8 @@ import {
   PolarGrid, PolarAngleAxis, Radar
 } from "recharts";
 import { Link } from "wouter";
-import { allPlayers, type Player as DataPlayer } from "@/data/players";
+import { usePlayers } from "@/hooks/usePlayers";
+import type { Player as SupabasePlayer } from "@/lib/supabase";
 import { useTacticalAnimation, BUILTIN_SCENARIOS } from "./useTacticalAnimation";
 import { useA2AAgent } from "../hooks/useA2AAgent";
 import AgentTracePanel from "@/components/AgentTracePanel";
@@ -248,8 +249,8 @@ const opponentPresets = [
   },
 ];
 
-// ─── Football players from data/players.ts ────────────────────────────────────
-const footballPlayers = allPlayers.filter(p => p.sport === "Football");
+// ─── Football players fetched from Supabase ────────────────────────────────────
+// (moved inside the component — see usePlayers hook call below)
 
 // ─── Component ────────────────────────────────────────────────────────────────
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -258,6 +259,10 @@ export default function CoachDashboard(props: any = {}) {
   const lang: "ar" | "en" = props.lang || "ar";
   const isRTL = lang === "ar";
   const font = isRTL ? "'Cairo', sans-serif" : "'Space Grotesk', sans-serif";
+
+  // ── Players from Supabase ────────────────────────────────────────────────
+  const { players: supabasePlayers, isLoading: playersLoading } = usePlayers();
+  const footballPlayers = supabasePlayers; // all players from Supabase (sport filter can be added via hook param)
 
   // ── Pitch State ──────────────────────────────────────────────────────────────
   const [formation, setFormation] = useState<Formation>("4-4-2");
@@ -392,13 +397,14 @@ export default function CoachDashboard(props: any = {}) {
   };
 
   // ─── Assign real player to pitch position ────────────────────────────────────
-  const assignPlayer = (pitchId: number, dataPlayer: DataPlayer) => {
+  const assignPlayer = (pitchId: number, dataPlayer: SupabasePlayer) => {
+    const name = dataPlayer.profile?.full_name || dataPlayer.id.slice(0, 6);
     setPlayers(prev => prev.map(p => p.id === pitchId ? {
       ...p,
-      nameAr: dataPlayer.nameAr,
-      nameEn: dataPlayer.nameEn,
-      rating: dataPlayer.rating,
-      linkedPlayerId: dataPlayer.id,
+      nameAr: name,
+      nameEn: name,
+      rating: 0, // will be populated from evaluations
+      linkedPlayerId: Number(dataPlayer.id),
     } : p));
     setShowAssignModal(false);
     setAssigningPlayerId(null);
@@ -1724,7 +1730,15 @@ export default function CoachDashboard(props: any = {}) {
               {isRTL ? "اختر لاعباً من قاعدة بيانات كرة القدم" : "Choose a player from the football database"}
             </p>
             <div className="space-y-2 max-h-72 overflow-y-auto">
-              {footballPlayers.map(dp => (
+              {playersLoading ? (
+                <div className="text-center py-4" style={{ color: "rgba(255,255,255,0.4)", fontFamily: font }}>
+                  {isRTL ? "جارٍ تحميل اللاعبين..." : "Loading players..."}
+                </div>
+              ) : footballPlayers.length === 0 ? (
+                <div className="text-center py-4" style={{ color: "rgba(255,255,255,0.4)", fontFamily: font }}>
+                  {isRTL ? "لا يوجد لاعبون بعد" : "No players yet"}
+                </div>
+              ) : footballPlayers.map(dp => (
                 <button
                   key={dp.id}
                   onClick={() => assignPlayer(assigningPlayerId, dp)}
@@ -1733,18 +1747,18 @@ export default function CoachDashboard(props: any = {}) {
                 >
                   <div className="w-9 h-9 rounded-full flex items-center justify-center font-black text-xs text-white flex-shrink-0"
                     style={{ background: "linear-gradient(135deg, #007ABA, #00DCC8)" }}>
-                    {dp.rating}
+                    {dp.position?.charAt(0) || "?"}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-white text-sm truncate" style={{ fontFamily: font }}>
-                      {isRTL ? dp.nameAr : dp.nameEn}
+                      {dp.profile?.full_name || dp.id.slice(0, 6)}
                     </div>
                     <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)", fontFamily: font }}>
-                      {isRTL ? dp.positionAr : dp.positionEn} · {isRTL ? dp.cityAr : dp.cityEn}
+                      {dp.position || "—"} · {dp.profile?.city || "—"}
                     </div>
                   </div>
                   <div className="text-xs font-bold" style={{ color: "#00DCC8", fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {dp.score}
+                    {dp.age || "—"}
                   </div>
                 </button>
               ))}

@@ -1,11 +1,15 @@
 /**
- * DemoAuthContext - Demo mode authentication (no login required)
- * Anyone can browse the app without authentication
+ * DemoAuthContext - DEMO-ONLY authentication (no real login)
+ *
+ * ⚠️  WARNING: This is NOT a real auth provider. It uses a hardcoded
+ *     DEMO_USER and DEMO_SESSION for demo/preview mode only.
+ *     Do NOT use in production. Replace with real Supabase auth
+ *     (AuthContext) before shipping.
  */
 import React, { createContext, useContext, useState } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 
-// Demo user for testing
+// ─── DEMO-ONLY: Hardcoded demo user — NOT real auth ──────────────────────────
 const DEMO_USER: User = {
   id: 'demo-user-id',
   email: 'demo@ada2ai.com',

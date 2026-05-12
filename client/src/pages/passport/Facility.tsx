@@ -12,27 +12,27 @@ const hourlyData = [
   { hour: '6PM',  count: 97 }, { hour: '8PM',  count: 43 },
 ];
 
-// Facility data is now fetched from the API inside FacilityDashboardInner
-
 function FacilityDashboardInner() {
   const { lang } = useLang();
 
-  const [data, setData] = useState<FacilityType[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch('/api/facilities')
-      .then(r => r.json())
-      .then(d => { setData(Array.isArray(d) ? d : [d]); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
-  }, []);
+  // No facilities table in Supabase yet — show empty state
+  const [loading] = useState(false);
+  const [error] = useState<string | null>(null);
+  const data: FacilityType[] | null = null;
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
-  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
-  if (!data?.length) return <div className="text-white/30 text-center p-8">No facility data available</div>;
+  if (error) return <div className="text-red-500 text-center p-8">{lang === 'ar' ? 'خطأ في تحميل البيانات' : 'Error loading data'}: {error}</div>;
+  // @ts-expect-error facility integration pending — data is null but dead code below will be used when Supabase integration lands
+  if (!data?.length) return (
+    <div className="text-center p-12">
+      <div className="text-5xl mb-4">🏟️</div>
+      <h2 className="text-xl font-bold text-white mb-2">{lang === 'ar' ? 'لا توجد بيانات منشأة' : 'No Facility Data'}</h2>
+      <p className="text-white/40 text-sm">{lang === 'ar' ? 'بيانات المنشأة غير متاحة حاليًا. سيتم ربطها قريبًا.' : 'Facility data is not available yet. Integration coming soon.'}</p>
+    </div>
+  );
 
-  const f = data[0];
+  // Facility data not yet in Supabase — below is placeholder for future integration
+  const f = data[0] as FacilityType;
   const [checkins, setCheckins] = useState<CheckIn[]>(f.checkins);
   const [scanning, setScanning] = useState(false);
 

@@ -1,13 +1,15 @@
 /**
  * LoginPage - Real Supabase Authentication
  * Supports: Academy, Club, Coach, Player, Parent, Scout
+ * After login → fetches profile role → redirects to role-specific dashboard
  */
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { supabase, signIn, signUp, type UserType } from '@/lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
+import { useProfile, roleDashboardPaths } from '@/hooks/useProfile'
+import { supabase, type UserType } from '@/lib/supabase'
 import { Users, Building2, UserCheck, Heart, Search, Shield, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
-import type { User } from '@supabase/supabase-js'
 
 const userTypes = [
   { id: 'academy' as UserType, icon: <Shield size={20} />, labelAr: 'أكاديمية', labelEn: 'Academy' },
@@ -21,6 +23,8 @@ const userTypes = [
 export default function LoginPage() {
   const { isRTL } = useLanguage()
   const [, navigate] = useLocation()
+  const { signIn: authSignIn, user } = useAuth()
+  const { role, loading: profileLoading } = useProfile()
 
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [userType, setUserType] = useState<UserType>('player')
@@ -33,6 +37,17 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
+  // ── After login, redirect to role-specific dashboard ──
+  useEffect(() => {
+    if (user && role && !profileLoading) {
+      const destination = roleDashboardPaths[role] || '/dashboard'
+      navigate(destination)
+    } else if (user && !role && !profileLoading) {
+      // Has auth but no profile/role yet → generic dashboard
+      navigate('/dashboard')
+    }
+  }, [user, role, profileLoading, navigate])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -42,44 +57,45 @@ export default function LoginPage() {
     try {
       if (mode === 'register') {
         // Sign up with Supabase Auth
-        const { data, error: signUpError } = await signUp(email, password, {
-          full_name: fullName,
-          user_type: userType
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName, user_type: userType } }
         })
         
         if (signUpError) throw signUpError
-        if (!data.user) throw new Error('No user returned')
 
+        // The AuthContext onAuthStateChange will pick up the new user.
         // Create profile in profiles table
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: data.user.id,
-            user_type: userType,
-            full_name: fullName,
-            phone: phone || null,
-            city: city || null,
-            sport: 'football'
-          })
-
-        if (profileError) console.error('Profile creation error:', profileError)
+        const { data: { user: newUser } } = await supabase.auth.getUser()
+        if (newUser) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: newUser.id,
+              user_type: userType,
+              full_name: fullName,
+              phone: phone || null,
+              city: city || null,
+              sport: 'football'
+            })
+          if (profileError) console.error('Profile creation error:', profileError)
+        }
 
         setSuccess(isRTL 
           ? '✅ تم إنشاء الحساب بنجاح!' 
           : '✅ Account created successfully!')
         
-        // Redirect to login after 2 seconds
+        // Redirect to login mode after 2 seconds
         setTimeout(() => {
           setMode('login')
           setSuccess(null)
         }, 2000)
       } else {
-        // Sign in with Supabase Auth
-        const { error: signInError } = await signIn(email, password)
+        // Sign in via AuthContext (triggers onAuthStateChange → profile fetch → redirect)
+        const { error: signInError } = await authSignIn(email, password)
         if (signInError) throw signInError
-        
-        // Success - redirect to dashboard
-        navigate('/dashboard')
+        // Redirection handled by useEffect above
       }
     } catch (err: any) {
       setError(err.message || (isRTL ? 'حدث خطأ' : 'An error occurred'))

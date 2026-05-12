@@ -17,12 +17,32 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ onNavigate, lang = "ar" }: DashboardProps) {
-  const { players } = usePlayers();
+  const { players, isLoading, isError } = usePlayers();
   const isRTL = lang === "ar";
 
   const avgProgress = players.length
     ? Math.round(players.reduce((a, p) => a + p.progress, 0) / players.length)
     : 0;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full" style={{ background: "#0A0E1A" }}>
+        <p style={{ color: "#00D4FF", fontFamily: "'Cairo', sans-serif" }}>
+          {lang === "ar" ? "جاري تحميل البيانات..." : "Loading data..."}
+        </p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center h-full" style={{ background: "#0A0E1A" }}>
+        <p style={{ color: "#FF6B6B", fontFamily: "'Cairo', sans-serif" }}>
+          {lang === "ar" ? "حدث خطأ أثناء تحميل البيانات" : "Error loading data"}
+        </p>
+      </div>
+    );
+  }
 
   const weeklyData = lang === "ar"
     ? [

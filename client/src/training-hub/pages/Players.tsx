@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { Search, Star, TrendingUp, Users, Plus, Filter, Brain, Loader2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, Star, TrendingUp, Users, Plus, Filter, Brain, Loader2, AlertCircle } from "lucide-react";
 import { useA2AAgent } from "../hooks/useA2AAgent";
+import { usePlayers } from "@/hooks/usePlayers";
+import { useEvaluations } from "@/hooks/useEvaluations";
 import AgentTracePanel from "@/components/AgentTracePanel";
 
 interface PlayersProps {
@@ -8,38 +10,98 @@ interface PlayersProps {
   lang?: "ar" | "en";
 }
 
-const playersData = [
-  { id: 1, nameAr: "أحمد الزهراني", nameEn: "Ahmed Al-Zahrani", posAr: "مهاجم", posEn: "Forward", age: 19, score: 87, speed: 88, dribble: 82, shoot: 91, pass: 75, endurance: 84, avatar: "AZ", level: "Gold" },
-  { id: 2, nameAr: "خالد العتيبي", nameEn: "Khalid Al-Otaibi", posAr: "وسط", posEn: "Midfielder", age: 21, score: 82, speed: 80, dribble: 85, shoot: 74, pass: 90, endurance: 83, avatar: "KA", level: "Silver" },
-  { id: 3, nameAr: "فيصل المطيري", nameEn: "Faisal Al-Mutairi", posAr: "مدافع", posEn: "Defender", age: 22, score: 79, speed: 76, dribble: 70, shoot: 65, pass: 82, endurance: 88, avatar: "FM", level: "Silver" },
-  { id: 4, nameAr: "عمر الشهري", nameEn: "Omar Al-Shahri", posAr: "حارس مرمى", posEn: "Goalkeeper", age: 20, score: 75, speed: 72, dribble: 60, shoot: 55, pass: 78, endurance: 85, avatar: "OS", level: "Bronze" },
-  { id: 5, nameAr: "يوسف القحطاني", nameEn: "Yousef Al-Qahtani", posAr: "مهاجم", posEn: "Forward", age: 18, score: 73, speed: 90, dribble: 78, shoot: 80, pass: 68, endurance: 76, avatar: "YQ", level: "Bronze" },
-  { id: 6, nameAr: "سلطان الدوسري", nameEn: "Sultan Al-Dosari", posAr: "ظهير أيمن", posEn: "Right Back", age: 23, score: 71, speed: 85, dribble: 72, shoot: 62, pass: 79, endurance: 80, avatar: "SD", level: "Bronze" },
-];
-
 const levelColors: Record<string, string> = {
   Platinum: "#00DCC8", Gold: "#F59E0B", Silver: "#9CA3AF", Bronze: "#CD7F32"
 };
 
+function getLevel(score: number): string {
+  if (score >= 85) return "Gold";
+  if (score >= 75) return "Silver";
+  return "Bronze";
+}
+
+function getInitials(name: string): string {
+  return name.split(" ").filter(Boolean).map(n => n[0]).join("").slice(0, 2).toUpperCase();
+}
+
 export default function Players({ onNavigate, lang = "ar" }: PlayersProps) {
   const isRTL = lang === "ar";
   const [search, setSearch] = useState("");
-  const [selectedPlayer, setSelectedPlayer] = useState<typeof playersData[0] | null>(null);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const a2a = useA2AAgent();
   const [playerQuestion, setPlayerQuestion] = useState("");
   const [playerAnswer, setPlayerAnswer] = useState("");
 
-  const filtered = playersData.filter(p =>
-    (isRTL ? p.nameAr : p.nameEn).toLowerCase().includes(search.toLowerCase())
-  );
+  const { players, isLoading, isError } = usePlayers();
+  const { evaluations, isLoading: evalLoading } = useEvaluations(selectedPlayerId);
 
-  const skills = selectedPlayer ? [
-    { labelAr: "السرعة", labelEn: "Speed", value: selectedPlayer.speed },
-    { labelAr: "المراوغة", labelEn: "Dribbling", value: selectedPlayer.dribble },
-    { labelAr: "التسديد", labelEn: "Shooting", value: selectedPlayer.shoot },
-    { labelAr: "التمرير", labelEn: "Passing", value: selectedPlayer.pass },
-    { labelAr: "التحمل", labelEn: "Endurance", value: selectedPlayer.endurance },
+  // Build a map of latest evaluation per player
+  const latestEvalMap = useMemo(() => {
+    const map: Record<string, { technical: number; tactical: number; physical: number; mental: number; overall: number }> = {};
+    for (const ev of evaluations) {
+      if (!map[ev.player_id]) {
+        map[ev.player_id] = { technical: ev.technical, tactical: ev.tactical, physical: ev.physical, mental: ev.mental, overall: ev.overall };
+      }
+    }
+    return map;
+  }, [evaluations]);
+
+  const filtered = players.filter(p => {
+    const name = p.profile?.full_name || "";
+    return name.toLowerCase().includes(search.toLowerCase());
+  });
+
+  const selectedPlayer = selectedPlayerId ? players.find(p => p.id === selectedPlayerId) ?? null : null;
+  const selectedEval = selectedPlayerId ? latestEvalMap[selectedPlayerId] : undefined;
+
+  const skills = selectedEval ? [
+    { labelAr: "التقنية", labelEn: "Technical", value: selectedEval.technical },
+    { labelAr: "التكتيك", labelEn: "Tactical", value: selectedEval.tactical },
+    { labelAr: "البدنية", labelEn: "Physical", value: selectedEval.physical },
+    { labelAr: "النفسية", labelEn: "Mental", value: selectedEval.mental },
   ] : [];
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center" style={{ background: "#0A0E1A", direction: isRTL ? "rtl" : "ltr" }}>
+        <div className="text-center">
+          <Loader2 size={32} className="animate-spin mx-auto mb-3" style={{ color: "#00DCC8" }} />
+          <p className="text-sm" style={{ color: "rgba(238,239,238,0.5)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+            {lang === "ar" ? "جاري تحميل اللاعبين..." : "Loading players..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="h-full flex items-center justify-center" style={{ background: "#0A0E1A", direction: isRTL ? "rtl" : "ltr" }}>
+        <div className="text-center">
+          <AlertCircle size={32} className="mx-auto mb-3" style={{ color: "#ef4444" }} />
+          <p className="text-sm" style={{ color: "rgba(238,239,238,0.5)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+            {lang === "ar" ? "حدث خطأ في تحميل اللاعبين" : "Failed to load players"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (players.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center" style={{ background: "#0A0E1A", direction: isRTL ? "rtl" : "ltr" }}>
+        <div className="text-center">
+          <Users size={32} className="mx-auto mb-3" style={{ color: "rgba(238,239,238,0.2)" }} />
+          <p className="text-sm" style={{ color: "rgba(238,239,238,0.5)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+            {lang === "ar" ? "لا يوجد لاعبون مسجلون بعد" : "No players registered yet"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex overflow-hidden" style={{ background: "#0A0E1A", direction: isRTL ? "rtl" : "ltr" }}>
@@ -53,7 +115,7 @@ export default function Players({ onNavigate, lang = "ar" }: PlayersProps) {
               {lang === "ar" ? "اللاعبون" : "Players"}
             </h1>
             <p className="text-sm" style={{ color: "rgba(238,239,238,0.45)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
-              {lang === "ar" ? `${playersData.length} لاعب مسجل` : `${playersData.length} registered players`}
+              {lang === "ar" ? `${players.length} لاعب مسجل` : `${players.length} registered players`}
             </p>
           </div>
           <button
@@ -87,51 +149,57 @@ export default function Players({ onNavigate, lang = "ar" }: PlayersProps) {
 
         {/* Players Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {filtered.map(p => (
-            <button
-              key={p.id}
-              onClick={() => setSelectedPlayer(p)}
-              className="p-4 rounded-2xl text-right transition-all"
-              style={{
-                background: selectedPlayer?.id === p.id ? "rgba(0,220,200,0.08)" : "#0D1220",
-                border: selectedPlayer?.id === p.id ? "1.5px solid rgba(0,220,200,0.4)" : "1px solid rgba(255,255,255,0.06)",
-                textAlign: isRTL ? "right" : "left",
-              }}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, #007ABA, #00DCC8)", color: "#fff", fontFamily: "'Space Grotesk', sans-serif" }}>
-                  {p.avatar}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-white text-sm truncate"
-                    style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
-                    {isRTL ? p.nameAr : p.nameEn}
+          {filtered.map(p => {
+            const ev = latestEvalMap[p.id];
+            const score = ev?.overall ?? 0;
+            const level = score ? getLevel(score) : "Bronze";
+            const avatar = getInitials(p.profile?.full_name || `P${p.jersey_number || ""}`);
+            return (
+              <button
+                key={p.id}
+                onClick={() => setSelectedPlayerId(selectedPlayerId === p.id ? null : p.id)}
+                className="p-4 rounded-2xl text-right transition-all"
+                style={{
+                  background: selectedPlayerId === p.id ? "rgba(0,220,200,0.08)" : "#0D1220",
+                  border: selectedPlayerId === p.id ? "1.5px solid rgba(0,220,200,0.4)" : "1px solid rgba(255,255,255,0.06)",
+                  textAlign: isRTL ? "right" : "left",
+                }}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0"
+                    style={{ background: "linear-gradient(135deg, #007ABA, #00DCC8)", color: "#fff", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {avatar}
                   </div>
-                  <div className="text-xs" style={{ color: "rgba(238,239,238,0.4)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
-                    {isRTL ? p.posAr : p.posEn} · {lang === "ar" ? `${p.age} سنة` : `${p.age} yrs`}
-                  </div>
-                </div>
-                <div className="px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0"
-                  style={{ background: `${levelColors[p.level]}18`, color: levelColors[p.level], fontFamily: "'Space Grotesk', sans-serif" }}>
-                  {p.level}
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1">
-                  <Star size={12} style={{ color: "#F59E0B" }} />
-                  <span className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{p.score}</span>
-                </div>
-                <div className="flex gap-1.5">
-                  {[p.speed, p.dribble, p.shoot].map((v, i) => (
-                    <div key={i} className="h-1.5 w-8 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-                      <div className="h-full rounded-full" style={{ width: `${v}%`, background: "linear-gradient(90deg, #007ABA, #00DCC8)" }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-white text-sm truncate"
+                      style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                      {p.profile?.full_name || (lang === "ar" ? "بدون اسم" : "No Name")}
                     </div>
-                  ))}
+                    <div className="text-xs" style={{ color: "rgba(238,239,238,0.4)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                      {p.position || (lang === "ar" ? "غير محدد" : "Unspecified")} · {p.age ? (lang === "ar" ? `${p.age} سنة` : `${p.age} yrs`) : ""}
+                    </div>
+                  </div>
+                  <div className="px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0"
+                    style={{ background: `${levelColors[level]}18`, color: levelColors[level], fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {level}
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <Star size={12} style={{ color: "#F59E0B" }} />
+                    <span className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{score || "—"}</span>
+                  </div>
+                  <div className="flex gap-1.5">
+                    {[ev?.technical ?? 0, ev?.physical ?? 0, ev?.mental ?? 0].map((v, i) => (
+                      <div key={i} className="h-1.5 w-8 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                        <div className="h-full rounded-full" style={{ width: `${v}%`, background: "linear-gradient(90deg, #007ABA, #00DCC8)" }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -142,29 +210,31 @@ export default function Players({ onNavigate, lang = "ar" }: PlayersProps) {
           <div className="text-center mb-5">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-black mx-auto mb-3"
               style={{ background: "linear-gradient(135deg, #007ABA, #00DCC8)", color: "#fff", fontFamily: "'Space Grotesk', sans-serif" }}>
-              {selectedPlayer.avatar}
+              {getInitials(selectedPlayer.profile?.full_name || "")}
             </div>
             <div className="font-bold text-white text-base mb-1"
               style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
-              {isRTL ? selectedPlayer.nameAr : selectedPlayer.nameEn}
+              {selectedPlayer.profile?.full_name || (lang === "ar" ? "بدون اسم" : "No Name")}
             </div>
             <div className="text-sm mb-2" style={{ color: "rgba(238,239,238,0.5)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
-              {isRTL ? selectedPlayer.posAr : selectedPlayer.posEn}
+              {selectedPlayer.position || (lang === "ar" ? "غير محدد" : "Unspecified")}
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full"
-              style={{ background: `${levelColors[selectedPlayer.level]}18`, border: `1px solid ${levelColors[selectedPlayer.level]}40` }}>
-              <Star size={12} style={{ color: levelColors[selectedPlayer.level] }} />
-              <span className="text-sm font-black" style={{ color: levelColors[selectedPlayer.level], fontFamily: "'Space Grotesk', sans-serif" }}>
-                {selectedPlayer.score}
-              </span>
-            </div>
+            {selectedEval && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full"
+                style={{ background: `${levelColors[getLevel(selectedEval.overall)]}18`, border: `1px solid ${levelColors[getLevel(selectedEval.overall)]}40` }}>
+                <Star size={12} style={{ color: levelColors[getLevel(selectedEval.overall)] }} />
+                <span className="text-sm font-black" style={{ color: levelColors[getLevel(selectedEval.overall)], fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {selectedEval.overall}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">
             <div className="text-xs font-semibold mb-2" style={{ color: "rgba(238,239,238,0.4)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
               {lang === "ar" ? "المهارات" : "Skills"}
             </div>
-            {skills.map((s, i) => (
+            {skills.length > 0 ? skills.map((s, i) => (
               <div key={i}>
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs" style={{ color: "rgba(238,239,238,0.6)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
@@ -177,11 +247,15 @@ export default function Players({ onNavigate, lang = "ar" }: PlayersProps) {
                     style={{ width: `${s.value}%`, background: s.value >= 85 ? "#00DCC8" : s.value >= 75 ? "#007ABA" : "#F59E0B" }} />
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="text-xs" style={{ color: "rgba(238,239,238,0.3)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}>
+                {lang === "ar" ? "لا توجد تقييمات بعد" : "No evaluations yet"}
+              </div>
+            )}
           </div>
 
           <button
-            onClick={() => onNavigate("ai-chat", { prompt: lang === "ar" ? `حلل أداء ${selectedPlayer.nameAr} وقدم توصيات` : `Analyze ${selectedPlayer.nameEn}'s performance and give recommendations` })}
+            onClick={() => onNavigate("ai-chat", { prompt: lang === "ar" ? `حلل أداء ${selectedPlayer.profile?.full_name || ""} وقدم توصيات` : `Analyze ${selectedPlayer.profile?.full_name || ""}'s performance and give recommendations` })}
             className="w-full mt-5 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all"
             style={{ background: "rgba(0,220,200,0.08)", color: "#00DCC8", border: "1px solid rgba(0,220,200,0.2)", fontFamily: isRTL ? "'Cairo', sans-serif" : "inherit" }}
           >

@@ -3,8 +3,10 @@ import type { Athlete } from '@/lib/passport/types';
 import { useLang, LanguageProvider } from '@/lib/passport/LanguageContext';
 import { t } from '@/lib/passport/i18n';
 import NavBar from '@/components/passport/NavBar';
-
-// Athlete data is now fetched from the API inside CareerPageInner
+import { usePlayers } from '@/hooks/usePlayers';
+import { useEvaluations } from '@/hooks/useEvaluations';
+import { mapPlayerToAthlete } from '@/lib/passport/supabase-mappers';
+import type { Evaluation } from '@/lib/supabase';
 
 /* ── Circular SVG progress ring ── */
 function CircleRing({ score, size = 110, stroke = 9 }: { score: number; size?: number; stroke?: number }) {
@@ -28,16 +30,10 @@ function CircleRing({ score, size = 110, stroke = 9 }: { score: number; size?: n
   );
 }
 
-const skills = [
-  { label: 'Consistency',    labelAr: 'الانتظام',      value: 85, color: '#00DCC8' },
-  { label: 'Certifications', labelAr: 'الشهادات',      value: 90, color: '#8B5CF6' },
-  { label: 'Skill Level',    labelAr: 'مستوى المهارة', value: 80, color: '#F59E0B' },
-  { label: 'Competition',    labelAr: 'المنافسات',      value: 65, color: '#EF4444' },
-  { label: 'Team Play',      labelAr: 'اللعب الجماعي', value: 75, color: '#06B6D4' },
-];
+// Skills are now computed from real evaluations inside CareerPageInner
 
 /* ── Radar / Spider Chart ── */
-function RadarChart({ lang }: { lang: 'en' | 'ar' }) {
+function RadarChart({ lang, skills }: { lang: 'en' | 'ar'; skills: { label: string; labelAr: string; value: number; color: string }[] }) {
   const cx = 130, cy = 130, maxR = 85;
   const n = skills.length;
 
@@ -209,22 +205,50 @@ function CareerPageInner() {
   const { lang } = useLang();
   const [applied, setApplied] = useState<string | null>(null);
 
-  const [data, setData] = useState<Athlete[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Fetch real data from Supabase
+  const { players: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
+  const currentPlayerId = playersData?.[0]?.id;
+  const { evaluations: evaluationsData, isLoading: evalLoading, error: evalError } = useEvaluations(currentPlayerId || '');
 
-  useEffect(() => {
-    fetch('/api/athletes/0/career')
-      .then(r => r.json())
-      .then(d => { setData(Array.isArray(d) ? d : [d]); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
-  }, []);
+  const loading = playersLoading || evalLoading;
+  const error = playersError?.message || evalError?.message || null;
+
+  // Map Supabase data to Athlete shape
+  const data: Athlete[] = (playersData && playersData.length > 0)
+    ? playersData.map((p: any) => {
+        const evals = (p.id === currentPlayerId && evaluationsData) ? evaluationsData : [];
+        return mapPlayerToAthlete(p, evals);
+      })
+    : [];
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
-  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
-  if (!data?.length) return <div className="text-white/30 text-center p-8">No athlete data available</div>;
+  if (error) return <div className="text-red-500 text-center p-8">{lang === 'ar' ? 'خطأ في تحميل البيانات' : 'Error loading data'}: {error}</div>;
+  if (!data.length) return (
+    <div className="text-center p-12">
+      <div className="text-5xl mb-4">🚀</div>
+      <h2 className="text-xl font-bold text-white mb-2">{lang === 'ar' ? 'لا توجد بيانات مسار' : 'No Career Data'}</h2>
+      <p className="text-white/40 text-sm">{lang === 'ar' ? 'قم بإكمال التقييمات لرؤية مسارك المهني.' : 'Complete evaluations to see your career pathway.'}</p>
+    </div>
+  );
 
   const athlete = data[0];
+
+  // Build skills from real evaluations
+  const skills: { label: string; labelAr: string; value: number; color: string }[] = evaluationsData && evaluationsData.length > 0
+    ? [
+        { label: 'Technical', labelAr: 'فني', value: evaluationsData[0].technical, color: '#00DCC8' },
+        { label: 'Tactical', labelAr: 'تكتيكي', value: evaluationsData[0].tactical, color: '#8B5CF6' },
+        { label: 'Physical', labelAr: 'بدني', value: evaluationsData[0].physical, color: '#F59E0B' },
+        { label: 'Mental', labelAr: 'ذهني', value: evaluationsData[0].mental, color: '#EF4444' },
+        { label: 'Overall', labelAr: 'الإجمالي', value: evaluationsData[0].overall, color: '#06B6D4' },
+      ]
+    : [
+        { label: 'Technical', labelAr: 'فني', value: 0, color: '#00DCC8' },
+        { label: 'Tactical', labelAr: 'تكتيكي', value: 0, color: '#8B5CF6' },
+        { label: 'Physical', labelAr: 'بدني', value: 0, color: '#F59E0B' },
+        { label: 'Mental', labelAr: 'ذهني', value: 0, color: '#EF4444' },
+        { label: 'Overall', labelAr: 'الإجمالي', value: 0, color: '#06B6D4' },
+      ];
 
   const aiRecommendations = [
     { id: 'r1', title: 'Regional U18 Football Trials',    titleAr: 'تجارب كرة القدم تحت 18 إقليمياً', match: 94, deadline: '2026-04-15', type: t('trial', lang),       icon: '⚽', urgent: true  },
@@ -280,7 +304,7 @@ function CareerPageInner() {
             {lang === 'ar' ? 'رادار الأداء' : 'Performance Radar'}
           </span>
         </div>
-        <RadarChart lang={lang} />
+        <RadarChart lang={lang} skills={skills} />
       </div>
 
       {/* ── Development Pathway ── */}

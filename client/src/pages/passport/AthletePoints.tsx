@@ -4,8 +4,10 @@ import type { Athlete } from '@/lib/passport/types';
 import { useLang, LanguageProvider } from '@/lib/passport/LanguageContext';
 import { t } from '@/lib/passport/i18n';
 import NavBar from '@/components/passport/NavBar';
-
-// Athlete data is now fetched from the API inside PointsPageInner
+import { usePlayers } from '@/hooks/usePlayers';
+import { useEvaluations } from '@/hooks/useEvaluations';
+import { mapPlayerToAthlete, computeSportPoints } from '@/lib/passport/supabase-mappers';
+import type { Evaluation } from '@/lib/supabase';
 
 const transactions = [
   { id: 1,  type: 'session',       icon: '⚽', label: 'Football Training',       labelAr: 'تدريب كرة القدم',         sub: 'Prince Faisal Sports Center', subAr: 'مركز الأمير فيصل', pts: 10,  date: '2026-03-10' },
@@ -64,20 +66,31 @@ function PointsPageInner() {
   const [filter, setFilter]     = useState<Filter>('all');
   const [redeemed, setRedeemed] = useState<number | null>(null);
 
-  const [data, setData] = useState<Athlete[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Fetch real data from Supabase
+  const { players: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
+  const currentPlayerId = playersData?.[0]?.id;
+  const { evaluations: evaluationsData, isLoading: evalLoading, error: evalError } = useEvaluations(currentPlayerId || '');
 
-  useEffect(() => {
-    fetch('/api/athletes/0/points')
-      .then(r => r.json())
-      .then(d => { setData(Array.isArray(d) ? d : [d]); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
-  }, []);
+  const loading = playersLoading || evalLoading;
+  const error = playersError?.message || evalError?.message || null;
+
+  // Map Supabase data to Athlete shape
+  const data: Athlete[] = (playersData && playersData.length > 0)
+    ? playersData.map((p: any) => {
+        const evals = (p.id === currentPlayerId && evaluationsData) ? evaluationsData : [];
+        return mapPlayerToAthlete(p, evals);
+      })
+    : [];
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
-  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
-  if (!data?.length) return <div className="text-white/30 text-center p-8">No athlete data available</div>;
+  if (error) return <div className="text-red-500 text-center p-8">{lang === 'ar' ? 'خطأ في تحميل البيانات' : 'Error loading data'}: {error}</div>;
+  if (!data.length) return (
+    <div className="text-center p-12">
+      <div className="text-5xl mb-4">⭐</div>
+      <h2 className="text-xl font-bold text-white mb-2">{lang === 'ar' ? 'لا توجد نقاط' : 'No Points Data'}</h2>
+      <p className="text-white/40 text-sm">{lang === 'ar' ? 'أكمل التقييمات لكسب النقاط الرياضية.' : 'Complete evaluations to earn Sport Points.'}</p>
+    </div>
+  );
 
   const athlete = data[0];
   const levelInfo = getLevelInfo(athlete.sportPoints);

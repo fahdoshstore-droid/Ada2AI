@@ -5,8 +5,6 @@ import { useLang, LanguageProvider } from '@/lib/passport/LanguageContext';
 import { t } from '@/lib/passport/i18n';
 import NavBar from '@/components/passport/NavBar';
 
-// Facility data is now fetched from the API inside FacilityAnalyticsInner
-
 const hourlyData = [
   { hour: '6am', checkins: 8 }, { hour: '8am', checkins: 23 }, { hour: '10am', checkins: 31 },
   { hour: '12pm', checkins: 18 }, { hour: '2pm', checkins: 14 }, { hour: '4pm', checkins: 38 },
@@ -20,22 +18,24 @@ const weeklyRevenue = [
 function FacilityAnalyticsInner() {
   const { lang } = useLang();
 
-  const [data, setData] = useState<Facility[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch('/api/facilities')
-      .then(r => r.json())
-      .then(d => { setData(Array.isArray(d) ? d : [d]); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
-  }, []);
+  // No facilities table in Supabase yet — show empty state
+  const [loading] = useState(false);
+  const [error] = useState<string | null>(null);
+  const data: Facility[] | null = null;
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
-  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
-  if (!data?.length) return <div className="text-white/30 text-center p-8">No facility data available</div>;
+  if (error) return <div className="text-red-500 text-center p-8">{lang === 'ar' ? 'خطأ في تحميل البيانات' : 'Error loading data'}: {error}</div>;
+  // @ts-expect-error facility integration pending — data is null but dead code below will be used when Supabase integration lands
+  if (!data?.length) return (
+    <div className="text-center p-12">
+      <div className="text-5xl mb-4">📊</div>
+      <h2 className="text-xl font-bold text-white mb-2">{lang === 'ar' ? 'لا توجد بيانات تحليلات' : 'No Analytics Data'}</h2>
+      <p className="text-white/40 text-sm">{lang === 'ar' ? 'بيانات التحليلات غير متاحة حاليًا. سيتم ربطها قريبًا.' : 'Analytics data is not available yet. Integration coming soon.'}</p>
+    </div>
+  );
 
-  const f = data[0];
+  // Facility data not yet in Supabase — below is placeholder for future integration
+  const f = data[0] as Facility;
   const sportDistribution = f.checkins.reduce<Record<string, number>>((acc, c) => { acc[c.sport] = (acc[c.sport] || 0) + 1; return acc; }, {});
   return (
     <div className="space-y-6">

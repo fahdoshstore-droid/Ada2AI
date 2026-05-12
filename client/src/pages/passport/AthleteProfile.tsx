@@ -6,6 +6,10 @@ import { t } from '@/lib/passport/i18n';
 import NavBar from '@/components/passport/NavBar';
 import QRCode from 'qrcode';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
+import { usePlayers } from '@/hooks/usePlayers';
+import { useEvaluations } from '@/hooks/useEvaluations';
+import { mapPlayerToAthlete, computeRadarData } from '@/lib/passport/supabase-mappers';
+import type { Player } from '@/lib/supabase';
 
 const levelGradients: Record<string, string> = {
   Bronze: 'from-amber-700 to-amber-500',
@@ -37,46 +41,7 @@ const sportIcons: Record<string, string> = {
   Athletics: '🏃', Tennis: '🎾', Volleyball: '🏐', 'Martial Arts': '🥋',
 };
 
-// Performance radar data — per sport
-const radarDataMap: Record<string, { subject: string; A: number }[]> = {
-  Football: [
-    { subject: 'Dribbling',    A: 82 },
-    { subject: 'Shooting',     A: 75 },
-    { subject: 'Stamina',      A: 88 },
-    { subject: 'Vision',       A: 70 },
-    { subject: 'Heading',      A: 65 },
-  ],
-  Swimming: [
-    { subject: 'Technique',    A: 90 },
-    { subject: 'Speed',        A: 78 },
-    { subject: 'Endurance',    A: 85 },
-    { subject: 'Turns',        A: 72 },
-    { subject: 'Starts',       A: 68 },
-  ],
-  Basketball: [
-    { subject: 'Ball Handle',  A: 80 },
-    { subject: 'Shooting',     A: 76 },
-    { subject: 'Defense',      A: 70 },
-    { subject: 'Playmaking',   A: 85 },
-    { subject: 'Rebounding',   A: 68 },
-  ],
-  Athletics: [
-    { subject: 'Speed',        A: 92 },
-    { subject: 'Endurance',    A: 88 },
-    { subject: 'Technique',    A: 85 },
-    { subject: 'Strength',     A: 78 },
-    { subject: 'Recovery',     A: 80 },
-  ],
-  Volleyball: [
-    { subject: 'Spiking',      A: 83 },
-    { subject: 'Blocking',     A: 75 },
-    { subject: 'Setting',      A: 70 },
-    { subject: 'Serving',      A: 88 },
-    { subject: 'Defense',      A: 72 },
-  ],
-};
-
-// Activity timeline
+// Activity timeline — static milestones (no Supabase table for these)
 const activityTimeline = [
   { date: 'Mar 2026', event: 'Bronze Medal, Riyadh Youth Championship',  icon: '🏆', color: '#F59E0B' },
   { date: 'Feb 2026', event: 'Level 3 Swimming Certified',               icon: '📜', color: '#8B5CF6' },
@@ -96,20 +61,31 @@ function AthletePageInner() {
   const [copied, setCopied]             = useState(false);
   const [showDemoMenu, setShowDemoMenu] = useState(false);
 
-  const [data, setData] = useState<Athlete[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Fetch real data from Supabase
+  const { players: playersData, isLoading: playersLoading, error: playersError } = usePlayers();
+  const currentPlayerId = playersData?.[0]?.id;
+  const { evaluations: evaluationsData, isLoading: evalLoading, error: evalError } = useEvaluations(currentPlayerId || '');
 
-  useEffect(() => {
-    fetch('/api/players')
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
-  }, []);
+  const loading = playersLoading || evalLoading;
+  const error = playersError?.message || evalError?.message || null;
+
+  // Map Supabase data to Athlete shape
+  const data: Athlete[] = (playersData && playersData.length > 0)
+    ? playersData.map((p: any) => {
+        const evals = (p.id === currentPlayerId && evaluationsData) ? evaluationsData : [];
+        return mapPlayerToAthlete(p, evals);
+      })
+    : [];
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
-  if (error) return <div className="text-red-500 text-center p-8">Error: {error}</div>;
-  if (!data?.length) return <div className="text-white/30 text-center p-8">No athlete data available</div>;
+  if (error) return <div className="text-red-500 text-center p-8">{lang === 'ar' ? 'خطأ في تحميل البيانات' : 'Error loading data'}: {error}</div>;
+  if (!data.length) return (
+    <div className="text-center p-12">
+      <div className="text-5xl mb-4">🪪</div>
+      <h2 className="text-xl font-bold text-white mb-2">{lang === 'ar' ? 'لا توجد بيانات رياضي' : 'No Athlete Data'}</h2>
+      <p className="text-white/40 text-sm">{lang === 'ar' ? 'لم يتم العثور على بيانات لاعب. قم بتسجيل الدخول أو أنشئ ملفًا رياضيًا.' : 'No player data found. Sign in or create a sport profile to get started.'}</p>
+    </div>
+  );
 
   const athlete = data[profileIndex];
 
@@ -120,8 +96,14 @@ function AthletePageInner() {
     setFlipped(false);
     setQrDataUrl('');
   }, [profileIndex, athlete.sports]);
-
-  const radarData = radarDataMap[activeSport] ?? radarDataMap['Football'];
+  const radarData = evaluationsData && evaluationsData.length > 0
+    ? computeRadarData(evaluationsData)
+    : [
+        { subject: lang === 'ar' ? 'فني' : 'Technical', A: 0 },
+        { subject: lang === 'ar' ? 'تكتيكي' : 'Tactical', A: 0 },
+        { subject: lang === 'ar' ? 'بدني' : 'Physical', A: 0 },
+        { subject: lang === 'ar' ? 'ذهني' : 'Mental', A: 0 },
+      ];
   const stamps = Array.from(
     new Map(athlete.sessions.map(s => [`${s.facilityId}-${s.sport}`, s])).values()
   );

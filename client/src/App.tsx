@@ -1,6 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Route, Switch } from "wouter";
+import { Route, Switch, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -8,6 +8,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import ToastContainer from "./components/ToastContainer";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // ── Pages ─────────────────────────────────────────────────
 import Home          from "./pages/Home";
@@ -54,6 +55,38 @@ import CoachDashboard from "./training-hub/pages/CoachDashboard";
 import ScoutDashboard from "./pages/dashboard/ScoutDashboard";
 import ClubDashboard from "./pages/dashboard/ClubDashboard";
 import ParentDashboard from "./pages/dashboard/ParentDashboard";
+
+// ── Dashboard Redirect by Role ────────────────────────────
+import { useProfile, roleDashboardPaths } from "./hooks/useProfile";
+
+/** /dashboard → redirects to the role-appropriate dashboard */
+function DashboardRedirect() {
+  const { role, loading } = useProfile();
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        backgroundColor: "#000A0F",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#9CA3AF",
+        fontFamily: "'Cairo', sans-serif",
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
+  if (!role) {
+    // No profile / role found – fall back to player dashboard
+    return <Redirect to="/dashboard/player" />;
+  }
+
+  const destination = roleDashboardPaths[role] || "/dashboard/player";
+  return <Redirect to={destination} />;
+}
 
 // ── Router ────────────────────────────────────────────────
 function Router() {
@@ -108,20 +141,89 @@ function Router() {
       <Route path="/features/qr-checkin"      component={QrCheckinPage} />
       <Route path="/features/sport-points"    component={SportPointsPage} />
       <Route path="/features/ministry-report" component={MinistryReportPage} />
+
       {/* ── Standalone Pages ── */}
       <Route path="/coach"           component={CoachDashboard} />
 
-      {/* ── Dashboard sub-routes ── */}
-      <Route path="/dashboard"         component={DashboardHome} />
-      <Route path="/dashboard/profile"  component={PlayerProfile} />
-      <Route path="/dashboard/settings" component={DashboardHome} />
-      <Route path="/dashboard/stats"   component={DashboardHome} />
-      <Route path="/dashboard/videos"   component={VideoUpload} />
-      <Route path="/dashboard/team"     component={TeamAnalysis} />
-      <Route path="/dashboard/coach"    component={CoachDashboard} />
-      <Route path="/dashboard/scout"    component={ScoutDashboard} />
-      <Route path="/dashboard/club"     component={ClubDashboard} />
-      <Route path="/dashboard/parent"   component={ParentDashboard} />
+      {/* ── Dashboard Routes (Auth-protected, role-gated) ── */}
+      <Route path="/dashboard">
+        {() => (
+          <ProtectedRoute>
+            <DashboardRedirect />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/dashboard/player">
+        {() => (
+          <ProtectedRoute allowedRoles={["player"]}>
+            <PlayerProfile />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/dashboard/coach">
+        {() => (
+          <ProtectedRoute allowedRoles={["coach"]}>
+            <CoachDashboard />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/dashboard/scout">
+        {() => (
+          <ProtectedRoute allowedRoles={["scout"]}>
+            <ScoutDashboard />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/dashboard/club">
+        {() => (
+          <ProtectedRoute allowedRoles={["club"]}>
+            <ClubDashboard />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/dashboard/parent">
+        {() => (
+          <ProtectedRoute allowedRoles={["parent"]}>
+            <ParentDashboard />
+          </ProtectedRoute>
+        )}
+      </Route>
+      {/* Profile / settings / stats still use DashboardHome but require auth */}
+      <Route path="/dashboard/profile">
+        {() => (
+          <ProtectedRoute>
+            <PlayerProfile />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/dashboard/settings">
+        {() => (
+          <ProtectedRoute>
+            <DashboardHome />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/dashboard/stats">
+        {() => (
+          <ProtectedRoute>
+            <DashboardHome />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/dashboard/videos">
+        {() => (
+          <ProtectedRoute>
+            <VideoUpload />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/dashboard/team">
+        {() => (
+          <ProtectedRoute>
+            <TeamAnalysis />
+          </ProtectedRoute>
+        )}
+      </Route>
 
       {/* ── Rankings ── */}
       <Route path="/rankings"          component={Rankings} />

@@ -211,6 +211,16 @@ export const getEvaluations = async (playerId: string) => {
   return { data: data as Evaluation[] || [], error }
 }
 
+export const getAllEvaluations = async (clubId?: string) => {
+  let query = supabase
+    .from('evaluations')
+    .select('*, player:players(*)')
+    .order('evaluation_date', { ascending: false })
+  if (clubId) query = query.eq('player.club_id', clubId)
+  const { data, error } = await query
+  return { data: data as (Evaluation & { player?: Player })[] || [], error }
+}
+
 export const createEvaluation = async (evaluation: Partial<Evaluation>) => {
   // Calculate overall
   const overall = Math.round((evaluation.technical! + evaluation.tactical! + evaluation.physical! + evaluation.mental!) / 4)
