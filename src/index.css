@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100;200;300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Ada2AI Brand Color System - Dark Theme */
+    --teal-prime: #00C2A8;
+    --scout-blue: #007ABA;
+    --deep-navy: #0a1628;
+    --ice-white: #f0f6ff;
+    --accent-gold: #D4AF37;
+    --accent-cyan: #00DCC8;
+    
+    --background: 210 50% 5%;
+    --foreground: 213 50% 97%;
+    --card: 210 45% 8%;
+    --card-foreground: 213 50% 97%;
+    --popover: 210 45% 8%;
+    --popover-foreground: 213 50% 97%;
+    --primary: 170 100% 38%;
+    --primary-foreground: 210 50% 5%;
+    --secondary: 210 45% 12%;
+    --secondary-foreground: 213 50% 97%;
+    --muted: 210 30% 15%;
+    --muted-foreground: 213 20% 65%;
+    --accent: 170 100% 38%;
+    --accent-foreground: 210 50% 5%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 30% 18%;
+    --input: 210 30% 18%;
+    --ring: 170 100% 38%;
+    --radius: 0.75rem;
+    --sidebar-background: 210 50% 5%;
+    --sidebar-foreground: 213 50% 97%;
+    --sidebar-primary: 170 100% 38%;
+    --sidebar-primary-foreground: 210 50% 5%;
+    --sidebar-accent: 210 45% 12%;
+    --sidebar-accent-foreground: 213 50% 97%;
+    --sidebar-border: 210 30% 18%;
+    --sidebar-ring: 170 100% 38%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-[#0a1628] text-[#f0f6ff] font-sans antialiased;
+    font-family: 'Plus Jakarta Sans', 'Noto Kufi Arabic', system-ui, sans-serif;
+  }
+  
+  ::selection {
+    background: rgba(0, 194, 168, 0.3);
+    color: #f0f6ff;
+  }
+}
+
+@layer utilities {
+  .text-gradient-teal {
+    background: linear-gradient(135deg, #00C2A8, #007ABA);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .bg-gradient-navy {
+    background: linear-gradient(180deg, #0a1628 0%, #0d1f35 50%, #0a1628 100%);
+  }
+  
+  .bg-gradient-radial {
+    background: radial-gradient(ellipse at center, rgba(0, 194, 168, 0.08) 0%, transparent 70%);
+  }
+  
+  .glass-card {
+    background: rgba(13, 31, 53, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 194, 168, 0.15);
+  }
+  
+  .glass-card-hover {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glass-card-hover:hover {
+    background: rgba(13, 31, 53, 0.8);
+    border-color: rgba(0, 194, 168, 0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 194, 168, 0.15);
+  }
+  
+  .glow-teal {
+    box-shadow: 0 0 30px rgba(0, 194, 168, 0.3), 0 0 60px rgba(0, 194, 168, 0.1);
+  }
+  
+  .border-glow {
+    position: relative;
+  }
+  
+  .border-glow::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(0, 194, 168, 0.5), rgba(0, 122, 186, 0.3), transparent 60%);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  
+  .border-glow:hover::before {
+    opacity: 1;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse-slow 4s ease-in-out infinite;
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+  }
+  
+  .grid-pattern {
+    background-image: 
+      linear-gradient(rgba(0, 194, 168, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 194, 168, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  
+  .arabic-text {
+    font-family: 'Noto Kufi Arabic', system-ui, sans-serif;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.8s ease-out forwards;
+}
