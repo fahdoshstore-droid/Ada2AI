@@ -5,6 +5,17 @@
 @tailwind utilities;
 
 @layer base {
+  html[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+  }
+  .arabic-text {
+    direction: rtl;
+    text-align: right;
+  }
+}
+
+@layer base {
   :root {
     /* Ada2AI Brand Color System - Dark Theme */
     --teal-prime: #00C2A8;

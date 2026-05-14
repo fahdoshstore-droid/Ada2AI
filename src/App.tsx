@@ -1,21 +1,24 @@
+import React, { Suspense } from 'react'
 import { Routes, Route } from 'react-router'
 import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
-import LandingPage from './pages/LandingPage'
-import LoginPage from './pages/LoginPage'
-import SportID from './pages/SportID'
-import ScoutDashboard from './pages/ScoutDashboard'
-import CoachDashboard from './pages/CoachDashboard'
-import OrganizationsDashboard from './pages/OrganizationsDashboard'
-import VideoAnalysis from './pages/VideoAnalysis'
-import Rankings from './pages/Rankings'
-import PlayerAnalysis from './pages/PlayerAnalysis'
+
+const LandingPage = React.lazy(() => import('./pages/LandingPage'))
+const LoginPage = React.lazy(() => import('./pages/LoginPage'))
+const SportID = React.lazy(() => import('./pages/SportID'))
+const ScoutDashboard = React.lazy(() => import('./pages/ScoutDashboard'))
+const CoachDashboard = React.lazy(() => import('./pages/CoachDashboard'))
+const OrganizationsDashboard = React.lazy(() => import('./pages/OrganizationsDashboard'))
+const VideoAnalysis = React.lazy(() => import('./pages/VideoAnalysis'))
+const Rankings = React.lazy(() => import('./pages/Rankings'))
+const PlayerAnalysis = React.lazy(() => import('./pages/PlayerAnalysis'))
 
 export default function App() {
   return (
     <AuthProvider>
       <Layout>
+        <Suspense fallback={<div className="min-h-screen bg-navy flex items-center justify-center"><div className="w-12 h-12 border-4 border-teal-prime border-t-transparent rounded-full animate-spin" /></div>}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -27,6 +30,7 @@ export default function App() {
           <Route path="/rankings" element={<ProtectedRoute><Rankings /></ProtectedRoute>} />
           <Route path="/player-analysis" element={<ProtectedRoute><PlayerAnalysis /></ProtectedRoute>} />
         </Routes>
+        </Suspense>
       </Layout>
     </AuthProvider>
   )

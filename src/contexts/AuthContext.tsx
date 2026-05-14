@@ -87,10 +87,6 @@ export function useAuth() {
   return ctx
 }
 
-export function useRole(): UserType | null {
-  const { profile } = useAuth()
-  return profile?.user_type ?? null
-}
 
 export function roleDashboard(role: UserType | null): string {
   switch (role) {
