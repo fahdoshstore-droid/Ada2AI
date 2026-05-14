@@ -42,7 +42,9 @@ export interface Player {
   id: string
   user_id?: string
   name?: string
-  club?: string
+  name_en?: string
+  sport?: string
+  rating?: number
   position?: string
   age?: number
   height_cm?: number
@@ -52,6 +54,25 @@ export interface Player {
   achievements?: string
   photo_url?: string
   video_url?: string
+  nationality?: string
+  club?: string
+  club_id?: string
+  goals?: number
+  assists?: number
+  appearances?: number
+  speed?: number
+  passing?: number
+  shooting?: number
+  fitness?: number
+  dribbling?: number
+  defense?: number
+  goalkeeping?: number
+  clean_sheets?: number
+  saves?: number
+  scouts_count?: number
+  matches_analyzed?: number
+  is_verified?: boolean
+  avatar_url?: string
   created_at?: string
   updated_at?: string
 }

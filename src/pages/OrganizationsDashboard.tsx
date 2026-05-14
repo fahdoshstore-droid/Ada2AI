@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Users, TrendingUp, Building2, Shield, FileBarChart, MapPin, Star, ExternalLink } from 'lucide-react';
+import { Users, TrendingUp, Building2, Shield, MapPin, Star, ExternalLink } from 'lucide-react';
 import { useOrganizations } from '../hooks/useOrganizations';
 
 export default function OrganizationsDashboard() {
