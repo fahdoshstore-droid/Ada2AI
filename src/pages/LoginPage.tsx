@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { useAuth, roleDashboard } from '../contexts/AuthContext'
 import type { UserType } from '../lib/supabase'
 
 export default function LoginPage() {
-  const { signIn, signUp, profile } = useAuth()
+  const { signIn, signUp, user, profile, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -14,10 +14,13 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Redirect if already logged in
-  if (profile?.user_type) {
-    navigate(roleDashboard(profile.user_type), { replace: true })
-  }
+  // Redirect authenticated users to their dashboard via useEffect (not during render)
+  useEffect(() => {
+    if (!authLoading && user && profile?.user_type) {
+      console.log('[LOGIN] redirecting to:', roleDashboard(profile.user_type))
+      navigate(roleDashboard(profile.user_type), { replace: true })
+    }
+  }, [user, profile, authLoading, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,8 +37,18 @@ export default function LoginPage() {
     } else {
       const { error: err } = await signIn(email, password)
       if (err) setError(err)
+      // onSuccess: onAuthStateChange will trigger → profile loads → useEffect redirects
     }
     setLoading(false)
+  }
+
+  // Show spinner while auth is initializing
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-navy flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-teal-prime border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
   }
 
   return (

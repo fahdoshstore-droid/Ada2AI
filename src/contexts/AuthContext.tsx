@@ -28,19 +28,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('*')
       .eq('user_id', userId)
       .single()
-    if (error) console.error('Failed to fetch profile:', error.message)
-    setProfile(data as Profile | null)
+    if (error) {
+      console.error('[AUTH] fetchProfile error:', error.code, error.message)
+      setProfile(null)
+    } else {
+      console.log('[AUTH] fetchProfile OK, user_type:', (data as Profile)?.user_type)
+      setProfile(data as Profile)
+    }
   }, [])
 
   useEffect(() => {
+    // 1. Restore existing session on mount
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
+      console.log('[AUTH] getSession:', s ? `user=${s.user.id}` : 'no session')
       setSession(s)
       setUser(s?.user ?? null)
-      if (s?.user) await fetchProfile(s.user.id)
+      if (s?.user) {
+        await fetchProfile(s.user.id)
+      }
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, s) => {
+    // 2. Listen for auth state changes (login, logout, token refresh)
+    //    Skip INITIAL_SESSION to avoid double-fetch with getSession above
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, s) => {
+      console.log('[AUTH] onAuthStateChange:', event, s?.user?.id)
+      if (event === 'INITIAL_SESSION') return
+
       setSession(s)
       setUser(s?.user ?? null)
       if (s?.user) {
@@ -88,8 +102,7 @@ export function useAuth() {
   return ctx
 }
 
-
-export function roleDashboard(role: UserType | null): string {
+export function roleDashboard(role: UserType | null | undefined): string {
   switch (role) {
     case 'player': return '/sport-id'
     case 'coach': return '/coach'
