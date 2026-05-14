@@ -7,15 +7,14 @@ interface ProtectedRouteProps {
   allowedRoles?: string[]
 }
 
-/** Maximum time to wait for profile before redirecting — prevents infinite spinner */
-const PROFILE_TIMEOUT_MS = 8000
+/** Maximum time to wait for profile before showing error — prevents infinite spinner */
+const PROFILE_TIMEOUT_MS = 5000
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, profile, loading } = useAuth()
+  const { user, profile, loading, profileError, refreshProfile } = useAuth()
   const [profileTimedOut, setProfileTimedOut] = useState(false)
 
   // If user is authenticated but profile is null, start a timeout
-  // to prevent infinite spinner when profile fetch fails (e.g. RLS blocks, network error)
   useEffect(() => {
     if (!loading && user && !profile) {
       const timer = setTimeout(() => setProfileTimedOut(true), PROFILE_TIMEOUT_MS)
@@ -24,7 +23,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     setProfileTimedOut(false)
   }, [loading, user, profile])
 
-  // Still loading auth state — show spinner
+  // 1. Still loading auth state — show spinner
   if (loading) {
     return (
       <div className="min-h-screen bg-navy flex items-center justify-center">
@@ -33,26 +32,49 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     )
   }
 
-  // Not authenticated — redirect to login
+  // 2. Not authenticated — redirect to login
   if (!user) {
     return <Navigate to="/login" replace />
   }
 
-  // Profile fetch timed out or failed — redirect to login with error state
+  // 3. Profile fetch failed or timed out — show error with retry
   if (profileTimedOut && !profile) {
-    return <Navigate to="/login" replace state={{ error: 'profile_timeout' }} />
-  }
-
-  // Authenticated but profile not loaded yet — brief loading spinner
-  if (!profile) {
     return (
       <div className="min-h-screen bg-navy flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-teal-prime border-t-transparent rounded-full animate-spin" />
+        <div className="glass-card rounded-2xl p-8 max-w-md text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-ice-white arabic-text mb-2">فشل تحميل الملف الشخصي</h2>
+          <p className="text-ice-muted arabic-text text-sm mb-4">
+            {profileError || 'تعذر تحميل بيانات الملف الشخصي. يرجى المحاولة مرة أخرى.'}
+          </p>
+          <button
+            onClick={() => { setProfileTimedOut(false); refreshProfile() }}
+            className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-semibold arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all"
+          >
+            إعادة المحاولة
+          </button>
+        </div>
       </div>
     )
   }
 
-  // Authenticated with profile — check role authorization
+  // 4. Authenticated but profile not loaded yet — brief loading spinner
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-navy flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-teal-prime border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-ice-muted arabic-text text-sm">جاري تحميل الملف الشخصي...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // 5. Authenticated with profile — check role authorization
   if (allowedRoles && !allowedRoles.includes(profile.user_type)) {
     return <Navigate to={roleDashboard(profile.user_type)} replace />
   }

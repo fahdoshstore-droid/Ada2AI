@@ -4,7 +4,7 @@ import { useAuth, roleDashboard } from '../contexts/AuthContext'
 import type { UserType } from '../lib/supabase'
 
 export default function LoginPage() {
-  const { signIn, signUp, user, profile, loading: authLoading } = useAuth()
+  const { signIn, signUp, user, profile, profileError, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,9 +17,17 @@ export default function LoginPage() {
   // Redirect authenticated users to their dashboard via useEffect (not during render)
   useEffect(() => {
     if (!authLoading && user && profile?.user_type) {
+      console.log('[LOGIN] Redirecting to:', roleDashboard(profile.user_type))
       navigate(roleDashboard(profile.user_type), { replace: true })
     }
   }, [user, profile, authLoading, navigate])
+
+  // Show profile error if auth succeeded but profile failed
+  useEffect(() => {
+    if (profileError && user) {
+      setError(profileError)
+    }
+  }, [profileError, user])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
