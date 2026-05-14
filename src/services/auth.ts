@@ -4,10 +4,9 @@
  *
  * Auth operations (signIn/signUp/signOut/session) use the default `supabase`
  * client because they go through Supabase Auth, not through table views.
- * Profile queries use `supabase` (Content-Profile: public) to bypass
- * RLS issues on api schema views.
+ * Profile queries use `supabase` — RLS enforced via security_barrier views.
  */
-import { supabase, supabase, type Profile, type UserType } from '../lib/supabase'
+import { supabase, type Profile, type UserType } from '../lib/supabase'
 import type { User, Session } from '@supabase/supabase-js'
 
 /** Get the current session */
