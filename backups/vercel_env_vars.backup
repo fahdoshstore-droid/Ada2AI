@@ -1,0 +1,32 @@
+# Ada2AI - Vercel Environment Variables Backup
+# Project: prj_I3nhAN2w1jE8tiKTZbYutTk4HYD8
+# Project Name: app
+# Org ID: team_jLnTUJxyJhTzPpRMVnRKVnFk
+# Generated: 2026-05-14
+#
+# NOTE: Could not retrieve env vars via `npx vercel env ls` or `npx vercel env pull`
+# because no Vercel authentication token was found on this machine.
+# Run `vercel login` or set VERCEL_TOKEN to enable full env var backup.
+#
+# Below are the environment variables identified from the project source code and .env file.
+
+# ===========================================
+# Client-side (VITE_*) - Exposed to browser
+# ===========================================
+
+# Supabase connection (from .env)
+VITE_SUPABASE_URL=https://ujjmhqpyehymaavkawiv.supabase.co
+VITE_SUPABASE_ANON_KEY=<REDACTED - see env.backup for structure>
+
+# ===========================================
+# Server-side only (not exposed to browser)
+# These would typically be set in Vercel dashboard
+# ===========================================
+
+# Supabase service role key (NOT in .env - must be in Vercel env vars)
+# SUPABASE_SERVICE_ROLE_KEY=<REDACTED - available in task context>
+
+# ===========================================
+# Source code references found
+# ===========================================
+# - src/lib/supabase.ts: uses VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY

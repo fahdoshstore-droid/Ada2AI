@@ -17,7 +17,6 @@ export default function LoginPage() {
   // Redirect authenticated users to their dashboard via useEffect (not during render)
   useEffect(() => {
     if (!authLoading && user && profile?.user_type) {
-      console.log('[LOGIN] redirecting to:', roleDashboard(profile.user_type))
       navigate(roleDashboard(profile.user_type), { replace: true })
     }
   }, [user, profile, authLoading, navigate])

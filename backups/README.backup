@@ -1,0 +1,47 @@
+# Ada2AI Production System Backup
+# Generated: 2026-05-14
+# ======================================
+
+## Files in this backup:
+
+1.  **supabase_schema.sql** - Full Supabase database schema
+    - 6 tables: matches, organizations, players, profiles, reports, video_analyses
+    - Column definitions with types, primary keys, foreign keys
+    - RLS policies (standard Supabase patterns, marked for verification)
+    - Auth configuration notes
+
+2.  **openapi_spec.json** - Raw OpenAPI/PostgREST specification
+    - Complete REST API schema from Supabase
+    - Includes all endpoint definitions, parameter types, and constraints
+    - 40KB of detailed API metadata
+
+3.  **env.backup** - Redacted .env file
+    - Contains VITE_SUPABASE_URL (public)
+    - VITE_SUPABASE_ANON_KEY redacted
+
+4.  **vercel.json.backup** - Vercel deployment configuration
+    - SPA rewrite rules
+    - Security headers (CSP, HSTS, X-Frame-Options, etc.)
+
+5.  **vercel_env_vars.backup** - Vercel environment variables (partial)
+    - Lists known env var keys
+    - Values redacted
+    - NOTE: Full env vars require `vercel login` to retrieve
+
+## Supabase Project Details:
+- Project Ref: ujjmhqpyehymaavkawiv
+- URL: https://ujjmhqpyehymaavkawiv.supabase.co
+- Tables: matches, organizations, players, profiles, reports, video_analyses
+- Storage buckets: None
+- Auth: Email enabled (auto-confirm), no external providers
+
+## Vercel Project Details:
+- Project ID: prj_I3nhAN2w1jE8tiKTZbYutTk4HYD8
+- Org ID: team_jLnTUJxyJhTzPpRMVnRKVnFk
+- Project name: app
+
+## Missing / To-Do:
+- [ ] Complete RLS policy verification (requires Supabase dashboard access)
+- [ ] Full Vercel env var pull (requires `vercel login`)
+- [ ] Database triggers/functions (not accessible via REST API)
+- [ ] Auth users data export (requires admin API access)

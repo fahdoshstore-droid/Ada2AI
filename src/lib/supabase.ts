@@ -13,6 +13,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '')
 
+/**
+ * NOTE: Content-Profile: public header removed — RLS now enforced via
+ * security_barrier views in api schema. Use `supabase` for all queries.
+ * Public data (players, matches, organizations) is accessible via RLS policies.
+ * Private data (profiles, reports) requires authenticated user.
+ */
+
 // Types
 export type UserType = 'player' | 'coach' | 'scout'
 
