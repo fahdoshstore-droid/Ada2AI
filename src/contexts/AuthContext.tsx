@@ -29,10 +29,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq('id', userId)
       .single()
     if (error) {
-      console.error('[AUTH] fetchProfile error:', error.code, error.message)
       setProfile(null)
     } else {
-      console.log('[AUTH] fetchProfile OK, user_type:', (data as Profile)?.user_type)
       setProfile(data as Profile)
     }
   }, [])
@@ -40,7 +38,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // 1. Restore existing session on mount
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
-      console.log('[AUTH] getSession:', s ? `user=${s.user.id}` : 'no session')
       setSession(s)
       setUser(s?.user ?? null)
       if (s?.user) {
@@ -52,7 +49,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 2. Listen for auth state changes (login, logout, token refresh)
     //    Skip INITIAL_SESSION to avoid double-fetch with getSession above
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, s) => {
-      console.log('[AUTH] onAuthStateChange:', event, s?.user?.id)
       if (event === 'INITIAL_SESSION') return
 
       setSession(s)
