@@ -14,7 +14,7 @@ export default function PlayerAnalysis() {
   // Filter players by search
   const filteredPlayers = players.filter(p =>
     !searchQuery ||
-    (p.profile?.full_name || '').includes(searchQuery) ||
+    (p.name || '').includes(searchQuery) ||
     (p.position || '').includes(searchQuery)
   );
 
@@ -126,8 +126,8 @@ export default function PlayerAnalysis() {
                   <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-teal-prime to-scout-blue flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4">
                     <User className="w-12 h-12" />
                   </div>
-                  <h2 className="text-2xl font-bold text-ice-white mb-1 arabic-text">{selectedPlayer.profile?.full_name || 'غير معروف'}</h2>
-                  <p className="text-teal-prime mb-4">{selectedPlayer.position || '-'} - {selectedPlayer.profile?.region || ''}</p>
+                  <h2 className="text-2xl font-bold text-ice-white mb-1 arabic-text">{selectedPlayer.name || 'غير معروف'}</h2>
+                  <p className="text-teal-prime mb-4">{selectedPlayer.position || '-'}</p>
                   
                   {selectedEval && (
                     <div className="flex items-center justify-center gap-2 mb-6">

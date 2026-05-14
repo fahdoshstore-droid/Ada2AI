@@ -171,10 +171,10 @@ export default function CoachDashboard() {
                         <div key={player.id} className="flex items-center justify-between bg-white/5 rounded-xl p-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-prime to-scout-blue flex items-center justify-center text-white font-bold text-sm">
-                              {(player.profile?.full_name || '؟').charAt(0)}
+                              {(player.name || '؟').charAt(0)}
                             </div>
                             <div>
-                              <div className="text-ice-white font-medium text-sm arabic-text">{player.profile?.full_name || 'غير معروف'}</div>
+                              <div className="text-ice-white font-medium text-sm arabic-text">{player.name || 'غير معروف'}</div>
                               <div className="text-ice-muted text-xs">{player.position || '-'}</div>
                             </div>
                           </div>

@@ -96,11 +96,11 @@ export default function ScoutDashboard() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-teal-prime to-scout-blue flex items-center justify-center text-white font-bold text-lg">
-                          {(player.profile?.full_name || '؟').charAt(0)}
+                          {(player.name || '؟').charAt(0)}
                         </div>
                         <div>
-                          <h3 className="font-bold text-ice-white arabic-text">{player.profile?.full_name || 'غير معروف'}</h3>
-                          <p className="text-sm text-teal-prime">{player.position || ''} - {player.profile?.region || ''}</p>
+                          <h3 className="font-bold text-ice-white arabic-text">{player.name || 'غير معروف'}</h3>
+                          <p className="text-sm text-teal-prime">{player.position || ''}</p>
                         </div>
                       </div>
                     </div>
@@ -149,9 +149,9 @@ export default function ScoutDashboard() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { value: `${players.length}+`, label: 'لاعب في قاعدة البيانات' },
-              { value: '350+', label: 'كشاف مسجل' },
-              { value: '2,100+', label: 'تقرير تحليلي' },
-              { value: '98%', label: 'نسبة الرضا' },
+              { value: `${new Set(players.map(p => p.club).filter(Boolean)).size}`, label: 'نادي مُمثّل' },
+              { value: `${new Set(players.map(p => p.position).filter(Boolean)).size}`, label: 'مركز مغطّى' },
+              { value: `${players.filter(p => p.achievements).length}`, label: 'لاعب بإنجازات' },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}

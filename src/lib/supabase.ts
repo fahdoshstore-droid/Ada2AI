@@ -33,9 +33,9 @@ export interface Profile {
 
 export interface Player {
   id: string
-  profile_id: string
-  academy_id?: string
-  club_id?: string
+  user_id?: string
+  name?: string
+  club?: string
   position?: string
   age?: number
   height_cm?: number
@@ -47,7 +47,6 @@ export interface Player {
   video_url?: string
   created_at?: string
   updated_at?: string
-  profile?: Profile
 }
 
 export interface Evaluation {
@@ -66,14 +65,17 @@ export interface Evaluation {
 
 export interface Match {
   id: string
-  club_id?: string
-  opponent?: string
-  match_date?: string
-  venue?: string
-  score_home?: number
-  score_away?: number
+  home_team?: string
+  away_team?: string
+  home_score?: number
+  away_score?: number
+  score?: string
+  result?: string
   competition?: string
-  status?: string
+  match_date?: string
+  season?: string
+  venue?: string
+  is_completed?: boolean
   created_at?: string
 }
 

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Pause, Bot, BarChart3, Target, Zap, Film, Clock } from 'lucide-react';
+import { supabase, type Match } from '../lib/supabase';
 
 const analysisTypes = [
   { icon: Target, title: 'تحليل الحركة', desc: 'تتبع حركة اللاعبين وتحليل المسارات' },
@@ -9,14 +10,20 @@ const analysisTypes = [
   { icon: Bot, title: 'YOLO Detection', desc: 'اكتشاف تلقائي للاعبين والكرة' },
 ];
 
-const recentAnalyses = [
-  { match: 'الهلال vs النصر', date: '2026-04-15', duration: '90:00', status: 'مكتمل' },
-  { match: 'الأهلي vs الاتحاد', date: '2026-04-10', duration: '90:00', status: 'مكتمل' },
-  { match: 'الشباب vs الفتح', date: '2026-04-05', duration: '90:00', status: 'قيد المعالجة' },
-];
-
 export default function VideoAnalysis() {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [recentMatches, setRecentMatches] = useState<Match[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('matches')
+      .select('*')
+      .order('match_date', { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        if (data) setRecentMatches(data as Match[]);
+      });
+  }, []);
   
   return (
     <div>
@@ -143,39 +150,47 @@ export default function VideoAnalysis() {
           {/* Recent Analyses */}
           <div className="mt-16">
             <h2 className="text-2xl font-bold text-ice-white mb-6 arabic-text">التحليلات الأخيرة</h2>
-            <div className="space-y-3">
-              {recentAnalyses.map((analysis, i) => (
-                <motion.div
-                  key={analysis.match}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  <div className="glass-card rounded-xl p-4 flex items-center justify-between hover:border-teal-prime/30 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-teal-prime/10 flex items-center justify-center">
-                        <Film className="w-5 h-5 text-teal-prime" />
+            {recentMatches.length === 0 ? (
+              <div className="glass-card rounded-xl p-8 text-center">
+                <Film className="w-12 h-12 text-ice-muted mx-auto mb-3" />
+                <p className="text-ice-muted arabic-text">لا توجد تحليلات حالياً</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentMatches.map((match, i) => (
+                  <motion.div
+                    key={match.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    <div className="glass-card rounded-xl p-4 flex items-center justify-between hover:border-teal-prime/30 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-teal-prime/10 flex items-center justify-center">
+                          <Film className="w-5 h-5 text-teal-prime" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-ice-white arabic-text">
+                            {match.home_team && match.away_team ? `${match.home_team} vs ${match.away_team}` : (match.home_team || match.away_team || 'مباراة')}
+                          </div>
+                          <div className="text-xs text-ice-muted">{match.match_date || ''}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="font-medium text-ice-white arabic-text">{analysis.match}</div>
-                        <div className="text-xs text-ice-muted">{analysis.date}</div>
+                      <div className="flex items-center gap-4">
+                        <span className={`text-xs px-3 py-1 rounded-lg font-medium ${
+                          match.is_completed
+                            ? 'bg-green-400/10 text-green-400'
+                            : 'bg-gold/10 text-gold'
+                        } arabic-text`}>
+                          {match.is_completed ? 'مكتمل' : 'قيد المعالجة'}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-ice-muted">{analysis.duration}</span>
-                      <span className={`text-xs px-3 py-1 rounded-lg font-medium ${
-                        analysis.status === 'مكتمل' 
-                          ? 'bg-green-400/10 text-green-400' 
-                          : 'bg-gold/10 text-gold'
-                      } arabic-text`}>
-                        {analysis.status}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>

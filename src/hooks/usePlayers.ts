@@ -9,7 +9,7 @@ export function usePlayers() {
   useEffect(() => {
     supabase
       .from('players')
-      .select('*, profile:profiles(*)')
+      .select('*')
       .order('created_at', { ascending: false })
       .then(({ data, error: err }) => {
         if (err) setError(err.message)

@@ -34,10 +34,10 @@ export default function Rankings() {
     .map((p, i) => ({
       id: p.id,
       rank: i + 1,
-      name: p.profile?.full_name || 'لاعب',
-      club: p.profile?.region || '—',
+      name: p.name || 'لاعب',
+      club: p.club || '—',
       position: p.position || '—',
-      rating: p.profile?.user_type ? 0 : 0, // Will use evaluations when available
+      rating: 0,
     }))
     .sort((a, b) => b.rating - a.rating);
 

@@ -9,7 +9,7 @@ export function useScoutPlayers(filterPosition?: string) {
   useEffect(() => {
     let query = supabase
       .from('players')
-      .select('*, profile:profiles(*)')
+      .select('*')
 
     if (filterPosition) {
       query = query.eq('position', filterPosition)

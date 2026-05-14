@@ -91,14 +91,14 @@ export default function OrganizationsDashboard() {
                     className="p-6 flex items-center gap-4 hover:bg-white/[0.02] transition-colors"
                   >
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-prime to-scout-blue flex items-center justify-center text-white font-bold">
-                      {(player.profile?.full_name || 'م').charAt(0)}
+                      {(player.name || 'م').charAt(0)}
                     </div>
                     <div className="flex-1">
                       <div className="font-bold text-ice-white arabic-text">
-                        {player.profile?.full_name || 'لاعب'}
+                        {player.name || 'لاعب'}
                       </div>
                       <div className="text-sm text-ice-muted arabic-text">
-                        {player.position || '—'} • {player.profile?.region || '—'}
+                        {player.position || '—'}
                       </div>
                     </div>
                     <Shield className="w-5 h-5 text-teal-prime" />
