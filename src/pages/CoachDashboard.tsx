@@ -11,8 +11,8 @@ export default function CoachDashboard() {
 
   // Compute team stats dynamically from matches
   const totalMatches = matches.length;
-  const wins = matches.filter(m => (m.score_home ?? 0) > (m.score_away ?? 0)).length;
-  const draws = matches.filter(m => (m.score_home ?? 0) === (m.score_away ?? 0)).length;
+  const wins = matches.filter(m => (m.home_score ?? 0) > (m.away_score ?? 0)).length;
+  const draws = matches.filter(m => (m.home_score ?? 0) === (m.away_score ?? 0)).length;
   const losses = totalMatches - wins - draws;
 
   const teamStats = [
@@ -119,15 +119,15 @@ export default function CoachDashboard() {
                   ) : (
                     <div className="space-y-3">
                       {matches.slice(0, 5).map((match, _i) => {
-                        const isWin = (match.score_home ?? 0) > (match.score_away ?? 0);
-                        const isDraw = (match.score_home ?? 0) === (match.score_away ?? 0);
+                        const isWin = (match.home_score ?? 0) > (match.away_score ?? 0);
+                        const isDraw = (match.home_score ?? 0) === (match.away_score ?? 0);
                         const resultLabel = isWin ? 'فوز' : isDraw ? 'تعادل' : 'خسارة';
-                        const score = `${match.score_home ?? 0}-${match.score_away ?? 0}`;
+                        const score = `${match.home_score ?? 0}-${match.away_score ?? 0}`;
                         return (
                           <div key={match.id} className="flex items-center justify-between bg-white/5 rounded-xl p-4">
                             <div className="flex items-center gap-3">
                               <div className={`w-2 h-2 rounded-full ${isWin ? 'bg-green-400' : isDraw ? 'bg-gold' : 'bg-red-400'}`} />
-                              <span className="text-ice-white font-medium arabic-text">{match.opponent || 'منافس'}</span>
+                              <span className="text-ice-white font-medium arabic-text">{match.home_team && match.away_team ? `${match.home_team} vs ${match.away_team}` : 'مباراة'}</span>
                             </div>
                             <div className="flex items-center gap-4">
                               <span className="text-ice-white font-bold">{score}</span>
