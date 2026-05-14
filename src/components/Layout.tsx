@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router';
-import { Menu, X, ChevronDown, Sparkles } from 'lucide-react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Menu, X, ChevronDown, Sparkles, LogOut, User } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const navLinks = [
   { name: 'الرئيسية', path: '/' },
@@ -18,7 +19,8 @@ const navLinks = [
   { name: 'تحليل الفيديو', path: '/video-analysis' },
 ];
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout() {
+  const { user, signOut } = useAuth()
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -115,15 +117,39 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
             {/* CTA Buttons */}
             <div className="hidden lg:flex items-center gap-3">
-              <Link 
-                to="/player-analysis" 
-                className="px-5 py-2.5 rounded-lg text-sm font-semibold border border-teal-prime/30 text-teal-prime hover:bg-teal-prime/10 transition-all duration-300"
-              >
-                تحليل اللاعب
-              </Link>
-              <button className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark hover:shadow-lg hover:shadow-teal-prime/25 transition-all duration-300">
-                ابدأ الآن
-              </button>
+              {user ? (
+                <>
+                  <Link 
+                    to="/sport-id" 
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-ice-muted hover:text-ice-white transition-colors"
+                  >
+                    <User className="w-4 h-4" />
+                    <span className="arabic-text truncate max-w-[150px]">{user.email}</span>
+                  </Link>
+                  <button 
+                    onClick={() => signOut()}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all duration-300"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span className="arabic-text">خروج</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link 
+                    to="/sport-id" 
+                    className="px-5 py-2.5 rounded-lg text-sm font-semibold border border-teal-prime/30 text-teal-prime hover:bg-teal-prime/10 transition-all duration-300"
+                  >
+                    تحليل اللاعب
+                  </Link>
+                  <Link 
+                    to="/login" 
+                    className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark hover:shadow-lg hover:shadow-teal-prime/25 transition-all duration-300"
+                  >
+                    تسجيل الدخول
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -170,15 +196,37 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </div>
               ))}
               <div className="pt-4 flex flex-col gap-2">
-                <Link 
-                  to="/player-analysis" 
-                  className="block text-center px-5 py-3 rounded-lg text-sm font-semibold border border-teal-prime/30 text-teal-prime"
-                >
-                  تحليل اللاعب
-                </Link>
-                <button className="block w-full text-center px-5 py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark">
-                  ابدأ الآن
-                </button>
+                {user ? (
+                  <>
+                    <Link 
+                      to="/sport-id"
+                      className="block text-center px-5 py-3 rounded-lg text-sm font-semibold border border-teal-prime/30 text-teal-prime"
+                    >
+                      <span className="arabic-text">مرحباً، {user.email}</span>
+                    </Link>
+                    <button 
+                      onClick={() => signOut()}
+                      className="block w-full text-center px-5 py-3 rounded-lg text-sm font-semibold border border-red-500/30 text-red-400 hover:bg-red-500/10"
+                    >
+                      خروج
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link 
+                      to="/sport-id" 
+                      className="block text-center px-5 py-3 rounded-lg text-sm font-semibold border border-teal-prime/30 text-teal-prime"
+                    >
+                      تحليل اللاعب
+                    </Link>
+                    <Link 
+                      to="/login"
+                      className="block w-full text-center px-5 py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark"
+                    >
+                      تسجيل الدخول
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -187,7 +235,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Main Content */}
       <main className="pt-16 lg:pt-20">
-        {children}
+        <Outlet />
       </main>
 
       {/* Footer */}

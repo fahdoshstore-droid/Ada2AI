@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { 
   Badge, UserSearch, Dumbbell, Users, TrendingUp, 
@@ -269,12 +269,12 @@ function HeroSection() {
               <span className="arabic-text">استكشف المنصة</span>
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             </Link>
-            <button className="group px-8 py-4 rounded-xl border border-white/10 text-ice-white font-semibold hover:bg-white/5 transition-all duration-300 flex items-center gap-3">
+            <Link to="/video-analysis" className="group px-8 py-4 rounded-xl border border-white/10 text-ice-white font-semibold hover:bg-white/5 transition-all duration-300 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-teal-prime/20 flex items-center justify-center group-hover:bg-teal-prime/30 transition-colors">
                 <Play className="w-4 h-4 text-teal-prime ml-0.5" />
               </div>
               <span className="arabic-text">شاهد كيف تعمل</span>
-            </button>
+            </Link>
           </div>
         </motion.div>
         
@@ -441,9 +441,9 @@ function CTASection() {
               انضم إلى أكثر من 200 نادٍ و50,000 لاعب يثقون بـ Ada2AI في تحليل المواهب وتطوير الأداء الرياضي
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button className="px-10 py-4 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-lg hover:shadow-xl hover:shadow-teal-prime/25 transition-all duration-300 arabic-text">
+              <Link to="/login" className="px-10 py-4 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-lg hover:shadow-xl hover:shadow-teal-prime/25 transition-all duration-300 arabic-text">
                 ابدأ رحلتك المجانية
-              </button>
+              </Link>
               <Link 
                 to="/rankings"
                 className="px-10 py-4 rounded-xl border border-white/10 text-ice-white font-semibold hover:bg-white/5 transition-all duration-300 arabic-text"

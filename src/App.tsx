@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react'
-import { Routes, Route } from 'react-router'
+import { Routes, Route } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
-import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -15,25 +14,31 @@ const VideoAnalysis = React.lazy(() => import('./pages/VideoAnalysis'))
 const Rankings = React.lazy(() => import('./pages/Rankings'))
 const PlayerAnalysis = React.lazy(() => import('./pages/PlayerAnalysis'))
 
+const LoadingSpinner = () => (
+  <div className="min-h-screen bg-navy flex items-center justify-center">
+    <div className="w-12 h-12 border-4 border-teal-prime border-t-transparent rounded-full animate-spin" />
+  </div>
+)
+
 export default function App() {
   return (
-    <AuthProvider>
+    <>
       <Analytics />
-      <Layout>
-        <Suspense fallback={<div className="min-h-screen bg-navy flex items-center justify-center"><div className="w-12 h-12 border-4 border-teal-prime border-t-transparent rounded-full animate-spin" /></div>}>
+      <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/sport-id" element={<ProtectedRoute><SportID /></ProtectedRoute>} />
-          <Route path="/scout" element={<ProtectedRoute allowedRoles={['scout']}><ScoutDashboard /></ProtectedRoute>} />
-          <Route path="/coach" element={<ProtectedRoute allowedRoles={['coach']}><CoachDashboard /></ProtectedRoute>} />
-          <Route path="/organizations" element={<ProtectedRoute><OrganizationsDashboard /></ProtectedRoute>} />
-          <Route path="/video-analysis" element={<ProtectedRoute><VideoAnalysis /></ProtectedRoute>} />
-          <Route path="/rankings" element={<ProtectedRoute><Rankings /></ProtectedRoute>} />
-          <Route path="/player-analysis" element={<ProtectedRoute><PlayerAnalysis /></ProtectedRoute>} />
+          <Route element={<Layout />}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/sport-id" element={<ProtectedRoute><SportID /></ProtectedRoute>} />
+            <Route path="/scout" element={<ProtectedRoute allowedRoles={['scout']}><ScoutDashboard /></ProtectedRoute>} />
+            <Route path="/coach" element={<ProtectedRoute allowedRoles={['coach']}><CoachDashboard /></ProtectedRoute>} />
+            <Route path="/organizations" element={<ProtectedRoute><OrganizationsDashboard /></ProtectedRoute>} />
+            <Route path="/video-analysis" element={<ProtectedRoute><VideoAnalysis /></ProtectedRoute>} />
+            <Route path="/rankings" element={<ProtectedRoute><Rankings /></ProtectedRoute>} />
+            <Route path="/player-analysis" element={<ProtectedRoute><PlayerAnalysis /></ProtectedRoute>} />
+          </Route>
         </Routes>
-        </Suspense>
-      </Layout>
-    </AuthProvider>
+      </Suspense>
+    </>
   )
 }

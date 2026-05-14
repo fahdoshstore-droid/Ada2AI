@@ -4,7 +4,7 @@
  * When demo is active: bypasses Supabase, uses local mock data.
  */
 import { useMemo } from 'react'
-import { useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router-dom'
 
 export function useDemoMode() {
   const [searchParams, setSearchParams] = useSearchParams()

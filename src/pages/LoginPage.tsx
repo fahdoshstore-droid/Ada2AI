@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 import { useAuth, roleDashboard } from '../contexts/AuthContext'
 import { useDemoMode } from '../hooks/useDemoMode'
 import type { UserType } from '../lib/supabase'
