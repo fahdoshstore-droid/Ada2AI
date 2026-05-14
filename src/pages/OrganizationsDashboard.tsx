@@ -1,23 +1,37 @@
 import { motion } from 'framer-motion';
-import { Users, TrendingUp, Building2, Shield, FileBarChart } from 'lucide-react';
-import { usePlayers } from '../hooks/usePlayers';
+import { Users, TrendingUp, Building2, Shield, FileBarChart, MapPin, Star, ExternalLink } from 'lucide-react';
+import { useOrganizations } from '../hooks/useOrganizations';
 
 export default function OrganizationsDashboard() {
-  const { players, loading } = usePlayers();
+  const { organizations, loading, error } = useOrganizations();
 
-  // Compute dynamic stats from real data
-  const totalPlayers = players.length;
+  // Compute dynamic stats from real organization data
+  const totalOrgs = organizations.length;
+  const totalPlayers = organizations.reduce((sum, o) => sum + (o.players_count || 0), 0);
+  const verifiedOrgs = organizations.filter(o => o.is_verified).length;
   const stats = [
-    { label: 'المنشآت', value: '—', icon: Building2 },
-    { label: 'اللاعبين', value: String(totalPlayers || '0'), icon: Users },
-    { label: 'التقارير', value: '—', icon: FileBarChart },
-    { label: 'النمو', value: '+0%', icon: TrendingUp },
+    { label: 'المنشآت', value: String(totalOrgs), icon: Building2 },
+    { label: 'اللاعبين', value: String(totalPlayers), icon: Users },
+    { label: 'موثق', value: String(verifiedOrgs), icon: Shield },
+    { label: 'متوسط التقييم', value: totalOrgs ? (organizations.reduce((s, o) => s + (o.rating || 0), 0) / totalOrgs).toFixed(1) : '0', icon: TrendingUp },
   ];
 
   if (loading) {
     return (
       <div className="min-h-screen bg-navy flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-teal-prime border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-navy flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <p className="text-ice-white arabic-text text-lg">خطأ في تحميل المنشآت</p>
+          <p className="text-ice-muted/60 arabic-text text-sm mt-2">{error}</p>
+        </div>
       </div>
     );
   }
@@ -70,7 +84,7 @@ export default function OrganizationsDashboard() {
           </div>
 
           {/* Organizations List */}
-          {players.length === 0 ? (
+          {organizations.length === 0 ? (
             <div className="text-center py-16">
               <Building2 className="w-16 h-16 text-ice-muted mx-auto mb-4" />
               <p className="text-ice-muted arabic-text text-lg">لا توجد منشآت بعد</p>
@@ -82,26 +96,45 @@ export default function OrganizationsDashboard() {
                 <h2 className="text-xl font-bold text-ice-white arabic-text">المنشآت المسجلة</h2>
               </div>
               <div className="divide-y divide-white/5">
-                {players.map((player, i) => (
+                {organizations.map((org, i) => (
                   <motion.div
-                    key={player.id}
+                    key={org.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.05 }}
                     className="p-6 flex items-center gap-4 hover:bg-white/[0.02] transition-colors"
                   >
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-prime to-scout-blue flex items-center justify-center text-white font-bold">
-                      {(player.name || 'م').charAt(0)}
+                      {org.name?.charAt(0) || 'م'}
                     </div>
-                    <div className="flex-1">
-                      <div className="font-bold text-ice-white arabic-text">
-                        {player.name || 'لاعب'}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-ice-white arabic-text truncate">
+                        {org.name || 'منشأة'}
+                        {org.is_verified && <Shield className="w-4 h-4 text-teal-prime inline mr-2" />}
                       </div>
+                      <div className="text-sm text-ice-muted arabic-text flex items-center gap-2">
+                        {org.type && <span>{org.type}</span>}
+                        {org.city && <>
+                          <MapPin className="w-3 h-3" />
+                          <span>{org.city}</span>
+                        </>}
+                        {org.rating && <>
+                          <Star className="w-3 h-3" />
+                          <span>{org.rating.toFixed(1)}</span>
+                        </>}
+                      </div>
+                    </div>
+                    <div className="text-left ml-4">
                       <div className="text-sm text-ice-muted arabic-text">
-                        {player.position || '—'}
+                        <Users className="w-4 h-4 inline ml-1" />
+                        {org.players_count || 0} لاعب
                       </div>
                     </div>
-                    <Shield className="w-5 h-5 text-teal-prime" />
+                    {org.website && (
+                      <a href={org.website} target="_blank" rel="noopener noreferrer" className="text-ice-muted hover:text-teal-prime transition-colors">
+                        <ExternalLink className="w-5 h-5" />
+                      </a>
+                    )}
                   </motion.div>
                 ))}
               </div>

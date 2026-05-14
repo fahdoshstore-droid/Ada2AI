@@ -29,17 +29,20 @@ export default function Rankings() {
     return 'border-white/5';
   };
 
-  // Map Supabase players to ranking data
+  // Map Supabase players to ranking data — sort by real rating from DB
   const rankedPlayers = players
-    .map((p, i) => ({
+    .map((p) => ({
       id: p.id,
-      rank: i + 1,
+      rank: 0,
       name: p.name || 'لاعب',
       club: p.club || '—',
       position: p.position || '—',
-      rating: 0,
+      rating: p.rating || 0,
+      goals: p.goals || 0,
+      assists: p.assists || 0,
     }))
-    .sort((a, b) => b.rating - a.rating);
+    .sort((a, b) => b.rating - a.rating)
+    .map((p, i) => ({ ...p, rank: i + 1 }));
 
   const topPlayers = rankedPlayers.length > 0 ? rankedPlayers : [];
 
