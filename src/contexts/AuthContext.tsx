@@ -31,12 +31,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
       if (error) {
         console.error('[AUTH] fetchProfile error:', error.message, error.code, error.details)
         setProfile(null)
         setProfileError(`فشل تحميل الملف الشخصي: ${error.message}`)
+      } else if (!data) {
+        console.warn('[AUTH] fetchProfile: no profile found for user:', userId)
+        setProfile(null)
+        setProfileError('لا يوجد ملف شخصي مرتبط بحسابك. تواصل مع الدعم.')
       } else {
         console.log('[AUTH] fetchProfile success:', data?.full_name, data?.user_type)
         setProfile(data as Profile)
