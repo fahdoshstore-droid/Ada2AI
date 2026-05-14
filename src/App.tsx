@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react'
 import { Routes, Route } from 'react-router'
+import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -17,6 +18,7 @@ const PlayerAnalysis = React.lazy(() => import('./pages/PlayerAnalysis'))
 export default function App() {
   return (
     <AuthProvider>
+      <Analytics />
       <Layout>
         <Suspense fallback={<div className="min-h-screen bg-navy flex items-center justify-center"><div className="w-12 h-12 border-4 border-teal-prime border-t-transparent rounded-full animate-spin" /></div>}>
         <Routes>

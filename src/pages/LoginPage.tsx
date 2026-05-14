@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { useAuth, roleDashboard } from '../contexts/AuthContext'
+import { useDemoMode } from '../hooks/useDemoMode'
 import type { UserType } from '../lib/supabase'
 
 export default function LoginPage() {
@@ -13,14 +14,28 @@ export default function LoginPage() {
   const [userType, setUserType] = useState<UserType>('player')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const { enableDemo } = useDemoMode()
 
-  // Redirect authenticated users to their dashboard via useEffect (not during render)
+  // Redirect authenticated users to their dashboard
+  // Handles both: session restore on mount + post-login redirect
   useEffect(() => {
-    if (!authLoading && user && profile?.user_type) {
-      console.log('[LOGIN] Redirecting to:', roleDashboard(profile.user_type))
-      navigate(roleDashboard(profile.user_type), { replace: true })
+    if (!authLoading && user) {
+      if (profile?.user_type) {
+        const target = roleDashboard(profile.user_type)
+        console.log('[LOGIN] Redirecting to:', target)
+        navigate(target, { replace: true })
+      } else if (profileError) {
+        // Profile fetch failed — still redirect, ProtectedRoute will show error
+        console.warn('[LOGIN] Profile error, redirecting based on user metadata')
+        // Fallback: use user_metadata if available
+        const metaType = user.user_metadata?.user_type as UserType | undefined
+        if (metaType) {
+          navigate(roleDashboard(metaType), { replace: true })
+        }
+      }
+      // If profile is still loading (null, no error), wait — onAuthStateChange will re-trigger this effect
     }
-  }, [user, profile, authLoading, navigate])
+  }, [user, profile, profileError, authLoading, navigate])
 
   // Show profile error if auth succeeded but profile failed
   useEffect(() => {
@@ -33,29 +48,25 @@ export default function LoginPage() {
     e.preventDefault()
     setError(null)
     setLoading(true)
-
-    if (isSignUp) {
-      const { error: err } = await signUp(email, password, {
-        full_name: name,
-        user_type: userType,
-      })
-      if (err) setError(err)
-      else setError('تحقق من بريدك الإلكتروني لتفعيل الحساب')
-    } else {
-      const { error: err } = await signIn(email, password)
-      if (err) setError(err)
-      // onSuccess: onAuthStateChange will trigger → profile loads → useEffect redirects
+    try {
+      if (isSignUp) {
+        const { error: err } = await signUp(email, password, {
+          full_name: name,
+          user_type: userType,
+        })
+        if (err) setError(err)
+        else setError('تحقق من بريدك الإلكتروني لتفعيل الحساب')
+      } else {
+        const { error: err } = await signIn(email, password)
+        if (err) setError(err)
+        // onSuccess: onAuthStateChange will trigger → profile loads → useEffect redirects
+      }
+    } catch (err) {
+      console.error('[LOGIN] handleSubmit exception:', err)
+      setError('حدث خطأ غير متوقع. حاول مرة أخرى.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
-  }
-
-  // Show spinner while auth is initializing
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-navy flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-teal-prime border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
   }
 
   return (
@@ -160,6 +171,18 @@ export default function LoginPage() {
             >
               {isSignUp ? 'لديك حساب؟ سجل دخولك' : 'ليس لديك حساب؟ أنشئ حسابًا'}
             </button>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-white/10 text-center">
+            <button
+              onClick={() => { enableDemo(); navigate('/sport-id', { replace: true }) }}
+              className="w-full py-2.5 rounded-lg text-sm font-medium border border-teal-prime/30 text-teal-prime hover:bg-teal-prime/10 transition-colors arabic-text"
+            >
+              🎬 عرض تجريبي
+            </button>
+            <p className="text-ice-muted text-xs mt-2 arabic-text">
+              استعرض المنصة بدون تسجيل دخول
+            </p>
           </div>
         </div>
       </div>

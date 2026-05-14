@@ -11,7 +11,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error('⚠️ Supabase configuration missing — check .env')
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '')
+export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '', {
+  auth: {
+    storage: window.localStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+})
 
 /**
  * NOTE: Content-Profile: public header removed — RLS now enforced via

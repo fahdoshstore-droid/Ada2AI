@@ -5,6 +5,7 @@
  * RLS issues on api schema views.
  */
 import { supabase, type Player } from '../lib/supabase'
+import { trackEvent } from '../lib/analytics'
 
 /** Fetch all players, newest first */
 export async function getAllPlayers(): Promise<Player[]> {
@@ -13,7 +14,10 @@ export async function getAllPlayers(): Promise<Player[]> {
     .select('*')
     .order('created_at', { ascending: false })
 
-  if (error) throw new Error(`Failed to fetch players: ${error.message}`)
+  if (error) {
+    trackEvent('loadError', { source: 'players', reason: error.message })
+    throw new Error(`Failed to fetch players: ${error.message}`)
+  }
   return (data as Player[]) ?? []
 }
 
@@ -55,13 +59,17 @@ export async function getPlayersByPosition(position: string): Promise<Player[]> 
 
 /** Search players by name (case-insensitive partial match) */
 export async function searchPlayers(query: string): Promise<Player[]> {
+  trackEvent('searchPlayers', { query })
   const { data, error } = await supabase
     .from('players')
     .select('*')
     .ilike('name', `%${query}%`)
     .order('created_at', { ascending: false })
 
-  if (error) throw new Error(`Failed to search players: ${error.message}`)
+  if (error) {
+    trackEvent('loadError', { source: 'players', reason: error.message })
+    throw new Error(`Failed to search players: ${error.message}`)
+  }
   return (data as Player[]) ?? []
 }
 

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { Profile, UserType } from '../lib/supabase'
+import { trackEvent } from '../lib/analytics'
 
 interface AuthState {
   user: User | null
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = useCallback(async (userId: string) => {
     console.log('[AUTH] fetchProfile called for:', userId)
+    const startTime = Date.now()
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -37,51 +39,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('[AUTH] fetchProfile error:', error.message, error.code, error.details)
         setProfile(null)
         setProfileError(`فشل تحميل الملف الشخصي: ${error.message}`)
+        trackEvent('profileLoadError', { durationMs: Date.now() - startTime, reason: error.message })
       } else if (!data) {
         console.warn('[AUTH] fetchProfile: no profile found for user:', userId)
         setProfile(null)
         setProfileError('لا يوجد ملف شخصي مرتبط بحسابك. تواصل مع الدعم.')
+        trackEvent('profileLoadError', { durationMs: Date.now() - startTime, reason: 'no profile found' })
       } else {
         console.log('[AUTH] fetchProfile success:', data?.full_name, data?.user_type)
         setProfile(data as Profile)
         setProfileError(null)
+        trackEvent('profileLoadTime', { durationMs: Date.now() - startTime, role: data?.user_type ?? 'none' })
       }
     } catch (err) {
       console.error('[AUTH] fetchProfile exception:', err)
       setProfile(null)
       setProfileError('خطأ غير متوقع في تحميل الملف الشخصي')
+      trackEvent('profileLoadError', { durationMs: Date.now() - startTime, reason: 'exception' })
     }
   }, [])
 
   useEffect(() => {
     // 1. Restore existing session on mount
-    console.log('[AUTH] Mount — checking session...')
-    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
-      console.log('[AUTH] getSession result:', s ? `user=${s.user.id}` : 'no session')
-      setSession(s)
-      setUser(s?.user ?? null)
-      if (s?.user) {
-        await fetchProfile(s.user.id)
-      }
-      setLoading(false)
-      console.log('[AUTH] Initial load complete, loading=false')
-    })
+    // onAuthStateChange with INITIAL_SESSION handles the initial load
+    // No manual getSession needed — onAuthStateChange fires after getSession resolves
+    console.log('[AUTH] Mount — subscribing to auth state changes')
 
-    // 2. Listen for auth state changes (login, logout, token refresh)
-    //    Skip INITIAL_SESSION to avoid double-fetch with getSession above
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, s) => {
       console.log('[AUTH] onAuthStateChange:', event, s ? `user=${s.user.id}` : 'no session')
-      if (event === 'INITIAL_SESSION') return
 
       setSession(s)
       setUser(s?.user ?? null)
+
       if (s?.user) {
+        // Keep loading=true until profile is fetched
+        // This prevents ProtectedRoute from showing "profile not found"
         await fetchProfile(s.user.id)
       } else {
         setProfile(null)
         setProfileError(null)
       }
+
+      // Only set loading=false AFTER profile fetch completes
       setLoading(false)
+      console.log('[AUTH] State change processed, loading=false, profile=', s?.user ? 'loaded' : 'null')
     })
 
     return () => subscription.unsubscribe()

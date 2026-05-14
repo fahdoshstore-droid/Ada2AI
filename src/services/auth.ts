@@ -7,6 +7,7 @@
  * Profile queries use `supabase` — RLS enforced via security_barrier views.
  */
 import { supabase, type Profile, type UserType } from '../lib/supabase'
+import { trackEvent } from '../lib/analytics'
 import type { User, Session } from '@supabase/supabase-js'
 
 /** Get the current session */
@@ -35,7 +36,13 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 
 /** Sign in with email and password */
 export async function signIn(email: string, password: string): Promise<{ error: string | null }> {
+  trackEvent('login', { method: 'email' })
   const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) {
+    trackEvent('loginError', { reason: error.message })
+  } else {
+    trackEvent('loginSuccess')
+  }
   return { error: error?.message ?? null }
 }
 
@@ -45,11 +52,17 @@ export async function signUp(
   password: string,
   metadata?: { full_name?: string; user_type?: UserType }
 ): Promise<{ error: string | null }> {
+  trackEvent('signup', { method: 'email', userType: metadata?.user_type ?? 'unknown' })
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: metadata },
   })
+  if (error) {
+    trackEvent('signupError', { reason: error.message })
+  } else {
+    trackEvent('signupSuccess', { userType: metadata?.user_type ?? 'unknown' })
+  }
   return { error: error?.message ?? null }
 }
 
