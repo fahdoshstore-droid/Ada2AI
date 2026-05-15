@@ -25,7 +25,7 @@ export async function GET(req: Request) {
         .order('rating', { ascending: false });
 
       if (error) {
-        return Response.json({ success: false, data: null, error: error.message }, { status: 500 });
+        return Response.json({ success: false, data: null, error: "Internal server error" }, { status: 500 });
       }
 
       // Return as flat array for backward compat + pagination metadata
@@ -55,7 +55,7 @@ export async function GET(req: Request) {
         .order('created_at', { ascending: false });
 
       if (error) {
-        return Response.json({ success: false, data: null, error: error.message }, { status: 500 });
+        return Response.json({ success: false, data: null, error: "Internal server error" }, { status: 500 });
       }
 
       return Response.json({
@@ -75,7 +75,7 @@ export async function GET(req: Request) {
         .order('created_at', { ascending: false });
 
       if (error) {
-        return Response.json({ success: false, data: null, error: error.message }, { status: 500 });
+        return Response.json({ success: false, data: null, error: "Internal server error" }, { status: 500 });
       }
 
       return Response.json({ success: true, data: { analyses: data }, error: null });
@@ -83,6 +83,6 @@ export async function GET(req: Request) {
 
     return Response.json({ success: false, data: null, error: 'Unknown endpoint' }, { status: 404 });
   } catch (e: any) {
-    return Response.json({ success: false, data: null, error: e.message }, { status: 500 });
+    return Response.json({ success: false, data: null, error: "Internal server error" }, { status: 500 });
   }
 }

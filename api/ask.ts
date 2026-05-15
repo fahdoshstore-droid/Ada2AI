@@ -1,22 +1,17 @@
-/** /api/ask — A2A Multi-Agent Endpoint (Vercel Serverless) */
-function classify(q: string) {
-  const l = q.toLowerCase();
-  if (/لاعب|player|search|بحث/.test(l)) return { id: "player_search", c: 0.85 };
-  if (/أفضل|best|top|نجوم?/.test(l)) return { id: "top_players", c: 0.82 };
-  if (/كم|عدد|how many|count/.test(l)) return { id: "count_query", c: 0.88 };
-  if (/أكاديمي|academy|نادي/.test(l)) return { id: "academy_search", c: 0.80 };
-  if (/تدريب|training|خطة|plan/.test(l)) return { id: "training_tips", c: 0.83 };
-  if (/مبارا|match|تحليل/.test(l)) return { id: "match_analysis", c: 0.75 };
-  return { id: "general_sport", c: 0.50 };
-}
+/**
+ * /api/ask — A2A Multi-Agent Endpoint (Vercel Edge)
+ *
+ * Integrated with the full Agentic pipeline (Classifier → Query → Synthesizer).
+ *
+ * TODO: Add per-IP/per-user rate limiting for production.
+ *       The Express server has rate limiting in server/_core/auth.ts,
+ *       but this edge function currently has none.
+ */
+import { orchestratorAgent } from "../server/_core/agents/orchestrator";
+import { createClient } from "@supabase/supabase-js";
 
-const R: Record<string, { ar: string; en: string }> = {
-  player_search: { ar: "🔍 تصفح 2,500+ لاعب حسب الرياضة والمركز والمستوى", en: "🔍 Browse 2,500+ players by sport, position, level" },
-  top_players: { ar: "🏆 أفضل اللاعبين: ⚽ مهاجمين ⭐4.8+ | 🏀 مسددين 🎯40%+", en: "🏆 Top Players: ⚽ Strikers ⭐4.8+ | 🏀 Shooters 🎯40%+" },
-  count_query: { ar: "📊 لاعبون: 2,500+ | أكاديميات: 150+ | منشآت: 300+", en: "📊 Players: 2,500+ | Academies: 150+ | Facilities: 300+" },
-  training_tips: { ar: "🏋️ إحماء 10-15 دقيقة | ابدأ بشدة 60% | يوم راحة كل يومين", en: "🏋️ Warm-up 10-15 min | Start 60% | Rest every 2 days" },
-  general_sport: { ar: "🤖 مرحباً! أنا Ada2AI — المساعد الرياضي الذكي", en: "🤖 Hi! I'm Ada2AI — smart sports assistant" },
-};
+// ── Input Validation ──────────────────────────────────────────
+const MAX_QUESTION_LENGTH = 2000;
 
 // ── Allowed Origins ────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -44,8 +39,6 @@ function getCorsHeaders(req: Request): Record<string, string> {
 }
 
 // ── Auth ───────────────────────────────────────────────────────
-import { createClient } from "@supabase/supabase-js";
-
 async function verifyAuth(req: Request): Promise<{ user: any } | null> {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
@@ -56,7 +49,7 @@ async function verifyAuth(req: Request): Promise<{ user: any } | null> {
   if (!url || !key) return null;
   
   const supabase = createClient(url, key);
-  const { data, error } = await (supabase.auth as any).getUser(token);
+  const { data, error } = await supabase.auth.getUser(token);
   if (error || !data.user) return null;
   return { user: data.user };
 }
@@ -76,14 +69,34 @@ export default async function handler(req: Request) {
   if (!auth) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } });
   }
+
   try {
     const { question } = await req.json();
-    if (!question?.trim()) return new Response(JSON.stringify({ error: "Question required" }), { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } });
-    const cl = classify(question);
-    const ar = /[\u0600-\u06FF]/.test(question);
-    const r = R[cl.id] || R.general_sport;
-    return new Response(ar ? r.ar : r.en, { headers: { "Content-Type": "text/plain; charset=utf-8", "x-intent-id": cl.id, "x-confidence": String(cl.c), ...corsHeaders } });
-  } catch { return new Response(JSON.stringify({ error: "Internal" }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }); }
+    if (!question?.trim()) {
+      return new Response(JSON.stringify({ error: "Question required" }), { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } });
+    }
+    if (typeof question !== "string" || question.length > MAX_QUESTION_LENGTH) {
+      return new Response(JSON.stringify({ error: "Invalid question format" }), { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } });
+    }
+
+    // Call the full orchestrator pipeline
+    const stream = await orchestratorAgent.getStreamResponse(question);
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        ...corsHeaders,
+      }
+    });
+  } catch (err: any) {
+    console.error("[/api/ask] Error:", err);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders }
+    });
+  }
 }
 
-export const config = { runtime: "edge" };
+export const config = {
+  runtime: "edge",
+};

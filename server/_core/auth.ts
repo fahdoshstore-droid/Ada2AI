@@ -6,21 +6,13 @@
  * - File upload size validation
  */
 
-import { createClient } from "@supabase/supabase-js";
+import { getSupabase } from "../db";
+import type { AuthUser } from "./context";
 import type { Request, Response, NextFunction } from "express";
 
-// ── Supabase Client ────────────────────────────────────────────────
+// ── Supabase Client (CENTRALIZED in db.ts) ─────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "";
-
-let supabaseClient: ReturnType<typeof createClient> | null = null;
-
-function getSupabaseClient() {
-  if (!supabaseClient && SUPABASE_URL && SUPABASE_ANON_KEY) {
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-  return supabaseClient;
-}
 
 // ── Auth Middleware ─────────────────────────────────────────────────
 /**
@@ -47,7 +39,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   // SEC-11: Removed ANON_KEY as valid auth token - security risk
   // ANON_KEY is a public key that should not be used for service authentication
 
-  const supabase = getSupabaseClient();
+  const supabase = getSupabase();
   if (!supabase) {
     console.error("[Auth] Supabase client not initialized");
     return res.status(500).json({ error: "Auth service unavailable" });
@@ -60,10 +52,11 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
       if (error || !data.user) {
         return res.status(401).json({ error: "Invalid or expired token" });
       }
-      (req as any).user = {
+      req.user = {
         id: data.user.id,
-        email: data.user.email,
-      };
+        email: data.user.email ?? null,
+        full_name: data.user.user_metadata?.full_name || null,
+      } satisfies AuthUser;
       next();
     })
     .catch((err) => {
@@ -88,7 +81,7 @@ const RATE_LIMIT_MAX_REQUESTS = 20;   // 20 Claude calls per minute per user
  * Limits per-user (by user ID or IP) requests within a time window.
  */
 export function rateLimit(req: Request, res: Response, next: NextFunction) {
-  const userId = (req as any).user?.id || req.ip || "anonymous";
+  const userId = req.user?.id || req.ip || "anonymous";
   const now = Date.now();
 
   const entry = rateLimitMap.get(userId);

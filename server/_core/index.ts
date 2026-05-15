@@ -1,9 +1,9 @@
 import "dotenv/config";
 import express from "express";
+import { z } from "zod";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
 import { registerChatRoutes } from "./chat";
 import { orchestratorAgent } from "./agents";
 import { registerScoutAnalysisRoutes } from "../scoutAnalysis";
@@ -59,20 +59,22 @@ async function startServer() {
   app.post("/api/tts", requireAuth, rateLimit, ttsHandler);
 
   // ── Route registrations ──────────────────────────────────────────
-  // OAuth callback under /api/oauth/callback
-  registerOAuthRoutes(app);
   // Chat API with streaming and tool calling
   registerChatRoutes(app);
   // ── Multi-Agent API Routes ─────────────────────────────────────────
   // /api/ask — Streaming text response (Classifier → Query → Synthesizer pipeline)
   app.post("/api/ask", async (req, res) => {
     try {
-      const { question } = req.body;
-
-      if (!question || typeof question !== "string") {
-        res.status(400).json({ error: "question (string) is required" });
-        return;
+      const schema = z.object({
+        question: z.string().min(1).max(2000),
+      });
+      
+      const parsed = schema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.flatten() });
       }
+
+      const { question } = parsed.data;
 
       // Use orchestrator's streaming pipeline (A2A architecture)
       await orchestratorAgent.runStreamPipeline(question, res);
@@ -87,12 +89,18 @@ async function startServer() {
   // /api/ask/full — Full pipeline result with trace + metadata (Agenticthon demo)
   app.post("/api/ask/full", requireAuth, rateLimit, async (req, res) => {
     try {
-      const { question, voice, language } = req.body;
+      const schema = z.object({
+        question: z.string().min(1).max(2000),
+        voice: z.string().optional(),
+        language: z.string().optional(),
+      });
 
-      if (!question || typeof question !== "string") {
-        res.status(400).json({ error: "question (string) is required" });
-        return;
+      const parsed = schema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.flatten() });
       }
+
+      const { question, voice, language } = parsed.data;
 
       const includeVoice = !!voice;
       const result = await orchestratorAgent.runPipeline(question, {
@@ -191,34 +199,23 @@ async function startServer() {
       
       console.log("[Football Analysis] Starting analysis for:", team_a_name, "vs", team_b_name);
       
-      // Call the scout analysis internally
-      // Use req.hostname to avoid closure bug — 'port' is not yet defined at route registration time
-      const serverPort = (server.address() as any)?.port || parseInt(process.env.PORT || "3000");
-      const response = await fetch(`http://localhost:${serverPort}/api/scout/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: videoUrl }),
-      });
-      
-      if (!response.ok) {
-        throw new Error("Scout analysis failed");
-      }
-      
-      const report = await response.json();
+      // SEC-13: Call handler directly instead of internal fetch
+      const { handleScoutAnalysis } = await import("../scoutAnalysis");
+      const report = await handleScoutAnalysis({ imageUrl: videoUrl });
       
       // Return in the format expected by CoachDashboard
       res.json({
         team_0_name: team_a_name || "Team A",
         team_1_name: team_b_name || "Team B",
-        team_0_possession: report.possession?.team_a || 50,
-        team_1_possession: report.possession?.team_b || 50,
-        team_0_area: report.area_control?.team_a || 50,
-        team_1_area: report.area_control?.team_b || 50,
-        team_0_goals: report.goals?.team_a || 0,
-        team_1_goals: report.goals?.team_b || 0,
-        team_0_shots: report.shots?.team_a || 0,
-        team_1_shots: report.shots?.team_b || 0,
-        full_report: report,
+        team_0_possession: (report.report as any).possession?.team_a || 50,
+        team_1_possession: (report.report as any).possession?.team_b || 50,
+        team_0_area: (report.report as any).area_control?.team_a || 50,
+        team_1_area: (report.report as any).area_control?.team_b || 50,
+        team_0_goals: (report.report as any).goals?.team_a || 0,
+        team_1_goals: (report.report as any).goals?.team_b || 0,
+        team_0_shots: (report.report as any).shots?.team_a || 0,
+        team_1_shots: (report.report as any).shots?.team_b || 0,
+        full_report: report.report,
       });
     } catch (err) {
       console.error("[Football Analysis] Error:", err);

@@ -1,3 +1,12 @@
+/**
+ * ⚠️ WARNING: THIS IS NOT THE MAIN ENTRY POINT FOR THE API.
+ * 
+ * This file only serves static files in production.
+ * The real API server is located at server/_core/index.ts.
+ * 
+ * For development, use: npm run dev
+ * For production deployment, make sure server/_core/index.ts is built and started.
+ */
 import express from "express";
 import { createServer } from "http";
 import path from "path";

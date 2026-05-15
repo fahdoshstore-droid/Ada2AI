@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { Menu, X, ChevronDown, Globe } from "lucide-react";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // Ada2ai Logo SVG — Teal rounded square with "A" + wordmark
@@ -54,7 +54,8 @@ export default function Ada2aiNavbar() {
   const [govOpen, setGovOpen] = useState(false);
   const [dashOpen, setDashOpen] = useState(false);
   const [location] = useLocation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, signOut } = useAuth();
+  const { profile } = useProfile();
   const { t, lang, setLang, isRTL } = useLanguage();
   const govRef = useRef<HTMLDivElement>(null);
   const dashRef = useRef<HTMLDivElement>(null);
@@ -281,16 +282,16 @@ export default function Ada2aiNavbar() {
               </button>
 
               {/* Auth */}
-              {isAuthenticated ? (
+              {user ? (
                 <div className="flex items-center gap-2">
                   <span
                     className="text-sm"
                     style={{ color: "rgba(238,239,238,0.6)", fontFamily: "'Cairo', sans-serif" }}
                   >
-                    {user?.full_name || user?.email}
+                    {profile?.full_name || user?.email}
                   </span>
                   <button
-                    onClick={logout}
+                    onClick={() => signOut()}
                     className="text-sm px-3 py-1.5 rounded-md transition-all"
                     style={{
                       fontFamily: "'Cairo', sans-serif",
@@ -435,9 +436,9 @@ export default function Ada2aiNavbar() {
               })}
 
               <div className="mt-3 pt-3 border-t border-white/10 flex gap-3">
-                {isAuthenticated ? (
+                {user ? (
                   <button
-                    onClick={logout}
+                    onClick={() => signOut()}
                     className="flex-1 py-2.5 text-sm rounded-md"
                     style={{ fontFamily: "'Cairo', sans-serif", color: "rgba(238,239,238,0.6)", border: "1px solid rgba(255,255,255,0.1)" }}
                   >

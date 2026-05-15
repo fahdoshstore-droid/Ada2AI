@@ -1,7 +1,8 @@
 /**
  * AuthContext - React Context for Supabase Authentication
+ * Simplified: no double-setLoading race, immediate auth state
  */
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 
@@ -9,7 +10,7 @@ interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>
+  signUp: (email: string, password: string, metadata?: Record<string, unknown>) => Promise<{ error: Error | null }>
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<{ error: Error | null }>
 }
@@ -20,27 +21,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const resolved = useRef(false)
 
   useEffect(() => {
-    // Check for existing session
+    let cancelled = false
+
+    // One-shot: get session, then subscribe to changes
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (cancelled) return
       setSession(session)
       setUser(session?.user ?? null)
+      resolved.current = true
       setLoading(false)
     })
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (cancelled) return
       setSession(session)
       setUser(session?.user ?? null)
-      setLoading(false)
+      // Only flip loading if initial session hasn't resolved yet
+      if (!resolved.current) {
+        resolved.current = true
+        setLoading(false)
+      }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      cancelled = true
+      subscription.unsubscribe()
+    }
   }, [])
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password })
+  const signUp = async (email: string, password: string, metadata?: Record<string, unknown>) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: metadata },
+    })
     return { error }
   }
 

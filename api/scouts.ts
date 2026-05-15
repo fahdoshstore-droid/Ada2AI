@@ -36,36 +36,37 @@ export default async function handler(req: Request) {
       const search = url.searchParams.get("search");
       if (search) query = query.or(`name.ilike.%${search}%,name_ar.ilike.%${search}%`);
       const { data, error } = await query.order("rating", { ascending: false });
-      if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
+      if (error) { console.error("[Scouts] GET error:", error.message); return new Response(JSON.stringify({ error: "Failed to fetch scouts" }), { status: 500, headers: { "Content-Type": "application/json" } }); }
       return new Response(JSON.stringify(data), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
     if (method === "POST") {
       const auth = await verifyAuth(req, supabase);
-      if (!auth) return new Response(JSON.stringify({ error: "Unauthorized — missing or invalid Authorization header" }), { status: 401, headers: { "Content-Type": "application/json" } });
+      if (!auth) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
 
       const body = await req.json();
       const { name, name_ar, sport, region, rating } = body;
       if (!name) return new Response(JSON.stringify({ error: "Scout name is required" }), { status: 400, headers: { "Content-Type": "application/json" } });
       const { data, error } = await supabase.from("scouts").insert({ name, name_ar, sport: sport || "Football", region, rating: rating || 0 }).select().single();
-      if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
+      if (error) { console.error("[Scouts] POST error:", error.message); return new Response(JSON.stringify({ error: "Failed to create scout" }), { status: 500, headers: { "Content-Type": "application/json" } }); }
       return new Response(JSON.stringify(data), { status: 201, headers: { "Content-Type": "application/json" } });
     }
 
     if (method === "DELETE") {
       const auth = await verifyAuth(req, supabase);
-      if (!auth) return new Response(JSON.stringify({ error: "Unauthorized — missing or invalid Authorization header" }), { status: 401, headers: { "Content-Type": "application/json" } });
+      if (!auth) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
 
       const id = url.searchParams.get("id");
       if (!id) return new Response(JSON.stringify({ error: "Scout id required" }), { status: 400, headers: { "Content-Type": "application/json" } });
       const { error } = await supabase.from("scouts").delete().eq("id", id);
-      if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
+      if (error) { console.error("[Scouts] DELETE error:", error.message); return new Response(JSON.stringify({ error: "Failed to delete scout" }), { status: 500, headers: { "Content-Type": "application/json" } }); }
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
     return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { "Content-Type": "application/json" } });
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message || "Internal server error" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    console.error("[Scouts] Unhandled error:", err);
+    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 

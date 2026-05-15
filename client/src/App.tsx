@@ -9,6 +9,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import ToastContainer from "./components/ToastContainer";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 // ── Pages ─────────────────────────────────────────────────
 import Home          from "./pages/Home";
@@ -61,26 +63,16 @@ import { useProfile, roleDashboardPaths } from "./hooks/useProfile";
 
 /** /dashboard → redirects to the role-appropriate dashboard */
 function DashboardRedirect() {
-  const { role, loading } = useProfile();
+  const { role, error, retry } = useProfile();
 
-  if (loading) {
-    return (
-      <div style={{
-        minHeight: "100vh",
-        backgroundColor: "#000A0F",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#9CA3AF",
-        fontFamily: "'Cairo', sans-serif",
-      }}>
-        Loading...
-      </div>
-    );
+  // Profile error — fall back to player dashboard immediately
+  if (error && !role) {
+    return <Redirect to="/dashboard/player" />;
   }
 
+  // No role yet (still loading) — fall back to player dashboard
+  // This avoids blocking; profile loads in background on the dashboard page
   if (!role) {
-    // No profile / role found – fall back to player dashboard
     return <Redirect to="/dashboard/player" />;
   }
 
@@ -143,7 +135,13 @@ function Router() {
       <Route path="/features/ministry-report" component={MinistryReportPage} />
 
       {/* ── Standalone Pages ── */}
-      <Route path="/coach"           component={CoachDashboard} />
+      <Route path="/coach">
+        {() => (
+          <ProtectedRoute allowedRoles={["coach"]}>
+            <CoachDashboard />
+          </ProtectedRoute>
+        )}
+      </Route>
 
       {/* ── Dashboard Routes (Auth-protected, role-gated) ── */}
       <Route path="/dashboard">
@@ -188,7 +186,7 @@ function Router() {
           </ProtectedRoute>
         )}
       </Route>
-      {/* Profile / settings / stats still use DashboardHome but require auth */}
+      {/* Profile / settings / stats — all authenticated roles */}
       <Route path="/dashboard/profile">
         {() => (
           <ProtectedRoute>
@@ -246,6 +244,8 @@ export default function App() {
             <Toaster />
             <ToastContainer />
             <Router />
+            <Analytics />
+            <SpeedInsights />
           </TooltipProvider>
         </NotificationProvider>
       </AuthProvider>

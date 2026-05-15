@@ -120,61 +120,75 @@ class OrchestratorAgent {
   }
 
   /**
-   * Streaming pipeline — runs classifier + query, then streams the synthesizer
-   * output directly to the HTTP response.
+   * Streaming pipeline — runs classifier + query, then returns a ReadableStream
+   * for the synthesizer output.
+   */
+  async getStreamResponse(
+    question: string,
+    options: { onMetadata?: (meta: { traceId: string; classification: ClassifierOutput }) => void } = {}
+  ): Promise<ReadableStream<string>> {
+    const traceId = randomUUID();
+
+    // Step 1: Classify
+    console.log(`[Orchestrator] ${traceId} → ClassifierAgent (stream)`);
+    const classifyResult = await classifierAgent.execute({ question }, traceId);
+
+    if (!classifyResult.success || !classifyResult.data) {
+      throw new Error(classifyResult.error ?? "Classification failed");
+    }
+
+    const classification = classifyResult.data as ClassifierOutput;
+
+    // Step 2: Query
+    console.log(`[Orchestrator] ${traceId} → QueryAgent (stream, intent: ${classification.intentId})`);
+    const queryResult = await queryAgent.execute(
+      { intentId: classification.intentId, params: classification.params },
+      traceId,
+    );
+
+    const queryData = (queryResult.data as QueryOutput) ?? {
+      table: "",
+      data: null,
+      count: null,
+      error: queryResult.error ?? "Query failed",
+    };
+
+    // Callback for metadata (headers)
+    options.onMetadata?.({ traceId, classification });
+
+    // Step 3: Stream synthesizer output
+    console.log(`[Orchestrator] ${traceId} → SynthesizerAgent (streaming)`);
+    return synthesizerAgent.executeStream(
+      {
+        question,
+        intentId: classification.intentId,
+        intentContext: "",
+        params: classification.params,
+        queryData,
+      },
+      traceId,
+    );
+  }
+
+  /**
+   * Streaming pipeline for Express — legacy wrapper around getStreamResponse
    */
   async runStreamPipeline(
     question: string,
     res: Response,
   ): Promise<void> {
     const pipelineStart = Date.now();
-    const traceId = randomUUID();
-
     try {
-      // Step 1: Classify
-      console.log(`[Orchestrator] ${traceId} → ClassifierAgent (stream)`);
-      const classifyResult = await classifierAgent.execute({ question }, traceId);
-
-      if (!classifyResult.success || !classifyResult.data) {
-        res.status(500).json({ error: classifyResult.error ?? "Classification failed" });
-        return;
-      }
-
-      const classification = classifyResult.data as ClassifierOutput;
-
-      // Step 2: Query
-      console.log(`[Orchestrator] ${traceId} → QueryAgent (stream, intent: ${classification.intentId})`);
-      const queryResult = await queryAgent.execute(
-        { intentId: classification.intentId, params: classification.params },
-        traceId,
-      );
-
-      const queryData = (queryResult.data as QueryOutput) ?? {
-        table: "",
-        data: null,
-        count: null,
-        error: queryResult.error ?? "Query failed",
-      };
-
-      // Step 3: Stream synthesizer output
-      console.log(`[Orchestrator] ${traceId} → SynthesizerAgent (streaming)`);
-      res.setHeader("Content-Type", "text/plain; charset=utf-8");
-      res.setHeader("Transfer-Encoding", "chunked");
-      res.setHeader("X-Trace-Id", traceId);
-      res.setHeader("X-Intent-Id", classification.intentId);
-      res.setHeader("X-Confidence", String(classification.confidence));
-      res.setHeader("X-Agent-Version", AGENT_VERSION);
-
-      const stream = await synthesizerAgent.executeStream(
-        {
-          question,
-          intentId: classification.intentId,
-          intentContext: "",
-          params: classification.params,
-          queryData,
-        },
-        traceId,
-      );
+      const stream = await this.getStreamResponse(question, {
+        onMetadata: ({ traceId, classification }) => {
+          res.setHeader("Content-Type", "text/plain; charset=utf-8");
+          res.setHeader("Transfer-Encoding", "chunked");
+          res.setHeader("X-Trace-Id", traceId);
+          res.setHeader("X-Intent-Id", classification.intentId);
+          res.setHeader("X-Confidence", String(classification.confidence));
+          res.setHeader("X-Agent-Version", AGENT_VERSION);
+        }
+      });
 
       const reader = stream.getReader();
       try {
@@ -188,10 +202,9 @@ class OrchestratorAgent {
         res.end();
       }
 
-      const totalDurationMs = Date.now() - pipelineStart;
-      console.log(`[Orchestrator] ${traceId} ✓ Stream complete in ${totalDurationMs}ms`);
+      console.log(`[Orchestrator] ✓ Stream complete in ${Date.now() - pipelineStart}ms`);
     } catch (error) {
-      console.error(`[Orchestrator] ${traceId} Error:`, error);
+      console.error(`[Orchestrator] Error:`, error);
       if (!res.headersSent) {
         res.status(500).json({ error: "Internal server error" });
       }

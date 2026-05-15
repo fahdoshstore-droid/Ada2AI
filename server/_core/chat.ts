@@ -32,30 +32,6 @@ function createLLMProvider() {
  * Example tool registry - customize these for your app.
  */
 const tools = {
-  getWeather: tool({
-    description: "Get the current weather for a location",
-    inputSchema: z.object({
-      location: z
-        .string()
-        .describe("The city and country, e.g. 'Tokyo, Japan'"),
-      unit: z.enum(["celsius", "fahrenheit"]).optional().default("celsius"),
-    }),
-    execute: async ({ location, unit }) => {
-      // Simulate weather API call
-      const temp = Math.floor(Math.random() * 30) + 5;
-      const conditions = ["sunny", "cloudy", "rainy", "partly cloudy"][
-        Math.floor(Math.random() * 4)
-      ] as string;
-      return {
-        location,
-        temperature: unit === "fahrenheit" ? Math.round(temp * 1.8 + 32) : temp,
-        unit,
-        conditions,
-        humidity: Math.floor(Math.random() * 50) + 30,
-      };
-    },
-  }),
-
   calculate: tool({
     description: "Perform a mathematical calculation",
     inputSchema: z.object({
@@ -180,9 +156,9 @@ export function registerChatRoutes(app: Express) {
       }
 
       const result = streamText({
-        model: openai.chat("gpt-4o"),
+        model: openai.chat(ENV.forgeModel),
         system:
-          "You are a helpful assistant. You have access to tools for getting weather and doing calculations. Use them when appropriate.",
+          "You are a helpful assistant. You have access to tools for doing calculations. Use them when appropriate.",
         messages,
         tools,
         stopWhen: stepCountIs(5),

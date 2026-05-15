@@ -20,24 +20,25 @@ export async function GET(req: Request) {
       .order('rating', { ascending: false });
 
     if (error) {
-      return Response.json({ success: false, data: null, error: error.message }, { status: 500 });
+      console.error("[SportID players] GET error:", error.message);
+      return Response.json({ success: false, data: null, error: "Internal server error" }, { status: 500 });
     }
 
+    // Return as flat array for backward compat + pagination metadata
     return Response.json({
       success: true,
-      data: {
-        players: data,
-        pagination: {
-          page,
-          limit,
-          total: count || data.length,
-          totalPages: Math.ceil((count || data.length) / limit)
-        }
+      data: data, // flat array for frontend compat
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || data.length) / limit)
       },
       error: null
     });
   } catch (e: any) {
-    return Response.json({ success: false, data: null, error: e.message }, { status: 500 });
+    console.error("[SportID players] Unhandled error:", e);
+    return Response.json({ success: false, data: null, error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -57,11 +58,13 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      return Response.json({ success: false, data: null, error: error.message }, { status: 500 });
+      console.error("[SportID players] POST error:", error.message);
+      return Response.json({ success: false, data: null, error: "Internal server error" }, { status: 500 });
     }
 
     return Response.json({ success: true, data, error: null }, { status: 201 });
   } catch (e: any) {
-    return Response.json({ success: false, data: null, error: e.message }, { status: 500 });
+    console.error("[SportID players] Unhandled error:", e);
+    return Response.json({ success: false, data: null, error: "Internal server error" }, { status: 500 });
   }
 }

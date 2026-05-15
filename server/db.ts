@@ -31,9 +31,6 @@ export interface Profile {
   user_type: string | null;
 }
 
-/** @deprecated Use Profile — kept for backward compat with tRPC context */
-export type User = Profile;
-
 export interface InsertProfile {
   id: string;
   email?: string | null;

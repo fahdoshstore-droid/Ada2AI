@@ -34,12 +34,23 @@ app.add_middleware(
         "http://localhost:3001",    # Alternative dev port
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Include SportID routes
 app.include_router(sportid_router)
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Run on server startup."""
+    print("[Startup] Initializing YOLO model...")
+    get_yolo()  # Pre-warm YOLO model
+    print("[Startup] Initializing SportID database...")
+    from sportid_routes import init_db
+    init_db()
+    print("[Startup] Initialization complete.")
 
 
 # Initialize models (lazy loading)

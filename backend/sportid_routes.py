@@ -129,10 +129,14 @@ import sqlite3
 import json
 import os
 
-DB_PATH = os.environ.get("SPORTID_DB", "sportid.db")
+# SEC-06: Sanitize DB_PATH to prevent path traversal
+_raw_db_path = os.environ.get("SPORTID_DB", "sportid.db")
+DB_PATH = os.path.basename(_raw_db_path)
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
+    # Use localized path within backend directory
+    db_full_path = os.path.join(os.path.dirname(__file__), DB_PATH)
+    conn = sqlite3.connect(db_full_path)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
@@ -206,8 +210,8 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Auto-init on import
-init_db()
+# CODE-05: Removed auto-init on import to avoid side effects during testing.
+# Database is now initialized in main.py startup_event().
 
 # ============================================================
 # API Routes

@@ -1,20 +1,8 @@
 /**
- * Patched Fetch for Manus Forge Proxy
+ * Patched Fetch for API Proxy
  *
- * Creates a patched fetch that fixes known issues with the Forge proxy.
+ * Creates a patched fetch that fixes known issues with the proxy.
  * Only needed when using Forge API (BUILT_IN_FORGE_API_URL) for streaming tool calls.
- *
- * @example
- * ```ts
- * import { createOpenAI } from "@ai-sdk/openai";
- * import { createPatchedFetch } from "./_core/patchedFetch";
- *
- * const openai = createOpenAI({
- *   baseURL: "https://forge.manus.im/v1",
- *   apiKey: process.env.FORGE_API_KEY,
- *   fetch: createPatchedFetch(fetch),
- * });
- * ```
  */
 
 /**

@@ -396,13 +396,22 @@ export function AIChatBox({
   // Auto-scroll on new messages
   // -------------------------------------------------------------------------
   useEffect(() => {
+    let isMounted = true;
     const viewport = scrollAreaRef.current?.querySelector(
       "[data-radix-scroll-area-viewport]"
     ) as HTMLDivElement;
+    
     if (viewport) {
-      requestAnimationFrame(() => {
-        viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
+      const scrollId = requestAnimationFrame(() => {
+        if (isMounted && viewport) {
+          viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
+        }
       });
+      
+      return () => {
+        isMounted = false;
+        cancelAnimationFrame(scrollId);
+      };
     }
   }, [messages, status]);
 

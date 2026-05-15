@@ -47,6 +47,12 @@ function sanitizeVideoPath(filePath: string): string {
   return resolved;
 }
 
+export interface ScoutAnalysisOptions {
+  imageUrl?: string;
+  frameUrls?: string[];
+  context?: string;
+}
+
 const router = Router();
 
 // ─── System Prompt (SAFF + FIFA v3) ──────────────────────────────────────
@@ -126,6 +132,81 @@ JSON structure:
 - جميع النصوص الوصفية بالعربي الواضح الصحيح
 - playerName: إن كان الاسم مرئياً على الزي استخدمه، وإلا اكتب "لاعب موهوب"
 - jerseyNumber: إن كان مرئياً استخدمه كرقم صحيح، وإلا استخدم قيمة overallRating`;
+
+// ─── Analysis Logic (STANDALONE) ──────────────────────────────────────────
+export async function handleScoutAnalysis(options: ScoutAnalysisOptions) {
+  const { imageUrl, frameUrls, context } = options;
+  const urls = frameUrls && frameUrls.length > 0 ? frameUrls : imageUrl ? [imageUrl] : [];
+  if (urls.length === 0) {
+    throw new Error("imageUrl or frameUrls is required");
+  }
+
+  console.log(`[Scout Analysis] Starting standalone SAFF+FIFA analysis on ${urls.length} frames...`);
+
+  let primaryImageBase64: string;
+  let primaryMediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+
+  try {
+    const imgSource = await fetchImageAsBase64(urls[0]);
+    primaryImageBase64 = imgSource.data;
+    primaryMediaType = imgSource.media_type;
+  } catch (err) {
+    console.error("[Scout Analysis] Failed to fetch primary image:", err);
+    throw new Error("Failed to fetch image for analysis");
+  }
+
+  const additionalFrameInfo = urls.length > 1
+    ? `\n\nNote: ${urls.length} video frames were analyzed. Focus on the first (primary) frame while considering motion across frames.`
+    : "";
+
+  const today = new Date().toLocaleDateString("ar-SA", {
+    year: "numeric", month: "long", day: "numeric",
+  });
+  const reportId = `ADA-${nanoid(6).toUpperCase()}`;
+
+  const nahdaCtx = context && context.includes("النهضة")
+    ? `\nContext: Official training video from Al-Nahda FC (Saudi Arabia) — Analyze with high precision and provide recommendations suitable for the Saudi Pro League.`
+    : "";
+
+  const userMessage = urls.length > 1
+    ? `Analyze this player from ${urls.length} video frames according to SAFF and FIFA standards.${nahdaCtx}${additionalFrameInfo}\nReport ID: ${reportId}\nDate: ${today}\nReturn JSON only.`
+    : `Analyze this player according to SAFF and FIFA standards.${nahdaCtx}\nReport ID: ${reportId}\nDate: ${today}\nReturn JSON only.`;
+
+  const result = await analyzeVisionPremium({
+    imageBase64: primaryImageBase64,
+    mediaType: primaryMediaType,
+    systemPrompt: SYSTEM_PROMPT,
+    userMessage,
+    maxTokens: 4096,
+  });
+
+  const rawText = result.text;
+  let report;
+  try {
+    const cleaned = rawText
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("JSON not found in response");
+    report = JSON.parse(jsonMatch[0]);
+    if (!report.reportId) report.reportId = reportId;
+    if (!report.playerName) report.playerName = "لاعب موهوب";
+    if (!report.jerseyNumber) report.jerseyNumber = report.overallRating || 77;
+  } catch (parseErr) {
+    console.error("[Scout Analysis] JSON parse error:", parseErr);
+    throw new Error("Failed to parse AI response as JSON");
+  }
+
+  return {
+    success: true,
+    report,
+    model: result.model,
+    source: result.provider,
+    framesAnalyzed: urls.length,
+  };
+}
 
 // ─── Helper: جلب صورة كـ base64 ──────────────────────────────────────
 async function fetchImageAsBase64(url: string): Promise<{
@@ -263,102 +344,16 @@ router.post("/upload", async (req, res) => {
 // ─── Analysis Endpoint ────────────────────────────────────────────────────
 router.post("/analyze", async (req, res) => {
   res.setTimeout(120000, () => {
-    if (!res.headersSent) res.status(504).json({ error: "انتهت مهلة التحليل" });
+    if (!res.headersSent) res.status(504).json({ error: "Analysis timeout" });
   });
 
   try {
-    const { imageUrl, frameUrls, context } = req.body as {
-      imageUrl?: string;
-      frameUrls?: string[];
-      context?: string;
-    };
-
-    const urls = frameUrls && frameUrls.length > 0 ? frameUrls : imageUrl ? [imageUrl] : [];
-    if (urls.length === 0) {
-      return res.status(400).json({ error: "imageUrl أو frameUrls مطلوب" });
-    }
-
-    console.log(`[Scout Analysis] بدء تحليل SAFF+FIFA على ${urls.length} إطار...`);
-
-    // Build combined image base64 for multi-frame analysis
-    // For scout, we analyze the first frame as primary with context from all frames
-    let primaryImageBase64: string;
-    let primaryMediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-
-    try {
-      const imgSource = await fetchImageAsBase64(urls[0]);
-      primaryImageBase64 = imgSource.data;
-      primaryMediaType = imgSource.media_type;
-    } catch (err) {
-      console.error("[Scout Analysis] فشل جلب الصورة الأساسية:", err);
-      return res.status(400).json({ error: "فشل جلب صورة التحليل" });
-    }
-
-    // If multiple frames, fetch them all and concat info
-    const additionalFrameInfo = urls.length > 1
-      ? `\n\nملاحظة: تم تحليل ${urls.length} إطارات من الفيديو.ركز على الإطار الأول (الأساسي) مع مراعاة الحركة عبر الإطارات.`
-      : "";
-
-    const today = new Date().toLocaleDateString("ar-SA", {
-      year: "numeric", month: "long", day: "numeric",
-    });
-    const reportId = `ADA-${nanoid(6).toUpperCase()}`;
-
-    const nahdaCtx = context && context.includes("النهضة")
-      ? `\nالسياق: فيديو تدريبي رسمي من نادي النهضة السعودي — حلل بدقة عالية وأعط توصيات مناسبة للدوري السعودي.`
-      : "";
-
-    const userMessage = urls.length > 1
-      ? `حلل هذا اللاعب من ${urls.length} إطار فيديو وفق معايير SAFF وFIFA.${nahdaCtx}${additionalFrameInfo}\nرقم التقرير: ${reportId}\nتاريخ التحليل: ${today}\nأعد JSON فقط.`
-      : `حلل هذا اللاعب وفق معايير SAFF وFIFA.${nahdaCtx}\nرقم التقرير: ${reportId}\nتاريخ التحليل: ${today}\nأعد JSON فقط.`;
-
-    // Use ai-provider (Anthropic → Ollama fallback)
-    const result = await analyzeVisionPremium({
-      imageBase64: primaryImageBase64,
-      mediaType: primaryMediaType,
-      systemPrompt: SYSTEM_PROMPT,
-      userMessage,
-      maxTokens: 4096,
-    });
-
-    const rawText = result.text;
-    console.log(`[Scout Analysis] طول الاستجابة: ${rawText.length} via ${result.provider}/${result.model}`);
-
-    // تحليل JSON — إزالة markdown إن وُجد
-    let report;
-    try {
-      const cleaned = rawText
-        .replace(/^```json\s*/i, "")
-        .replace(/^```\s*/i, "")
-        .replace(/\s*```$/i, "")
-        .trim();
-      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("لم يُعثر على JSON في الاستجابة");
-      report = JSON.parse(jsonMatch[0]);
-      if (!report.reportId) report.reportId = reportId;
-      if (!report.playerName) report.playerName = "لاعب موهوب";
-      if (!report.jerseyNumber) report.jerseyNumber = report.overallRating || 77;
-    } catch (parseErr) {
-      console.error("[Scout Analysis] خطأ في تحليل JSON:", parseErr);
-      console.error("[Scout Analysis] أول 800 حرف:", rawText.substring(0, 800));
-      return res.status(500).json({
-        error: "فشل تحليل استجابة الذكاء الاصطناعي",
-        raw: rawText.substring(0, 500),
-      });
-    }
-
-    console.log("[Scout Analysis] ✅ التقييم الكلي:", report.overallRating, "| اللاعب:", report.playerName);
-    return res.json({
-      success: true,
-      report,
-      model: result.model,
-      source: result.provider,
-      framesAnalyzed: urls.length,
-    });
+    const result = await handleScoutAnalysis(req.body);
+    return res.json(result);
   } catch (err: any) {
-    console.error("[Scout Analysis] خطأ:", err?.message || err);
+    console.error("[Scout Analysis] Error:", err?.message || err);
     if (!res.headersSent) {
-      return res.status(500).json({ error: err?.message || "فشل التحليل" });
+      return res.status(500).json({ error: err?.message || "Analysis failed" });
     }
   }
 });

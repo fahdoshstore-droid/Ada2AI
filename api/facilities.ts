@@ -128,30 +128,31 @@ export default async function handler(req: Request) {
 
     if (method === "POST") {
       const auth = await verifyAuth(req, supabase);
-      if (!auth) return new Response(JSON.stringify({ error: "Unauthorized — missing or invalid Authorization header" }), { status: 401, headers: { "Content-Type": "application/json" } });
+      if (!auth) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
 
       const body = await req.json();
       const { name, nameAr, city, region, sports, managerId, monthlyRevenue, activeAthletes } = body;
       if (!name) return new Response(JSON.stringify({ error: "Facility name is required" }), { status: 400, headers: { "Content-Type": "application/json" } });
       const { data, error } = await supabase.from("facilities").insert({ name, nameAr, city, region, sports, managerId, monthlyRevenue, activeAthletes }).select().single();
-      if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
+      if (error) { console.error("[Facilities] POST error:", error.message); return new Response(JSON.stringify({ error: "Failed to create facility" }), { status: 500, headers: { "Content-Type": "application/json" } }); }
       return new Response(JSON.stringify(data), { status: 201, headers: { "Content-Type": "application/json" } });
     }
 
     if (method === "DELETE") {
       const auth = await verifyAuth(req, supabase);
-      if (!auth) return new Response(JSON.stringify({ error: "Unauthorized — missing or invalid Authorization header" }), { status: 401, headers: { "Content-Type": "application/json" } });
+      if (!auth) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
 
       const id = url.searchParams.get("id");
       if (!id) return new Response(JSON.stringify({ error: "Facility id required" }), { status: 400, headers: { "Content-Type": "application/json" } });
       const { error } = await supabase.from("facilities").delete().eq("id", id);
-      if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
+      if (error) { console.error("[Facilities] DELETE error:", error.message); return new Response(JSON.stringify({ error: "Failed to delete facility" }), { status: 500, headers: { "Content-Type": "application/json" } }); }
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
     return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { "Content-Type": "application/json" } });
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message || "Internal server error" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    console.error("[Facilities] Unhandled error:", err);
+    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 

@@ -220,7 +220,7 @@ export default async function handler(req: any, res: any) {
   } catch (error: any) {
     console.error("Analysis error:", error);
     return res.status(500).json({ 
-      error: error.message || "Analysis failed",
+      error: "Analysis failed",
       details: "Check server logs for more information"
     });
   }

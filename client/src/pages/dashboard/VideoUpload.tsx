@@ -141,7 +141,7 @@ export default function VideoUpload() {
   const saveAnalysisResult = async (result: AnalysisResult) => {
     try {
       // In production, save to Supabase
-      console.log('Saving analysis result:', result)
+      // TODO: In production, save to Supabase
       // await supabase.from('analyses').insert({
       //   user_id: user?.id,
       //   track_id: result.track_id,

@@ -6,12 +6,12 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { Link, useLocation } from 'wouter'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { supabase, getProfile } from '@/lib/supabase'
+import { useProfile } from '@/hooks/useProfile'
 import {
   Home, Users, BarChart3, Video, Settings, LogOut,
   ChevronRight, Shield, Building2, UserCheck, Search, Heart, Menu, X
 } from 'lucide-react'
-import type { UserType, Profile } from '@/types/profiles'
+import type { UserType } from '@/types/profiles'
 import NotificationBell from '@/components/NotificationBell'
 
 const userTypeIcons: Record<UserType, React.ReactNode> = {
@@ -74,23 +74,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, signOut: authSignOut } = useAuth()
   const { isRTL } = useLanguage()
   const [location] = useLocation()
-  const [userType, setUserType] = useState<UserType>('player')
-  const [profile, setProfile] = useState<Profile | null>(null)
+  const { profile, role } = useProfile()
+  const userType = (role || 'player') as UserType
   const [drawerOpen, setDrawerOpen] = useState(false)
-
-  // Fetch user profile to get userType
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (user) {
-        const { data } = await getProfile(user.id)
-        if (data) {
-          setProfile(data)
-          setUserType((data.user_type as UserType) || 'player')
-        }
-      }
-    }
-    fetchProfile()
-  }, [user])
 
   // Close drawer on route change
   useEffect(() => {

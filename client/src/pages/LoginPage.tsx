@@ -1,14 +1,15 @@
 /**
  * LoginPage - Real Supabase Authentication
  * Supports: Academy, Club, Coach, Player, Parent, Scout
- * After login → fetches profile role → redirects to role-specific dashboard
+ * After login → redirects immediately to dashboard
  */
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'wouter'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { useProfile, roleDashboardPaths } from '@/hooks/useProfile'
-import { supabase, type UserType } from '@/lib/supabase'
+
+import { type UserType } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { Users, Building2, UserCheck, Heart, Search, Shield, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 
 const userTypes = [
@@ -23,8 +24,7 @@ const userTypes = [
 export default function LoginPage() {
   const { isRTL } = useLanguage()
   const [, navigate] = useLocation()
-  const { signIn: authSignIn, user } = useAuth()
-  const { role, loading: profileLoading } = useProfile()
+  const { signIn: authSignIn, signUp: authSignUp, user } = useAuth()
 
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [userType, setUserType] = useState<UserType>('player')
@@ -37,16 +37,12 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  // ── After login, redirect to role-specific dashboard ──
+  // ── After login, redirect immediately (don't wait for profile) ──
   useEffect(() => {
-    if (user && role && !profileLoading) {
-      const destination = roleDashboardPaths[role] || '/dashboard'
-      navigate(destination)
-    } else if (user && !role && !profileLoading) {
-      // Has auth but no profile/role yet → generic dashboard
+    if (user) {
       navigate('/dashboard')
     }
-  }, [user, role, profileLoading, navigate])
+  }, [user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,11 +52,10 @@ export default function LoginPage() {
 
     try {
       if (mode === 'register') {
-        // Sign up with Supabase Auth
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: fullName, user_type: userType } }
+        // Sign up with Supabase Auth via AuthContext (triggers onAuthStateChange)
+        const { error: signUpError } = await authSignUp(email, password, {
+          full_name: fullName,
+          user_type: userType,
         })
         
         if (signUpError) throw signUpError
