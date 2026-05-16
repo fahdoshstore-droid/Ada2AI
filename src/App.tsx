@@ -3,6 +3,8 @@ import { Routes, Route } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
+// Monitoring init — safe no-op if DSNs not configured
+import './lib/monitoring'
 
 const LandingPage = React.lazy(() => import('./pages/LandingPage'))
 const LoginPage = React.lazy(() => import('./pages/LoginPage'))
