@@ -15,6 +15,7 @@ const OrganizationsDashboard = React.lazy(() => import('./pages/OrganizationsDas
 const VideoAnalysis = React.lazy(() => import('./pages/VideoAnalysis'))
 const Rankings = React.lazy(() => import('./pages/Rankings'))
 const PlayerAnalysis = React.lazy(() => import('./pages/PlayerAnalysis'))
+const WelcomePage = React.lazy(() => import('./pages/WelcomePage'))
 
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-navy flex items-center justify-center">
@@ -31,6 +32,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/welcome" element={<ProtectedRoute><WelcomePage /></ProtectedRoute>} />
             <Route path="/sport-id" element={<ProtectedRoute><SportID /></ProtectedRoute>} />
             <Route path="/scout" element={<ProtectedRoute allowedRoles={['scout']}><ScoutDashboard /></ProtectedRoute>} />
             <Route path="/coach" element={<ProtectedRoute allowedRoles={['coach']}><CoachDashboard /></ProtectedRoute>} />

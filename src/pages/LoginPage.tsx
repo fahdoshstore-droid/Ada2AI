@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth, roleDashboard } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/AuthContext'
 import { useDemoMode } from '../hooks/useDemoMode'
 import type { UserType } from '../lib/supabase'
 
@@ -21,16 +21,16 @@ export default function LoginPage() {
   useEffect(() => {
     if (!authLoading && user) {
       if (profile?.user_type) {
-        const target = roleDashboard(profile.user_type)
+        const target = '/welcome'
         console.log('[LOGIN] Redirecting to:', target)
         navigate(target, { replace: true })
       } else if (profileError) {
         // Profile fetch failed — still redirect, ProtectedRoute will show error
-        console.warn('[LOGIN] Profile error, redirecting based on user metadata')
+        console.warn('[LOGIN] Profile error, redirecting to welcome')
         // Fallback: use user_metadata if available
         const metaType = user.user_metadata?.user_type as UserType | undefined
         if (metaType) {
-          navigate(roleDashboard(metaType), { replace: true })
+          navigate('/welcome', { replace: true })
         }
       }
       // If profile is still loading (null, no error), wait — onAuthStateChange will re-trigger this effect
