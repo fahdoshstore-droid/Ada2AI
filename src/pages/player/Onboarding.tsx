@@ -7,7 +7,7 @@
  * Writes to: public.players (existing table, no schema changes)
  * RLS check: auth.uid() = user_id (policy already exists in schema)
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
@@ -82,6 +82,15 @@ export default function PlayerOnboarding() {
     region: '',
   })
 
+  // Track abandonment if user leaves before completing all steps
+  useEffect(() => {
+    return () => {
+      if (step < 3) {
+        trackEvent('onboarding_abandoned', { step })
+      }
+    }
+  }, [step])
+
   // ── Validation ────────────────────────────────────────────
 
   const step1Valid = step1.sport && step1.position && step1.birth_year
@@ -129,6 +138,7 @@ export default function PlayerOnboarding() {
     queryClient.invalidateQueries({ queryKey: ['scout-players'] })
 
     trackEvent('playerOnboardingComplete', { sport: step1.sport, position: step1.position })
+    trackEvent('onboarding_completed', { sport: step1.sport, position: step1.position })
     navigate('/player/dashboard', { replace: true })
   }
 
@@ -408,7 +418,10 @@ export default function PlayerOnboarding() {
 
           {step < 3 && (
             <button
-              onClick={() => setStep(s => s + 1)}
+              onClick={() => {
+                  trackEvent('onboarding_step_completed', { step })
+                  setStep(s => s + 1)
+                }}
               disabled={step === 1 ? !step1Valid : !step2Valid}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-teal-prime/25 transition-all arabic-text"
             >

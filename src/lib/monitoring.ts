@@ -19,7 +19,7 @@ if (SENTRY_ENABLED) {
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: import.meta.env.MODE === 'production' ? 'production' : 'staging',
-    release: 'ada2ai@2026.05.16',
+    release: 'ada2ai@910249b',
     tracesSampleRate: 0.1,        // 10% traces for perf monitoring
     replaysSessionSampleRate: 0,   // No replays (GDPR)
     replaysOnErrorSampleRate: 1.0, // Full replay on errors

@@ -8,6 +8,7 @@
  * Uses useMutation from React Query.
  * Invalidates ['players'] and ['scout-players'] on success.
  */
+import { useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { updatePlayerVideoUrl } from '../services/players'
@@ -53,7 +54,7 @@ export function useMediaUpload() {
       const sanitized = sanitizeFilename(file.name)
       const path = `${playerId}/${Date.now()}-${sanitized}`
 
-      trackEvent('videoUploadStart', { playerId, fileSize: file.size })
+      trackEvent('upload_started', { playerId, fileSize: file.size })
 
       // Upload to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -86,7 +87,7 @@ export function useMediaUpload() {
         throw new Error(`فشل تحديث السجل. تم حذف الفيديو. حاول مجدداً: ${dbError.message}`)
       }
 
-      trackEvent('videoUploadSuccess', { playerId })
+      trackEvent('upload_success', { playerId })
       return { publicUrl, path: uploadData.path }
     },
 
@@ -100,6 +101,13 @@ export function useMediaUpload() {
     },
   })
 
+  const resetWithTracking = useCallback(() => {
+    if (mutation.isError) {
+      trackEvent('upload_retried')
+    }
+    mutation.reset()
+  }, [mutation])
+ 
   return {
     upload: mutation.mutate,
     status: mutation.isIdle
@@ -111,6 +119,6 @@ export function useMediaUpload() {
           : 'error',
     progress: mutation.isPending ? 0 : mutation.isSuccess ? 100 : 0,
     error: mutation.error?.message ?? null,
-    reset: mutation.reset,
+    reset: resetWithTracking,
   }
 }

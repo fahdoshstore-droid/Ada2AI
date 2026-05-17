@@ -72,6 +72,7 @@ export default function PlayerDashboard() {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([])
   const [loadingPlayer, setLoadingPlayer] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   // Fetch player record
   useEffect(() => {
@@ -83,7 +84,10 @@ export default function PlayerDashboard() {
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data, error }) => {
-        if (error) console.error('[PlayerDashboard] player fetch error:', error)
+        if (error) {
+          console.error('[PlayerDashboard] player fetch error:', error)
+          setFetchError('تعذّر تحميل بيانات اللاعب. حاول مرة أخرى.')
+        }
         setPlayerRecord(data as Player | null)
         setLoadingPlayer(false)
       })
@@ -137,6 +141,21 @@ export default function PlayerDashboard() {
     return (
       <div className="min-h-screen bg-navy flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-teal-prime border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (fetchError) {
+    return (
+      <div dir="rtl" className="min-h-screen bg-navy flex flex-col items-center justify-center px-4">
+        <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
+        <p className="text-ice-white font-bold text-lg mb-2 arabic-text">{fetchError}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-5 py-2.5 rounded-xl bg-teal-prime/10 text-teal-prime text-sm font-medium hover:bg-teal-prime/20 transition-colors arabic-text"
+        >
+          إعادة المحاولة
+        </button>
       </div>
     )
   }

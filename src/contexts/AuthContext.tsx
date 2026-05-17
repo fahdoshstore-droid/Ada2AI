@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      // SIGNED_OUT — session expired or user logged out
+      // SIGNED_OUT — session expired or user logged out // verified: redirect to /login handled by ProtectedRoute
       if (event === 'SIGNED_OUT') {
         console.log('[AUTH] Signed out — clearing state')
         setUser(null)

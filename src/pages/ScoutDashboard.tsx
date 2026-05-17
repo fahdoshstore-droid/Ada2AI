@@ -15,7 +15,8 @@ import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import {
   UserSearch, Filter, Eye, Download,
-  Share2, GitCompareArrows, ChevronLeft, ChevronRight
+  Share2, GitCompareArrows, ChevronLeft, ChevronRight,
+  AlertCircle
 } from 'lucide-react'
 import { useScoutPlayers } from '../hooks/useScoutPlayers'
 import { trackEvent } from '../lib/analytics'
@@ -28,7 +29,7 @@ export default function ScoutDashboard() {
   const [page, setPage] = useState(0)
   const [compareList, setCompareList] = useState<string[]>([])
 
-  const { players, loading, pageSize } = useScoutPlayers(
+  const { players, loading, error, pageSize } = useScoutPlayers(
     activeFilter !== 'الكل' ? activeFilter : undefined,
     page
   )
@@ -145,6 +146,20 @@ export default function ScoutDashboard() {
             </div>
           )}
 
+          {/* Error */}
+          {!loading && error && (
+            <div className="flex flex-col items-center justify-center py-20">
+              <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
+              <p className="text-ice-muted text-lg arabic-text mb-4">تعذّر تحميل بيانات اللاعبين</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-5 py-2.5 rounded-xl bg-teal-prime/10 text-teal-prime text-sm font-medium hover:bg-teal-prime/20 transition-colors arabic-text"
+              >
+                إعادة المحاولة
+              </button>
+            </div>
+          )}
+
           {/* Empty */}
           {!loading && players.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20">
@@ -218,7 +233,7 @@ export default function ScoutDashboard() {
                         <button
                           onClick={() => handleCompare(player.id)}
                           title="مقارنة"
-                          className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${
+                          className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
                             isInCompare
                               ? 'bg-teal-prime/20 text-teal-prime'
                               : 'bg-white/5 text-ice-muted hover:text-ice-white hover:bg-white/10'
@@ -231,7 +246,7 @@ export default function ScoutDashboard() {
                         <button
                           onClick={() => toast.info('تقارير PDF قريباً')}
                           title="تنزيل التقرير"
-                          className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 text-ice-muted hover:text-ice-white hover:bg-white/10 transition-colors"
+                          className="flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 text-ice-muted hover:text-ice-white hover:bg-white/10 transition-colors"
                         >
                           <Download className="w-4 h-4" />
                         </button>
@@ -240,7 +255,7 @@ export default function ScoutDashboard() {
                         <button
                           onClick={() => handleShare(player.id)}
                           title="مشاركة"
-                          className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 text-ice-muted hover:text-ice-white hover:bg-white/10 transition-colors"
+                          className="flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 text-ice-muted hover:text-ice-white hover:bg-white/10 transition-colors"
                         >
                           <Share2 className="w-4 h-4" />
                         </button>

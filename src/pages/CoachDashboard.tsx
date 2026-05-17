@@ -1,12 +1,12 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, Users, Calendar, TrendingUp, Target, ClipboardList, PlayCircle, Star } from 'lucide-react';
+import { Dumbbell, Users, Calendar, TrendingUp, Target, ClipboardList, PlayCircle, Star, AlertCircle } from 'lucide-react';
 import { useCoachPlayers } from '../hooks/useCoachPlayers';
 import { useMatches } from '../hooks/useMatches';
 
 export default function CoachDashboard() {
-  const { players, loading: playersLoading } = useCoachPlayers();
-  const { matches, loading: matchesLoading } = useMatches();
+  const { players, loading: playersLoading, error: playersError } = useCoachPlayers();
+  const { matches, loading: matchesLoading, error: matchesError } = useMatches();
   const navigate = useNavigate();
 
   const loading = playersLoading || matchesLoading;
@@ -62,8 +62,22 @@ export default function CoachDashboard() {
         </div>
       )}
 
+      {/* Error State */}
+      {(playersError || matchesError) && !loading && (
+        <div className="flex flex-col items-center justify-center py-20">
+          <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
+          <p className="text-ice-muted text-lg arabic-text mb-4">تعذّر تحميل البيانات</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-5 py-2.5 rounded-xl bg-teal-prime/10 text-teal-prime text-sm font-medium hover:bg-teal-prime/20 transition-colors arabic-text"
+          >
+            إعادة المحاولة
+          </button>
+        </div>
+      )}
+
       {/* Empty State */}
-      {!loading && players.length === 0 && matches.length === 0 && (
+      {!loading && !playersError && !matchesError && players.length === 0 && matches.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20">
           <Users className="w-16 h-16 text-ice-muted mb-4" />
           <p className="text-ice-muted text-lg arabic-text">لا توجد بيانات متاحة</p>
