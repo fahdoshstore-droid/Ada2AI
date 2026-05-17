@@ -1,4 +1,7 @@
-import { useState, useEffect } from 'react'
+/**
+ * useOrganizations.ts — Ada2AI (React Query migration)
+ */
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 
 export interface Organization {
@@ -17,28 +20,28 @@ export interface Organization {
   created_at?: string
 }
 
+async function fetchOrganizations(): Promise<Organization[]> {
+  const { data, error } = await supabase
+    .from('organizations')
+    .select('*')
+    .order('name', { ascending: true })
+    .limit(100)
+
+  if (error) throw new Error(error.message)
+  return (data as Organization[]) ?? []
+}
+
 export function useOrganizations() {
-  const [organizations, setOrganizations] = useState<Organization[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['organizations'],
+    queryFn: fetchOrganizations,
+    // Organizations are fairly static — cache for 15 minutes
+    staleTime: 1000 * 60 * 15,
+  })
 
-  useEffect(() => {
-    async function fetchOrganizations() {
-      const { data, error: err } = await supabase
-        .from('organizations')
-        .select('*')
-        .order('name', { ascending: true })
-
-      if (err) {
-        setError(err.message)
-        setOrganizations([])
-      } else {
-        setOrganizations((data as Organization[]) || [])
-      }
-      setLoading(false)
-    }
-    fetchOrganizations()
-  }, [])
-
-  return { organizations, loading, error }
+  return {
+    organizations: data ?? [],
+    loading: isLoading,
+    error: error?.message ?? null,
+  }
 }

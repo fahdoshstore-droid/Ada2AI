@@ -107,3 +107,18 @@ export async function deletePlayer(id: string): Promise<void> {
 
   if (error) throw new Error(`Failed to delete player ${id}: ${error.message}`)
 }
+
+/** Update a player's video_url after upload */
+export async function updatePlayerVideoUrl(playerId: string, videoUrl: string): Promise<void> {
+  const { error } = await supabase
+    .from('players')
+    .update({ video_url: videoUrl } as any)
+    .eq('id', playerId)
+
+  if (error) {
+    trackEvent('playerVideoUrlUpdateError', { playerId, reason: error.message })
+    throw new Error(`Failed to update video URL for player ${playerId}: ${error.message}`)
+  }
+
+  trackEvent('playerVideoUrlUpdated', { playerId })
+}

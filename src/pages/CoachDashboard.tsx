@@ -1,11 +1,13 @@
 import { motion } from 'framer-motion';
-import { Dumbbell, Users, Calendar, TrendingUp, Target, ClipboardList, PlayCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Dumbbell, Users, Calendar, TrendingUp, Target, ClipboardList, PlayCircle, Star } from 'lucide-react';
 import { useCoachPlayers } from '../hooks/useCoachPlayers';
 import { useMatches } from '../hooks/useMatches';
 
 export default function CoachDashboard() {
   const { players, loading: playersLoading } = useCoachPlayers();
   const { matches, loading: matchesLoading } = useMatches();
+  const navigate = useNavigate();
 
   const loading = playersLoading || matchesLoading;
 
@@ -191,10 +193,13 @@ export default function CoachDashboard() {
                                 <div className="text-ice-white font-bold">{player.height_cm}</div>
                               </div>
                             )}
-                            <div className="text-center">
-                              <div className="text-xs text-ice-muted arabic-text">المركز</div>
-                              <div className="text-teal-prime font-bold">{player.position || '-'}</div>
-                            </div>
+                            <button
+                              onClick={() => navigate(`/coach/evaluate/${player.id}`)}
+                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gold/10 text-gold text-xs font-medium hover:bg-gold/20 transition-colors arabic-text"
+                            >
+                              <Star className="w-3 h-3" />
+                              تقييم
+                            </button>
                           </div>
                         </div>
                       ))}

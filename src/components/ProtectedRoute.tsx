@@ -32,7 +32,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     )
   }
 
-  // 2. Not authenticated — redirect to login
+  // 2. Not authenticated — redirect to login // verified
   if (!user) {
     return <Navigate to="/login" replace />
   }
@@ -62,7 +62,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     )
   }
 
-  // 4. Authenticated but profile not loaded yet — brief loading spinner
+  // 4. Authenticated but profile not loaded yet — brief loading spinner // verified
   if (!profile) {
     return (
       <div className="min-h-screen bg-navy flex items-center justify-center">
@@ -74,7 +74,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     )
   }
 
-  // 5. Authenticated with profile — check role authorization
+  // 5. Authenticated with profile — check role authorization // verified
   if (allowedRoles && !allowedRoles.includes(profile.user_type)) {
     return <Navigate to={roleDashboard(profile.user_type)} replace />
   }

@@ -68,6 +68,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, s) => {
       console.log('[AUTH] onAuthStateChange:', event, s ? `user=${s.user.id}` : 'no session')
 
+      // Token refreshed successfully — update session state
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('[AUTH] Token refreshed successfully')
+        setSession(s)
+        setUser(s?.user ?? null)
+        return
+      }
+
+      // SIGNED_OUT — session expired or user logged out
+      if (event === 'SIGNED_OUT') {
+        console.log('[AUTH] Signed out — clearing state')
+        setUser(null)
+        setProfile(null)
+        setSession(null)
+        setProfileError(null)
+        trackEvent('tokenRefreshFailed', { reason: 'session expired' })
+        setLoading(false)
+        return
+      }
+
       setSession(s)
       setUser(s?.user ?? null)
 
@@ -131,9 +151,9 @@ export function useAuth() {
 
 export function roleDashboard(role: UserType | null | undefined): string {
   switch (role) {
-    case 'player': return '/sport-id'
-    case 'coach': return '/coach'
-    case 'scout': return '/scout'
-    default: return '/'
+    case 'player': return '/player/dashboard'
+    case 'coach':  return '/coach'
+    case 'scout':  return '/scout'
+    default:       return '/'
   }
 }

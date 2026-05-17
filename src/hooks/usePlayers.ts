@@ -1,22 +1,42 @@
-import { useState, useEffect } from 'react'
-import { supabase, type Player } from '../lib/supabase'
+/**
+ * usePlayers.ts — Ada2AI (React Query migration)
+ * 
+ * Before: useState + useEffect hitting Supabase directly
+ * After:  useQuery → services/players.ts → Supabase
+ * 
+ * Benefits:
+ * - Automatic caching (5 min stale time)
+ * - Deduplication of identical requests
+ * - Background refetch
+ * - Consistent loading/error states
+ */
+import { useQuery } from '@tanstack/react-query'
+import { getAllPlayers, getPlayersByPosition } from '../services/players'
 
 export function usePlayers() {
-  const [players, setPlayers] = useState<Player[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['players'],
+    queryFn: getAllPlayers,
+  })
 
-  useEffect(() => {
-    supabase
-      .from('players')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .then(({ data, error: err }) => {
-        if (err) setError(err.message)
-        else setPlayers((data as Player[]) || [])
-        setLoading(false)
-      })
-  }, [])
+  return {
+    players: data ?? [],
+    loading: isLoading,
+    error: error?.message ?? null,
+  }
+}
 
-  return { players, loading, error }
+export function usePlayersByPosition(position?: string) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['players', 'position', position],
+    queryFn: () => position ? getPlayersByPosition(position) : getAllPlayers(),
+    // Re-run query when position changes
+    enabled: true,
+  })
+
+  return {
+    players: data ?? [],
+    loading: isLoading,
+    error: error?.message ?? null,
+  }
 }
