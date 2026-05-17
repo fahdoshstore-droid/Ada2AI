@@ -27,3 +27,6 @@ dist-ssr
 .env.local
 dist/
 .env.vercel
+
+# Claude Code
+.claude/
