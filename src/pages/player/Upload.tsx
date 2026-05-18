@@ -184,6 +184,14 @@ export default function PlayerUpload() {
             </div>
           )}
 
+          {/* Upload consent wording */}
+          {status !== 'success' && (
+            <p className="text-xs text-ice-muted arabic-text text-center mb-3 mt-4">
+              برفع الفيديو توافق على عرضه للكشافين والمدربين المسجلين في المنصة.
+              إذا كنت دون 18 سنة، تأكد من موافقة ولي أمرك.
+            </p>
+          )}
+
           {/* Validation error */}
           {validationError && (
             <div className="mt-4 flex items-center gap-2 text-red-400 text-sm arabic-text">

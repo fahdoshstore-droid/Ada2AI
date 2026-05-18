@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useDemoMode } from '../hooks/useDemoMode'
 import type { UserType } from '../lib/supabase'
@@ -160,6 +160,13 @@ export default function LoginPage() {
             >
               {loading ? 'جاري التحميل...' : isSignUp ? 'إنشاء حساب' : 'تسجيل الدخول'}
             </button>
+
+            {isSignUp && (
+              <p className="text-xs text-ice-muted arabic-text text-center mt-3">
+                بالتسجيل أنت توافق على{' '}
+                <Link to="/privacy" className="text-teal-prime hover:underline">سياسة الخصوصية</Link>
+              </p>
+            )}
           </form>
 
           <div className="mt-6 text-center">

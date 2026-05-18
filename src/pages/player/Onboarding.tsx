@@ -8,7 +8,7 @@
  * RLS check: auth.uid() = user_id (policy already exists in schema)
  */
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
@@ -454,7 +454,12 @@ export default function PlayerOnboarding() {
           )}
 
           {step === 3 && (
-            <button
+            <>
+              <p className="text-xs text-ice-muted arabic-text text-center mb-3">
+                بالتسجيل أنت توافق على{' '}
+                <Link to="/privacy" className="text-teal-prime hover:underline">سياسة الخصوصية</Link>
+              </p>
+              <button
               onClick={handleSubmit}
               disabled={submitting}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm disabled:opacity-60 hover:shadow-lg hover:shadow-teal-prime/25 transition-all arabic-text"
@@ -471,6 +476,7 @@ export default function PlayerOnboarding() {
                 </>
               )}
             </button>
+            </>
           )}
         </div>
       </div>

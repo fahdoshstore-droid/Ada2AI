@@ -25,14 +25,33 @@ export interface UploadState {
 
 // ── Constraints ──────────────────────────────────────
 const MAX_FILE_SIZE = 200 * 1024 * 1024 // 200MB
-const ALLOWED_TYPES = /^video\//
 
-/** Sanitize filename — remove path separators and special chars */
+const ALLOWED_MIME_TYPES = [
+  'video/mp4',
+  'video/quicktime',  // MOV
+  'video/x-msvideo',  // AVI
+  'video/webm',
+  'video/ogg',
+]
+
+const BLOCKED_EXTENSIONS = [
+  '.exe', '.php', '.js', '.html', '.htm',
+  '.svg', '.sh', '.py', '.rb', '.bat',
+]
+
+/** Sanitize filename — remove unsafe chars, prevent path traversal, limit length */
 function sanitizeFilename(name: string): string {
   return name
-    .replace(/[\\/]/g, '_')
-    .replace(/[^a-zA-Z0-9._-_\u0600-\u06FF]/g, '_')
-    .replace(/_+/g, '_')
+    .replace(/[^a-zA-Z0-9._-]/g, '_')  // remove all unsafe chars
+    .replace(/\.{2,}/g, '.')             // prevent ../
+    .substring(0, 100)                  // max 100 chars
+}
+
+/** Get file extension in lowercase */
+function getExtension(filename: string): string {
+  const lastDot = filename.lastIndexOf('.')
+  if (lastDot === -1) return ''
+  return filename.substring(lastDot).toLowerCase()
 }
 
 // ── Hook ──────────────────────────────────────
@@ -41,18 +60,24 @@ export function useMediaUpload() {
 
   const mutation = useMutation({
     mutationFn: async ({ file, playerId }: { file: File; playerId: string }) => {
-      // Validate file type
-      if (!ALLOWED_TYPES.test(file.type)) {
-        throw new Error('يُقبل فيديو فقط. الصيغ المدعومة: MP4, MOV, AVI')
+      // 1. Validate MIME type
+      if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+        throw new Error('نوع الملف غير مدعوم. الصيغ المدعومة: MP4, MOV, AVI, WebM, OGG')
       }
 
-      // Validate file size
+      // 2. Validate extension — block dangerous file types
+      const ext = getExtension(file.name)
+      if (BLOCKED_EXTENSIONS.includes(ext)) {
+        throw new Error('نوع الملف غير مسموح')
+      }
+
+      // 3. Validate file size
       if (file.size > MAX_FILE_SIZE) {
         throw new Error('حجم الملف كبير جداً. الحد الأقصى 200MB')
       }
 
       const sanitized = sanitizeFilename(file.name)
-      const path = `${playerId}/${Date.now()}-${sanitized}`
+      const path = `${playerId}/${Date.now()}_${sanitized}`
 
       trackEvent('upload_started', { playerId, fileSize: file.size })
 
@@ -76,7 +101,7 @@ export function useMediaUpload() {
         timeoutPromise,
       ])
 
-      // Upload won the race — clear the timeout to prevent unhandled rejection
+      // Upload won the race — clear the timeout to prevent unhandled rejection // verified
       if (timeoutId) clearTimeout(timeoutId)
 
       const { data: uploadData, error: uploadError } = result
@@ -96,7 +121,7 @@ export function useMediaUpload() {
       try {
         await updatePlayerVideoUrl(playerId, publicUrl)
       } catch (dbError: any) {
-        // Storage upload succeeded but DB update failed — rollback storage
+        // Storage upload succeeded but DB update failed — rollback storage // verified
         await supabase.storage
           .from('player-media')
           .remove([uploadData.path])

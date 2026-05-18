@@ -26,6 +26,7 @@ const Rankings = React.lazy(() => import('./pages/Rankings'))
 const PlayerAnalysis = React.lazy(() => import('./pages/PlayerAnalysis'))
 const WelcomePage = React.lazy(() => import('./pages/WelcomePage'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'))
 
 // Phase 2 — Player Loop (active)
 const PlayerOnboarding = React.lazy(() => import('./pages/player/Onboarding'))
@@ -174,6 +175,13 @@ export default function App() {
                   <EvaluationForm />
                 </ErrorBoundary>
               </ProtectedRoute>
+            } />
+
+            {/* Public — Privacy Policy */}
+            <Route path="/privacy" element={
+              <ErrorBoundary fallback={<RouteErrorFallback />}>
+                <PrivacyPolicy />
+              </ErrorBoundary>
             } />
 
             {/* 404 — must be last */}
