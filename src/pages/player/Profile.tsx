@@ -243,14 +243,14 @@ export default function PlayerProfile() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="text-2xl font-bold text-ice-white arabic-text truncate">
-                  {player.name || 'بدون اسم'}
+                  {(player.name || 'بدون اسم').split(' ')[0]}
                 </h1>
                 {player.is_verified && (
                   <CheckCircle className="w-5 h-5 text-teal-prime flex-shrink-0" />
                 )}
               </div>
               {player.name_en && (
-                <p className="text-ice-muted text-xs mb-2">{player.name_en}</p>
+                <p className="text-ice-muted text-xs mb-2">{player.name_en.split(' ')[0]}</p>
               )}
               <div className="flex flex-wrap gap-2 text-xs">
                 {player.sport && (

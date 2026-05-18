@@ -115,6 +115,23 @@ export default function PlayerDashboard() {
     }
   }, [loadingPlayer, playerRecord, navigate])
 
+  // Refetch data when window regains focus (session continuity)
+  useEffect(() => {
+    function handleFocus() {
+      if (!user) return
+      supabase
+        .from('players')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setPlayerRecord(data as Player)
+        })
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [user])
+
   // ── Derived state ────────────────────────────────────────
 
   const latestEval = evaluations[0] ?? null
@@ -210,7 +227,7 @@ export default function PlayerDashboard() {
           </div>
 
           {/* Quick stats */}
-          <div className="grid grid-cols-3 gap-3 mt-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">
             {[
               { label: 'التقييم العام', value: latestEval?.overall ?? '-', highlight: true },
               { label: 'المباريات', value: playerRecord.appearances ?? '-', highlight: false },

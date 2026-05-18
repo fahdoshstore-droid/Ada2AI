@@ -177,6 +177,7 @@ export default function PlayerOnboarding() {
               </div>
             ))}
           </div>
+          <p className="text-ice-muted text-xs arabic-text text-center mt-2">خطوة {step} من ٣</p>
         </div>
       </div>
 
@@ -248,7 +249,7 @@ export default function PlayerOnboarding() {
                   <select
                     value={step1.birth_year}
                     onChange={(e) => setStep1(prev => ({ ...prev, birth_year: Number(e.target.value) }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white text-sm focus:outline-none focus:border-teal-prime transition-colors arabic-text"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white text-base focus:outline-none focus:border-teal-prime transition-colors arabic-text"
                     dir="rtl"
                   >
                     {BIRTH_YEARS.map((y) => (
@@ -289,7 +290,7 @@ export default function PlayerOnboarding() {
                       placeholder="175"
                       min={130}
                       max={220}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white text-sm focus:outline-none focus:border-teal-prime transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white text-base focus:outline-none focus:border-teal-prime transition-colors"
                     />
                   </div>
                   <div>
@@ -301,7 +302,7 @@ export default function PlayerOnboarding() {
                       placeholder="70"
                       min={40}
                       max={150}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white text-sm focus:outline-none focus:border-teal-prime transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white text-base focus:outline-none focus:border-teal-prime transition-colors"
                     />
                   </div>
                 </div>
@@ -337,7 +338,7 @@ export default function PlayerOnboarding() {
                     value={step2.club}
                     onChange={(e) => setStep2(prev => ({ ...prev, club: e.target.value }))}
                     placeholder="اسم النادي"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white text-sm placeholder:text-ice-muted/50 focus:outline-none focus:border-teal-prime transition-colors arabic-text"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white text-base placeholder:text-ice-muted/50 focus:outline-none focus:border-teal-prime transition-colors arabic-text"
                     dir="rtl"
                   />
                 </div>
@@ -348,7 +349,7 @@ export default function PlayerOnboarding() {
                   <select
                     value={step2.region}
                     onChange={(e) => setStep2(prev => ({ ...prev, region: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white text-sm focus:outline-none focus:border-teal-prime transition-colors arabic-text"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white text-base focus:outline-none focus:border-teal-prime transition-colors arabic-text"
                     dir="rtl"
                   >
                     <option value="" className="bg-navy-dark">اختر المنطقة</option>
@@ -428,6 +429,9 @@ export default function PlayerOnboarding() {
               التالي
               <ChevronLeft className="w-4 h-4" />
             </button>
+          )}
+          {step < 3 && (step === 1 ? !step1Valid : !step2Valid) && (
+            <p className="text-ice-muted/60 text-xs arabic-text text-center mt-2">يُرجى إكمال جميع الحقول المطلوبة</p>
           )}
 
           {step === 3 && (

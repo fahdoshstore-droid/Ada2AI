@@ -191,7 +191,7 @@ export default function ScoutDashboard() {
                           </div>
                           <div>
                             <h3 className="font-bold text-ice-white arabic-text">
-                              {player.name || 'غير معروف'}
+                              {(player.name || 'غير معروف').split(' ')[0]}
                             </h3>
                             <p className="text-sm text-teal-prime">{player.position || ''}</p>
                           </div>

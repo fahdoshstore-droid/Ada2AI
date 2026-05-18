@@ -52,11 +52,11 @@ export default function PlayerUpload() {
     reset()
 
     if (!file.type.startsWith('video/')) {
-      setValidationError('نوع الملف غير مدعوم. يُرجى رفع ملف فيديو فقط.')
+      setValidationError('يُقبل فيديو فقط. الصيغ المدعومة: MP4, MOV, AVI')
       return
     }
     if (file.size > 200 * 1024 * 1024) {
-      setValidationError('حجم الملف يتجاوز 200 ميجابايت.')
+      setValidationError('حجم الملف كبير جداً. الحد الأقصى 200MB')
       return
     }
     if (!playerId) return

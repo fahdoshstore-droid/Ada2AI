@@ -43,12 +43,12 @@ export function useMediaUpload() {
     mutationFn: async ({ file, playerId }: { file: File; playerId: string }) => {
       // Validate file type
       if (!ALLOWED_TYPES.test(file.type)) {
-        throw new Error('نوع الملف غير مدعوم. يُرجى رفع ملف فيديو فقط.')
+        throw new Error('يُقبل فيديو فقط. الصيغ المدعومة: MP4, MOV, AVI')
       }
 
       // Validate file size
       if (file.size > MAX_FILE_SIZE) {
-        throw new Error('حجم الملف يتجاوز 200 ميجابايت.')
+        throw new Error('حجم الملف كبير جداً. الحد الأقصى 200MB')
       }
 
       const sanitized = sanitizeFilename(file.name)
@@ -65,7 +65,7 @@ export function useMediaUpload() {
         })
 
       if (uploadError) {
-        throw new Error(`فشل رفع الفيديو: ${uploadError.message}`)
+        throw new Error('فشل رفع الملف. حاول مجدداً')
       }
 
       // Get public URL
@@ -84,7 +84,7 @@ export function useMediaUpload() {
           .from('player-media')
           .remove([uploadData.path])
           .catch(() => null) // best-effort cleanup, don't mask original error
-        throw new Error(`فشل تحديث السجل. تم حذف الفيديو. حاول مجدداً: ${dbError.message}`)
+        throw new Error('فشل حفظ البيانات. حاول مجدداً')
       }
 
       trackEvent('upload_success', { playerId })
