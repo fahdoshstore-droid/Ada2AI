@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null)
         setSession(null)
         setProfileError(null)
-        trackEvent('tokenRefreshFailed', { reason: 'session expired' })
+        trackEvent('auth_signed_out', { reason: 'session expired' })
         setLoading(false)
         return
       }

@@ -46,6 +46,8 @@ export default function ScoutDashboard() {
     navigator.clipboard.writeText(url).then(() => {
       toast.success('تم نسخ رابط اللاعب')
       trackEvent('scoutSharedPlayer', { playerId })
+    }).catch(() => {
+      toast.error('فشل نسخ الرابط')
     })
   }
 

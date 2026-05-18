@@ -162,6 +162,8 @@ export default function PlayerDashboard() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
       trackEvent('playerProfileShared')
+    }).catch(() => {
+      setCopied(false)
     })
   }
 

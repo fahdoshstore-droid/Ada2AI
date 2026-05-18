@@ -7,7 +7,7 @@
  * Writes to: public.players (existing table, no schema changes)
  * RLS check: auth.uid() = user_id (policy already exists in schema)
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
@@ -67,6 +67,7 @@ export default function PlayerOnboarding() {
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const completedRef = useRef(false)
 
   const [step1, setStep1] = useState<Step1>({
     sport: '',
@@ -82,18 +83,19 @@ export default function PlayerOnboarding() {
     region: '',
   })
 
-  // Track abandonment if user leaves before completing all steps
+  // Track abandonment only if user leaves the page without completing
   useEffect(() => {
     return () => {
-      if (step < 3) {
+      if (!completedRef.current) {
         trackEvent('onboarding_abandoned', { step })
       }
     }
-  }, [step])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Validation ────────────────────────────────────────────
 
-  const step1Valid = step1.sport && step1.position && step1.birth_year
+  const sportHasPositions = step1.sport && POSITIONS[step1.sport]
+  const step1Valid = step1.sport && step1.birth_year && (sportHasPositions ? step1.position : true)
 
   const step2Valid =
     step2.dominant_foot &&
@@ -139,6 +141,7 @@ export default function PlayerOnboarding() {
 
     trackEvent('playerOnboardingComplete', { sport: step1.sport, position: step1.position })
     trackEvent('onboarding_completed', { sport: step1.sport, position: step1.position })
+    completedRef.current = true
     navigate('/player/dashboard', { replace: true })
   }
 
@@ -208,7 +211,7 @@ export default function PlayerOnboarding() {
                     {SPORTS.map((s) => (
                       <button
                         key={s}
-                        onClick={() => setStep1(prev => ({ ...prev, sport: s, position: '' }))}
+                        onClick={() => setStep1(prev => ({ ...prev, sport: s, position: POSITIONS[s] ? '' : 'عام' }))}
                         className={`py-2.5 px-3 rounded-xl text-sm font-medium transition-all arabic-text ${
                           step1.sport === s
                             ? 'bg-teal-prime text-navy-dark'
@@ -240,6 +243,22 @@ export default function PlayerOnboarding() {
                         </button>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Custom position for sports without predefined positions */}
+                {step1.sport && !POSITIONS[step1.sport] && (
+                  <div className="mb-5">
+                    <label className="block text-sm text-ice-muted mb-2 arabic-text">المركز (اختياري)</label>
+                    <input
+                      type="text"
+                      value={step1.position === 'عام' ? '' : step1.position}
+                      onChange={(e) => setStep1(prev => ({ ...prev, position: e.target.value || 'عام' }))}
+                      placeholder="عام"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white text-base placeholder:text-ice-muted/50 focus:outline-none focus:border-teal-prime transition-colors arabic-text"
+                      dir="rtl"
+                    />
+                    <p className="text-ice-muted/60 text-xs mt-1 arabic-text">اتركه فارغاً ليكون "عام"</p>
                   </div>
                 )}
 

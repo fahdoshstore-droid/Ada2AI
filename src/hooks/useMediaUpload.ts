@@ -58,6 +58,7 @@ export function useMediaUpload() {
 
       // 60s timeout — prevents indefinite hang on slow/stalled networks
       const UPLOAD_TIMEOUT_MS = 60_000
+      let timeoutId: ReturnType<typeof setTimeout> | undefined
 
       const uploadPromise = supabase.storage
         .from('player-media')
@@ -67,13 +68,18 @@ export function useMediaUpload() {
         })
 
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('الاتصال بطيء. حاول مجدداً')), UPLOAD_TIMEOUT_MS)
+        timeoutId = setTimeout(() => reject(new Error('الاتصال بطيء. حاول مجدداً')), UPLOAD_TIMEOUT_MS)
       })
 
-      const { data: uploadData, error: uploadError } = await Promise.race([
+      const result = await Promise.race([
         uploadPromise,
         timeoutPromise,
       ])
+
+      // Upload won the race — clear the timeout to prevent unhandled rejection
+      if (timeoutId) clearTimeout(timeoutId)
+
+      const { data: uploadData, error: uploadError } = result
 
       if (uploadError) {
         throw new Error('فشل رفع الملف. حاول مجدداً')
