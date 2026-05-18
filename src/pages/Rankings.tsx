@@ -44,7 +44,35 @@ export default function Rankings() {
     .sort((a, b) => b.rating - a.rating)
     .map((p, i) => ({ ...p, rank: i + 1 }));
 
-  const topPlayers = rankedPlayers.length > 0 ? rankedPlayers : [];
+  // Filter and sort players based on active category
+  const filteredPlayers = (() => {
+    if (activeCategory === 'all') return rankedPlayers;
+    if (activeCategory === 'goals') {
+      return rankedPlayers
+        .filter(p => p.goals > 0)
+        .sort((a, b) => b.goals - a.goals)
+        .map((p, i) => ({ ...p, rank: i + 1 }));
+    }
+    if (activeCategory === 'assists') {
+      return rankedPlayers
+        .filter(p => p.assists > 0)
+        .sort((a, b) => b.assists - a.assists)
+        .map((p, i) => ({ ...p, rank: i + 1 }));
+    }
+    if (activeCategory === 'goalkeeper') {
+      return rankedPlayers
+        .filter(p => /حارس|goalkeeper/i.test(p.position))
+        .map((p, i) => ({ ...p, rank: i + 1 }));
+    }
+    if (activeCategory === 'defender') {
+      return rankedPlayers
+        .filter(p => /مدافع|defender/i.test(p.position))
+        .map((p, i) => ({ ...p, rank: i + 1 }));
+    }
+    return rankedPlayers;
+  })();
+
+  const topPlayers = filteredPlayers;
 
   if (loading) {
     return (

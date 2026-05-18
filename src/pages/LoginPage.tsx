@@ -22,11 +22,9 @@ export default function LoginPage() {
     if (!authLoading && user) {
       if (profile?.user_type) {
         const target = '/welcome'
-        console.log('[LOGIN] Redirecting to:', target)
         navigate(target, { replace: true })
       } else if (profileError) {
         // Profile fetch failed — still redirect, ProtectedRoute will show error
-        console.warn('[LOGIN] Profile error, redirecting to welcome')
         // Fallback: use user_metadata if available
         const metaType = user.user_metadata?.user_type as UserType | undefined
         if (metaType) {

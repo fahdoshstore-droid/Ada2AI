@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { Badge, Shield, BarChart3, Globe, QrCode, TrendingUp, FileText, Award } from 'lucide-react';
 
@@ -38,6 +39,7 @@ const features = [
 export default function SportID() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const navigate = useNavigate();
   
   return (
     <div>
@@ -65,7 +67,7 @@ export default function SportID() {
               بطاقة FIFA رقمية شاملة لكل لاعب. احصل على هويتك الرياضية الموثقة 
               مع تقييم شامل وتحليل أداء مستمر يتتبع تطورك في كل مباراة.
             </p>
-            <button className="px-8 py-4 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text">
+            <button onClick={() => navigate('/player/onboarding')} className="px-8 py-4 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text">
               احصل على هويتك الرياضية
             </button>
           </motion.div>

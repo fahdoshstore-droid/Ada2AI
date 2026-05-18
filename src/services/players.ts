@@ -7,11 +7,12 @@
 import { supabase, type Player } from '../lib/supabase'
 import { trackEvent } from '../lib/analytics'
 
-/** Fetch all players, newest first */
-export async function getAllPlayers(): Promise<Player[]> {
+/** Fetch all players, newest first (paginated) */
+export async function getAllPlayers(page = 1, pageSize = 20): Promise<Player[]> {
   const { data, error } = await supabase
     .from('players')
     .select('*')
+    .range((page - 1) * pageSize, page * pageSize - 1)
     .order('created_at', { ascending: false })
 
   if (error) {

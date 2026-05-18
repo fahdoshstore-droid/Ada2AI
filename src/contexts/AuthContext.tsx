@@ -26,7 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profileError, setProfileError] = useState<string | null>(null)
 
   const fetchProfile = useCallback(async (userId: string) => {
-    console.log('[AUTH] fetchProfile called for:', userId)
     const startTime = Date.now()
     try {
       const { data, error } = await supabase
@@ -41,12 +40,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfileError(`فشل تحميل الملف الشخصي: ${error.message}`)
         trackEvent('profileLoadError', { durationMs: Date.now() - startTime, reason: error.message })
       } else if (!data) {
-        console.warn('[AUTH] fetchProfile: no profile found for user:', userId)
         setProfile(null)
         setProfileError('لا يوجد ملف شخصي مرتبط بحسابك. تواصل مع الدعم.')
         trackEvent('profileLoadError', { durationMs: Date.now() - startTime, reason: 'no profile found' })
       } else {
-        console.log('[AUTH] fetchProfile success:', data?.full_name, data?.user_type)
         setProfile(data as Profile)
         setProfileError(null)
         trackEvent('profileLoadTime', { durationMs: Date.now() - startTime, role: data?.user_type ?? 'none' })
@@ -63,14 +60,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 1. Restore existing session on mount
     // onAuthStateChange with INITIAL_SESSION handles the initial load
     // No manual getSession needed — onAuthStateChange fires after getSession resolves
-    console.log('[AUTH] Mount — subscribing to auth state changes')
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, s) => {
-      console.log('[AUTH] onAuthStateChange:', event, s ? `user=${s.user.id}` : 'no session')
 
       // Token refreshed successfully — update session state
       if (event === 'TOKEN_REFRESHED') {
-        console.log('[AUTH] Token refreshed successfully')
         setSession(s)
         setUser(s?.user ?? null)
         return
@@ -78,7 +72,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // SIGNED_OUT — session expired or user logged out // verified: redirect to /login handled by ProtectedRoute
       if (event === 'SIGNED_OUT') {
-        console.log('[AUTH] Signed out — clearing state')
         setUser(null)
         setProfile(null)
         setSession(null)
@@ -102,19 +95,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Only set loading=false AFTER profile fetch completes
       setLoading(false)
-      console.log('[AUTH] State change processed, loading=false, profile=', s?.user ? 'loaded' : 'null')
     })
 
     return () => subscription.unsubscribe()
   }, [fetchProfile])
 
   const signIn = useCallback(async (email: string, password: string) => {
-    console.log('[AUTH] signIn called for:', email)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       console.error('[AUTH] signIn error:', error.message)
-    } else {
-      console.log('[AUTH] signIn success — onAuthStateChange will handle redirect')
     }
     return { error: error?.message ?? null }
   }, [])

@@ -10,19 +10,26 @@
  * - Background refetch
  * - Consistent loading/error states
  */
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getAllPlayers, getPlayersByPosition } from '../services/players'
 
-export function usePlayers() {
+export function usePlayers({ pageSize = 20 }: { pageSize?: number } = {}) {
+  const [page, setPage] = useState(1)
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ['players'],
-    queryFn: getAllPlayers,
+    queryKey: ['players', page, pageSize],
+    queryFn: () => getAllPlayers(page, pageSize),
   })
 
   return {
     players: data ?? [],
     loading: isLoading,
     error: error?.message ?? null,
+    page,
+    setPage,
+    pageSize,
+    hasMore: (data ?? []).length === pageSize,
   }
 }
 
