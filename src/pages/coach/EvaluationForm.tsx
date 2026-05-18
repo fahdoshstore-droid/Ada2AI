@@ -11,6 +11,7 @@ import { motion } from 'framer-motion'
 import { supabase, type Player } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCreateEvaluation } from '../../hooks/useCreateEvaluation'
+import { trackEvent } from '../../lib/analytics'
 import {
   Star, ArrowRight, Loader2, AlertCircle,
   Save
@@ -73,6 +74,13 @@ export default function EvaluationForm() {
   const { mutate, isPending, isSuccess, error: submitError } = useCreateEvaluation()
 
   const overall = Math.round((technical + tactical + physical + mental) / 4)
+
+  // Track evaluation started on mount
+  useEffect(() => {
+    if (playerId) {
+      trackEvent('evaluation_started', { playerId })
+    }
+  }, [playerId])
 
   // Fetch player
   useEffect(() => {

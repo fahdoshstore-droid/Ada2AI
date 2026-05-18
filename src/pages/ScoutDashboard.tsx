@@ -58,11 +58,13 @@ export default function ScoutDashboard() {
         toast.info('يمكنك مقارنة لاعبين فقط في نفس الوقت')
         return prev
       }
+      trackEvent('scout_compare_added', { playerId })
       return [...prev, playerId]
     })
   }
 
   function handleFilterChange(f: string) {
+    trackEvent('scout_filter_used', { filter: f })
     setActiveFilter(f)
     setPage(0) // reset to first page when filter changes
   }

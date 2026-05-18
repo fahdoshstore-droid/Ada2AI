@@ -127,10 +127,23 @@ export default function PlayerDashboard() {
         .then(({ data }) => {
           if (data) setPlayerRecord(data as Player)
         })
+      // Also refetch evaluations when returning to the app
+      const currentPlayerId = playerRecord?.id
+      if (currentPlayerId) {
+        supabase
+          .from('evaluations')
+          .select('*')
+          .eq('player_id', currentPlayerId)
+          .order('evaluation_date', { ascending: false })
+          .limit(10)
+          .then(({ data }) => {
+            if (data) setEvaluations(data as Evaluation[])
+          })
+      }
     }
     window.addEventListener('focus', handleFocus)
     return () => window.removeEventListener('focus', handleFocus)
-  }, [user])
+  }, [user, playerRecord?.id])
 
   // ── Derived state ────────────────────────────────────────
 
@@ -325,10 +338,7 @@ export default function PlayerDashboard() {
           ) : (
             <div className="text-center py-6">
               <Star className="w-10 h-10 text-ice-muted mx-auto mb-2" />
-              <p className="text-ice-muted text-sm arabic-text">لا يوجد تقييم بعد</p>
-              <p className="text-ice-muted/60 text-xs mt-1 arabic-text">
-                ارفع فيديو لتسريع عملية التقييم
-              </p>
+              <p className="text-ice-muted text-sm arabic-text">لم يصلك تقييم بعد — ارفع فيديو لتسريع العملية</p>
             </div>
           )}
         </motion.div>

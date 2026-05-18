@@ -105,6 +105,7 @@ export default function PlayerProfile() {
         }
 
         setPlayer(playerData as Player)
+        trackEvent('player_profile_viewed', { playerId: id as string })
 
         // Fetch latest evaluation
         const { data: evalData } = await supabase
