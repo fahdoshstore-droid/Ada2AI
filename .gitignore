@@ -30,3 +30,4 @@ dist/
 
 # Claude Code
 .claude/
+.env*.local

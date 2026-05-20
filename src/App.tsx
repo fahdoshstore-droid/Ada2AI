@@ -25,6 +25,7 @@ const CoachDashboard = React.lazy(() => import('./pages/CoachDashboard'))
 const OrganizationsDashboard = React.lazy(() => import('./pages/OrganizationsDashboard'))
 const Rankings = React.lazy(() => import('./pages/Rankings'))
 const PlayerAnalysis = React.lazy(() => import('./pages/PlayerAnalysis'))
+const VideoAnalysis = React.lazy(() => import('./pages/VideoAnalysis'))
 const WelcomePage = React.lazy(() => import('./pages/WelcomePage'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'))
@@ -137,6 +138,14 @@ export default function App() {
               <ProtectedRoute>
                 <ErrorBoundary fallback={<RouteErrorFallback />}>
                   <PlayerAnalysis />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/video-analysis" element={
+              <ProtectedRoute>
+                <ErrorBoundary fallback={<RouteErrorFallback />}>
+                  <VideoAnalysis />
                 </ErrorBoundary>
               </ProtectedRoute>
             } />

@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Clock, Loader2, CheckCircle, XCircle,
   Play, ClipboardList, BarChart3,
-  ChevronDown, ChevronUp, ArrowLeft, Users
+  ChevronDown, ChevronUp, ArrowLeft, Users, Swords, Upload as UploadIcon, FileText
 } from 'lucide-react'
 import {
   usePendingAnalyses,
@@ -25,7 +25,10 @@ import {
 } from '../../hooks/useAnalysis'
 import { useCoachPlayers } from '../../hooks/useCoachPlayers'
 import { type AnalysisResults } from '../../services/analysis'
+import { createAnalysisRecord } from '../../services/analysis'
 import PitchView from '../../components/coach/PitchView'
+import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../lib/supabase'
 
 // ── Status Badge ──────────────────────────────────────────────
 
@@ -231,10 +234,18 @@ export default function CoachWorkspace() {
   const updateStatus = useUpdateAnalysisStatus()
   const saveResults = useSaveAnalysisResults()
   const { players } = useCoachPlayers()
+  const { user } = useAuth()
 
   const [activeFormId, setActiveFormId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [formation, setFormation] = useState<'4-3-3' | '4-4-2' | '3-5-2'>('4-3-3')
+  const [activeTab, setActiveTab] = useState<'workspace' | 'opponent'>('workspace')
+  const [opponentTeam, setOpponentTeam] = useState('')
+  const [matchDate, setMatchDate] = useState('')
+  const [opponentVideo, setOpponentVideo] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadMsg, setUploadMsg] = useState<string | null>(null)
+  const [tacticalNotes, setTacticalNotes] = useState('')
 
   const handleStartProcessing = (id: string) => {
     updateStatus.mutate({ id, status: 'processing' })
@@ -255,27 +266,111 @@ export default function CoachWorkspace() {
     )
   }
 
+  const handleOpponentUpload = async () => {
+    if (!opponentTeam.trim() || !opponentVideo || !user) return
+    setUploading(true)
+    setUploadMsg(null)
+    try {
+      const filePath = `opponent/${Date.now()}_${opponentVideo.name}`
+      const { error: uploadError } = await supabase.storage
+        .from('player-media')
+        .upload(filePath, opponentVideo, { cacheControl: '3600' })
+      if (uploadError) throw uploadError
+
+      const { data: urlData } = supabase.storage.from('player-media').getPublicUrl(filePath)
+      const publicUrl = urlData.publicUrl
+
+      await createAnalysisRecord(user.id, publicUrl)
+      // Update the title to indicate opponent analysis
+      // We update via a direct query since createAnalysisRecord doesn't accept title
+      const { data: latestAnalysis } = await supabase
+        .from('video_analyses')
+        .select('id')
+        .eq('video_url', publicUrl)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (latestAnalysis) {
+        await supabase
+          .from('video_analyses')
+          .update({
+            title: `تحليل منافس: ${opponentTeam}`,
+            match: opponentTeam,
+            date: matchDate || undefined,
+          })
+          .eq('id', latestAnalysis.id)
+      }
+
+      setUploadMsg('تم الرفع — التحليل سيبدأ قريباً')
+      setOpponentTeam('')
+      setMatchDate('')
+      setOpponentVideo(null)
+      // Save tactical notes to localStorage as temporary storage
+      if (tacticalNotes.trim()) {
+        // TODO: Persist to evaluations.notes when opponent player_id is available
+        const key = `opponent_notes_${latestAnalysis?.id || Date.now()}`
+        localStorage.setItem(key, tacticalNotes)
+        setTacticalNotes('')
+      }
+    } catch (err: any) {
+      setUploadMsg(`خطأ: ${err.message || 'فشل الرفع'}`)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   return (
     <div dir="rtl" className="min-h-screen bg-navy">
       <div className="absolute inset-0 bg-gradient-radial opacity-30" />
       <div className="absolute inset-0 grid-pattern opacity-10" />
 
       <div className="relative max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        {/* Header + Tabs */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/coach')}
+                className="flex items-center gap-1.5 text-ice-muted text-sm hover:text-ice-white transition-colors arabic-text"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                رجوع
+              </button>
+            </div>
+            <h1 className="text-xl font-bold text-ice-white arabic-text">مساحة العمل</h1>
+          </div>
+          {/* Tab Buttons */}
+          <div className="flex gap-2">
             <button
-              onClick={() => navigate('/coach')}
-              className="flex items-center gap-1.5 text-ice-muted text-sm hover:text-ice-white transition-colors arabic-text"
+              onClick={() => setActiveTab('workspace')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors arabic-text ${
+                activeTab === 'workspace'
+                  ? 'bg-teal-prime/20 text-teal-prime border border-teal-prime/30'
+                  : 'glass-card text-ice-muted hover:text-ice-white'
+              }`}
             >
-              <ArrowLeft className="w-4 h-4" />
-              رجوع
+              <FileText className="w-4 h-4" />
+              التحليلات
+            </button>
+            <button
+              onClick={() => setActiveTab('opponent')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors arabic-text ${
+                activeTab === 'opponent'
+                  ? 'bg-teal-prime/20 text-teal-prime border border-teal-prime/30'
+                  : 'glass-card text-ice-muted hover:text-ice-white'
+              }`}
+            >
+              <Swords className="w-4 h-4" />
+              تحليل المنافس
             </button>
           </div>
-          <h1 className="text-xl font-bold text-ice-white arabic-text">مساحة العمل</h1>
         </div>
 
-        {/* ── SECTION B: Team Formation (Interactive Pitch) ── */}
+        {/* ── Tab Content ── */}
+        {activeTab === 'workspace' && (
+          <>
+            {/* ── SECTION B: Team Formation (Interactive Pitch) ── */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -529,6 +624,103 @@ export default function CoachWorkspace() {
             </div>
           )}
         </motion.div>
+          </>
+        )}
+
+        {/* ── Opponent Analysis Tab ── */}
+        {activeTab === 'opponent' && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card rounded-2xl p-5 space-y-5"
+          >
+            <h2 className="font-bold text-ice-white flex items-center gap-2 arabic-text">
+              <Swords className="w-5 h-5 text-teal-prime" />
+              تحليل المنافس
+            </h2>
+            <p className="text-ice-muted text-sm arabic-text">
+              ارفع فيديو لفريق المنافس وسيتم إنشاء تحليل تلقائي في قائمة الانتظار
+            </p>
+
+            {/* Team Name */}
+            <div>
+              <label className="text-xs text-ice-muted arabic-text block mb-1">اسم الفريق المنافس</label>
+              <input
+                type="text"
+                value={opponentTeam}
+                onChange={e => setOpponentTeam(e.target.value)}
+                placeholder="مثال: الهلال"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-ice-white arabic-text focus:border-teal-prime/50 focus:outline-none"
+              />
+            </div>
+
+            {/* Match Date */}
+            <div>
+              <label className="text-xs text-ice-muted arabic-text block mb-1">تاريخ المباراة (اختياري)</label>
+              <input
+                type="date"
+                value={matchDate}
+                onChange={e => setMatchDate(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-ice-white focus:border-teal-prime/50 focus:outline-none"
+              />
+            </div>
+
+            {/* Video Upload */}
+            <div>
+              <label className="text-xs text-ice-muted arabic-text block mb-1">فيديو المنافس</label>
+              <label className="flex flex-col items-center justify-center gap-2 px-4 py-6 bg-white/5 border border-dashed border-white/20 rounded-xl cursor-pointer hover:border-teal-prime/40 transition-colors">
+                <UploadIcon className="w-8 h-8 text-ice-muted" />
+                <span className="text-sm text-ice-muted arabic-text">
+                  {opponentVideo ? opponentVideo.name : 'اختر ملف الفيديو'}
+                </span>
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={e => setOpponentVideo(e.target.files?.[0] ?? null)}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Tactical Notes */}
+            <div>
+              <label className="text-xs text-ice-muted arabic-text block mb-1">ملاحظات تكتيكية</label>
+              <textarea
+                value={tacticalNotes}
+                onChange={e => setTacticalNotes(e.target.value)}
+                rows={4}
+                placeholder="أضف ملاحظاتك عن أسلوب اللعب، نقاط الضعف، إلخ..."
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-ice-white arabic-text focus:border-teal-prime/50 focus:outline-none resize-none"
+              />
+            </div>
+
+            {/* Submit */}
+            <button
+              onClick={handleOpponentUpload}
+              disabled={uploading || !opponentTeam.trim() || !opponentVideo}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  جارٍ الرفع...
+                </>
+              ) : (
+                <>
+                  <UploadIcon className="w-4 h-4" />
+                  رفع وتحليل
+                </>
+              )}
+            </button>
+
+            {/* Upload message */}
+            {uploadMsg && (
+              <p className={`text-sm arabic-text text-center ${uploadMsg.startsWith('خطأ') ? 'text-red-400' : 'text-teal-prime'}`}>
+                {uploadMsg}
+              </p>
+            )}
+          </motion.div>
+        )}
       </div>
     </div>
   )
