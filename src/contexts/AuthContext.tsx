@@ -146,3 +146,8 @@ export function roleDashboard(role: UserType | null | undefined): string {
     default:       return '/'
   }
 }
+
+/** Check if profile has admin privileges (coach with sport='admin') */
+export function isAdmin(profile: Profile | null): boolean {
+  return profile?.user_type === 'coach' && profile?.sport === 'admin'
+}

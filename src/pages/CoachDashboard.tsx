@@ -1,13 +1,16 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, Users, Calendar, TrendingUp, Target, ClipboardList, PlayCircle, Star, AlertCircle, Briefcase } from 'lucide-react';
+import { Dumbbell, Users, Calendar, TrendingUp, Target, ClipboardList, PlayCircle, Star, AlertCircle, Briefcase, Settings } from 'lucide-react';
 import { useCoachPlayers } from '../hooks/useCoachPlayers';
 import { useMatches } from '../hooks/useMatches';
+import { useAuth, isAdmin } from '../contexts/AuthContext';
 
 export default function CoachDashboard() {
   const { players, loading: playersLoading, error: playersError } = useCoachPlayers();
   const { matches, loading: matchesLoading, error: matchesError } = useMatches();
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const showAdmin = isAdmin(profile);
 
   const loading = playersLoading || matchesLoading;
 
@@ -55,6 +58,15 @@ export default function CoachDashboard() {
                 <Briefcase className="w-4 h-4" />
                 مساحة العمل
               </button>
+              {showAdmin && (
+                <button
+                  onClick={() => navigate('/admin')}
+                  className="flex items-center gap-2 px-4 py-3 rounded-xl glass-card text-ice-muted hover:text-ice-white transition-colors text-sm arabic-text"
+                >
+                  <Settings className="w-4 h-4" />
+                  لوحة الإدارة
+                </button>
+              )}
             </div>
             <p className="text-ice-muted text-lg leading-relaxed max-w-2xl arabic-text">
               أدوات متكاملة لإدارة الفريق، تخطيط التدريبات، تحليل الأداء، 

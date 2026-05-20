@@ -13,6 +13,7 @@ import { Routes, Route } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import './lib/monitoring'
 
@@ -37,6 +38,9 @@ const PlayerUpload = React.lazy(() => import('./pages/player/Upload'))
 // Coach tools
 const EvaluationForm = React.lazy(() => import('./pages/coach/EvaluationForm'))
 const CoachWorkspace = React.lazy(() => import('./pages/coach/Workspace'))
+
+// Admin
+const AdminDashboard = React.lazy(() => import('./pages/admin/Dashboard'))
 
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-navy flex items-center justify-center">
@@ -184,6 +188,15 @@ export default function App() {
                   <CoachWorkspace />
                 </ErrorBoundary>
               </ProtectedRoute>
+            } />
+
+            {/* Admin — coach with sport='admin' only */}
+            <Route path="/admin" element={
+              <AdminRoute>
+                <ErrorBoundary fallback={<RouteErrorFallback />}>
+                  <AdminDashboard />
+                </ErrorBoundary>
+              </AdminRoute>
             } />
 
             {/* Public — Privacy Policy */}
