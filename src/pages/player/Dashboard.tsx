@@ -33,7 +33,7 @@ function SkillBar({ label, value }: { label: string; value: number }) {
     <div>
       <div className="flex justify-between text-xs mb-1">
         <span className="text-ice-muted arabic-text">{label}</span>
-        <span className="text-teal-prime font-medium">{value}</span>
+        <span className="text-teal-prime font-display font-medium">{value}</span>
       </div>
       <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
         <motion.div
@@ -237,7 +237,7 @@ export default function PlayerDashboard() {
               { label: 'الكشافون', value: playerRecord.scouts_count ?? 0, highlight: false },
             ].map(({ label, value, highlight }) => (
               <div key={label} className="bg-white/5 rounded-xl p-3 text-center">
-                <div className={`text-xl font-black ${highlight ? 'text-gradient-teal' : 'text-ice-white'}`}>
+                <div className={`text-xl font-black font-display ${highlight ? 'text-gradient-teal' : 'text-ice-white'}`}>
                   {value}
                 </div>
                 <div className="text-xs text-ice-muted arabic-text mt-0.5">{label}</div>
@@ -319,7 +319,7 @@ export default function PlayerDashboard() {
               </div>
               <div className="flex items-center justify-center gap-2 pt-2 border-t border-white/5">
                 <Trophy className="w-5 h-5 text-teal-prime" />
-                <span className="text-2xl font-black text-gradient-teal">{latestEval.overall}</span>
+                <span className="text-2xl font-black font-display text-gradient-teal">{latestEval.overall}</span>
                 <span className="text-sm text-ice-muted arabic-text">/ 100 تقييم عام</span>
               </div>
             </div>
@@ -381,25 +381,25 @@ export default function PlayerDashboard() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {results.activity_score != null && (
                       <div className="bg-white/5 rounded-xl p-3 text-center">
-                        <div className="text-2xl font-black text-gradient-teal">{results.activity_score}%</div>
+                        <div className="text-2xl font-black font-display text-gradient-teal">{results.activity_score}%</div>
                         <div className="text-xs text-ice-muted arabic-text">نشاط اللاعب</div>
                       </div>
                     )}
                     {results.touches_estimate != null && (
                       <div className="bg-white/5 rounded-xl p-3 text-center">
-                        <div className="text-2xl font-bold text-ice-white">{results.touches_estimate}</div>
+                        <div className="text-2xl font-bold font-display text-ice-white">{results.touches_estimate}</div>
                         <div className="text-xs text-ice-muted arabic-text">لمسات</div>
                       </div>
                     )}
                     {results.speed_estimate_kmh != null && (
                       <div className="bg-white/5 rounded-xl p-3 text-center">
-                        <div className="text-2xl font-bold text-ice-white">{results.speed_estimate_kmh}</div>
+                        <div className="text-2xl font-bold font-display text-ice-white">{results.speed_estimate_kmh}</div>
                         <div className="text-xs text-ice-muted arabic-text">كم/س سرعة</div>
                       </div>
                     )}
                     {results.possession_involvement != null && (
                       <div className="bg-white/5 rounded-xl p-3 text-center">
-                        <div className="text-2xl font-bold text-ice-white">{results.possession_involvement}%</div>
+                        <div className="text-2xl font-bold font-display text-ice-white">{results.possession_involvement}%</div>
                         <div className="text-xs text-ice-muted arabic-text">استحواذ</div>
                       </div>
                     )}

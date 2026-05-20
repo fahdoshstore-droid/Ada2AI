@@ -322,7 +322,7 @@ export default function CoachWorkspace() {
                 رجوع
               </button>
             </div>
-            <h1 className="text-xl font-bold text-ice-white arabic-text">مساحة العمل</h1>
+            <h1 className="text-xl font-bold font-display text-ice-white arabic-text">مساحة العمل</h1>
           </div>
           {/* Tab Buttons */}
           <div className="flex gap-2">
@@ -540,25 +540,25 @@ export default function CoachWorkspace() {
                           <div className="grid grid-cols-2 gap-3 mb-3">
                             {results.activity_score != null && (
                               <div className="bg-white/5 rounded-lg p-3 text-center">
-                                <div className="text-lg font-bold text-teal-prime">{results.activity_score}%</div>
+                                <div className="text-lg font-bold font-display text-teal-prime">{results.activity_score}%</div>
                                 <div className="text-xs text-ice-muted arabic-text">نشاط اللاعب</div>
                               </div>
                             )}
                             {results.touches_estimate != null && (
                               <div className="bg-white/5 rounded-lg p-3 text-center">
-                                <div className="text-lg font-bold text-ice-white">{results.touches_estimate}</div>
+                                <div className="text-lg font-bold font-display text-ice-white">{results.touches_estimate}</div>
                                 <div className="text-xs text-ice-muted arabic-text">لمسات</div>
                               </div>
                             )}
                             {results.speed_estimate_kmh != null && (
                               <div className="bg-white/5 rounded-lg p-3 text-center">
-                                <div className="text-lg font-bold text-ice-white">{results.speed_estimate_kmh}</div>
+                                <div className="text-lg font-bold font-display text-ice-white">{results.speed_estimate_kmh}</div>
                                 <div className="text-xs text-ice-muted arabic-text">كم/س</div>
                               </div>
                             )}
                             {results.possession_involvement != null && (
                               <div className="bg-white/5 rounded-lg p-3 text-center">
-                                <div className="text-lg font-bold text-ice-white">{results.possession_involvement}%</div>
+                                <div className="text-lg font-bold font-display text-ice-white">{results.possession_involvement}%</div>
                                 <div className="text-xs text-ice-muted arabic-text">استحواذ</div>
                               </div>
                             )}
@@ -609,7 +609,7 @@ export default function CoachWorkspace() {
             animate={{ opacity: 1, y: 0 }}
             className="glass-card rounded-2xl p-5 space-y-5"
           >
-            <h2 className="font-bold text-ice-white flex items-center gap-2 arabic-text">
+            <h2 className="font-bold font-display text-ice-white flex items-center gap-2 arabic-text">
               <Swords className="w-5 h-5 text-teal-prime" />
               تحليل المنافس
             </h2>

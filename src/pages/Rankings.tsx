@@ -19,7 +19,7 @@ export default function Rankings() {
     if (rank === 1) return <Crown className="w-5 h-5 text-gold" />;
     if (rank === 2) return <Medal className="w-5 h-5 text-gray-300" />;
     if (rank === 3) return <Award className="w-5 h-5 text-amber-600" />;
-    return <span className="w-5 h-5 flex items-center justify-center text-sm text-ice-muted font-bold">{rank}</span>;
+    return <span className="w-5 h-5 flex items-center justify-center text-sm text-ice-muted font-bold font-display">{rank}</span>;
   };
 
   const getRankBg = (rank: number) => {
@@ -100,7 +100,7 @@ export default function Rankings() {
               <Trophy className="w-4 h-4" />
               <span className="arabic-text">ترتيب المواهب</span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display mb-6">
               <span className="text-gradient-teal arabic-text">ترتيب أفضل المواهب</span>
             </h1>
             <p className="text-ice-muted text-lg max-w-2xl mx-auto arabic-text">
@@ -157,10 +157,10 @@ export default function Rankings() {
                         </div>
                         <div className="text-center mb-3">
                           <div className="text-ice-white font-bold text-sm arabic-text">{player.name}</div>
-                          <div className="text-teal-prime text-xs">{player.rating || '—'}</div>
+                          <div className="text-teal-prime text-xs font-display">{player.rating || '—'}</div>
                         </div>
                         <div className={`w-24 ${heights[i]} rounded-t-xl bg-gradient-to-t from-navy-light to-navy-light/50 border border-teal-prime/20 flex items-center justify-center`}>
-                          <span className="text-2xl font-bold text-gradient-teal">{positions[i]}</span>
+                          <span className="text-2xl font-bold font-display text-gradient-teal">{positions[i]}</span>
                         </div>
                       </motion.div>
                     );
@@ -194,7 +194,7 @@ export default function Rankings() {
                       
                       <div className="flex items-center gap-1 bg-teal-prime/10 px-3 py-1.5 rounded-lg">
                         <Star className="w-4 h-4 text-gold fill-gold" />
-                        <span className="text-teal-prime font-bold">{player.rating || '—'}</span>
+                        <span className="text-teal-prime font-bold font-display">{player.rating || '—'}</span>
                       </div>
                     </div>
                   </motion.div>

@@ -139,7 +139,7 @@ function SectionHeader({ badge, title, subtitle }: { badge: string; title: strin
       <motion.h2 
         variants={fadeInUp}
         custom={1}
-        className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight"
+        className="text-3xl md:text-4xl lg:text-5xl font-bold font-display mb-4 leading-tight"
       >
         <span className="text-gradient-teal">{title}</span>
       </motion.h2>
@@ -250,7 +250,7 @@ function HeroSection() {
             <span className="arabic-text">الجيل القادم من تحليل المواهب الرياضية</span>
           </span>
           
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-display leading-tight mb-6">
             <span className="text-ice-white">نبني المواهب</span>
             <br />
             <span className="text-gradient-teal">بالذكاء الاصطناعي</span>
@@ -269,7 +269,7 @@ function HeroSection() {
               <span className="arabic-text">استكشف المنصة</span>
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             </Link>
-            <Link to="/video-analysis" className="group px-8 py-4 rounded-xl border border-white/10 text-ice-white font-semibold hover:bg-white/5 transition-all duration-300 flex items-center gap-3">
+            <Link to="/video-analysis" className="group px-8 py-4 rounded-xl border border-teal-prime/30 text-teal-prime font-semibold hover:border-teal-prime/60 hover:bg-teal-prime/5 transition-all duration-300 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-teal-prime/20 flex items-center justify-center group-hover:bg-teal-prime/30 transition-colors">
                 <Play className="w-4 h-4 text-teal-prime ml-0.5" />
               </div>
@@ -287,7 +287,7 @@ function HeroSection() {
         >
           {stats.map((stat, i) => (
             <div key={i} className="glass-card rounded-2xl p-6">
-              <div className="text-2xl md:text-3xl font-bold text-gradient-teal mb-1">{stat.value}</div>
+              <div className="text-2xl md:text-3xl font-bold font-display text-gradient-teal mb-1">{stat.value}</div>
               <div className="text-sm text-ice-muted arabic-text">{stat.label}</div>
             </div>
           ))}
@@ -433,7 +433,7 @@ function CTASection() {
           <div className="absolute bottom-0 left-0 w-72 h-72 bg-scout-blue/20 rounded-full blur-[100px]" />
           
           <div className="relative text-center max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display mb-6">
               <span className="text-ice-white arabic-text">اكتشف النجوم </span>
               <span className="text-gradient-teal arabic-text">قبل الجميع</span>
             </h2>
@@ -446,7 +446,7 @@ function CTASection() {
               </Link>
               <Link 
                 to="/rankings"
-                className="px-10 py-4 rounded-xl border border-white/10 text-ice-white font-semibold hover:bg-white/5 transition-all duration-300 arabic-text"
+                className="px-10 py-4 rounded-xl border border-teal-prime/30 text-teal-prime font-semibold hover:border-teal-prime/60 hover:bg-teal-prime/5 transition-all duration-300 arabic-text"
               >
                 استكشف الترتيب
               </Link>

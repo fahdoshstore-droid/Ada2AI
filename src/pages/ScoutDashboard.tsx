@@ -91,7 +91,7 @@ export default function ScoutDashboard() {
               <UserSearch className="w-4 h-4" />
               <span className="arabic-text">لوحة الكشافين</span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display mb-6">
               <span className="text-gradient-teal arabic-text">اكتشف المواهب</span>
               <br />
               <span className="text-ice-white arabic-text">بذكاء اصطناعي متقدم</span>
@@ -217,7 +217,7 @@ export default function ScoutDashboard() {
                           <div className="text-xs text-ice-muted arabic-text">القميص</div>
                         </div>
                         <div className="text-center bg-white/5 rounded-lg p-2">
-                          <div className="text-lg font-bold text-teal-prime">{player.rating || '-'}</div>
+                          <div className="text-lg font-bold font-display text-teal-prime">{player.rating || '-'}</div>
                           <div className="text-xs text-ice-muted arabic-text">التقييم</div>
                         </div>
                       </div>
@@ -314,7 +314,7 @@ export default function ScoutDashboard() {
                 transition={{ delay: i * 0.1 }}
                 className="glass-card rounded-2xl p-6 text-center"
               >
-                <div className="text-2xl md:text-3xl font-bold text-gradient-teal mb-1">{stat.value}</div>
+                <div className="text-2xl md:text-3xl font-bold font-display text-gradient-teal mb-1">{stat.value}</div>
                 <div className="text-sm text-ice-muted arabic-text">{stat.label}</div>
               </motion.div>
             ))}
