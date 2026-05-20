@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, Users, Calendar, TrendingUp, Target, ClipboardList, PlayCircle, Star, AlertCircle } from 'lucide-react';
+import { Dumbbell, Users, Calendar, TrendingUp, Target, ClipboardList, PlayCircle, Star, AlertCircle, Briefcase } from 'lucide-react';
 import { useCoachPlayers } from '../hooks/useCoachPlayers';
 import { useMatches } from '../hooks/useMatches';
 
@@ -47,6 +47,15 @@ export default function CoachDashboard() {
               <br />
               <span className="text-ice-white arabic-text">باحترافية عالية</span>
             </h1>
+            <div className="flex flex-wrap gap-3 mb-4">
+              <button
+                onClick={() => navigate('/coach/workspace')}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text"
+              >
+                <Briefcase className="w-4 h-4" />
+                مساحة العمل
+              </button>
+            </div>
             <p className="text-ice-muted text-lg leading-relaxed max-w-2xl arabic-text">
               أدوات متكاملة لإدارة الفريق، تخطيط التدريبات، تحليل الأداء، 
               واتخاذ قرارات تكتيكية مبنية على البيانات.

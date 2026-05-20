@@ -1,0 +1,513 @@
+/**
+ * Coach Workspace — Ada2AI
+ *
+ * Real workspace for coaches to manage video analysis lifecycle.
+ * No fake AI — buttons trigger actual state changes in video_analyses.
+ *
+ * SECTION A: Pending analyses queue
+ * SECTION B: Inline results form
+ * SECTION C: Completed analyses history
+ */
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
+import {
+  Clock, Loader2, CheckCircle, XCircle,
+  Play, ClipboardList, BarChart3,
+  ChevronDown, ChevronUp, ArrowLeft
+} from 'lucide-react'
+import {
+  usePendingAnalyses,
+  useCompletedAnalyses,
+  useUpdateAnalysisStatus,
+  useSaveAnalysisResults,
+} from '../../hooks/useAnalysis'
+import { type AnalysisResults } from '../../services/analysis'
+
+// ── Status Badge ──────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: string | null }) {
+  const config: Record<string, { icon: typeof Clock; label: string; color: string; spin?: boolean }> = {
+    queued: { icon: Clock, label: 'في الانتظار', color: 'text-amber-400 bg-amber-400/10' },
+    processing: { icon: Loader2, label: 'جارٍ التحليل', color: 'text-blue-400 bg-blue-400/10', spin: true },
+    completed: { icon: CheckCircle, label: 'مكتمل', color: 'text-teal-prime bg-teal-prime/10' },
+    failed: { icon: XCircle, label: 'فشل', color: 'text-red-400 bg-red-400/10' },
+  }
+  const { icon: Icon, label, color, spin } = config[status ?? 'queued'] ?? config.queued
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${color} arabic-text`}>
+      <Icon className={`w-3.5 h-3.5 ${spin ? 'animate-spin' : ''}`} />
+      {label}
+    </span>
+  )
+}
+
+// ── Results Form ──────────────────────────────────────────────
+
+function ResultsForm({
+  analysisId,
+  onSave,
+  onCancel,
+}: {
+  analysisId: string
+  onSave: (id: string, results: AnalysisResults) => void
+  onCancel: () => void
+}) {
+  const [touches, setTouches] = useState('')
+  const [speed, setSpeed] = useState('')
+  const [activityScore, setActivityScore] = useState(50)
+  const [possession, setPossession] = useState(50)
+  const [defensiveZone, setDefensiveZone] = useState(33)
+  const [midZone, setMidZone] = useState(34)
+  const [attackingZone, setAttackingZone] = useState(33)
+  const [notes, setNotes] = useState('')
+
+  const setZone = (zone: 'def' | 'mid' | 'att', val: number) => {
+    if (zone === 'def') setDefensiveZone(val)
+    else if (zone === 'mid') setMidZone(val)
+    else setAttackingZone(val)
+  }
+
+  // Suppress unused warning — setZone is used in JSX below
+
+  const handleSubmit = () => {
+    const results: AnalysisResults = {
+      touches_estimate: touches ? Number(touches) : undefined,
+      speed_estimate_kmh: speed ? Number(speed) : undefined,
+      activity_score: activityScore,
+      possession_involvement: possession,
+      movement_zones: [
+        { zone: 'دفاعي', percentage: defensiveZone },
+        { zone: 'وسط', percentage: midZone },
+        { zone: 'هجومي', percentage: attackingZone },
+      ],
+      notes: notes || undefined,
+    }
+    onSave(analysisId, results)
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      className="bg-white/5 rounded-xl p-4 space-y-4 border border-teal-prime/20"
+    >
+      <h4 className="text-sm font-bold text-teal-prime arabic-text flex items-center gap-2">
+        <ClipboardList className="w-4 h-4" />
+        تسجيل نتائج التحليل
+      </h4>
+
+      <div className="grid grid-cols-2 gap-3">
+        {/* Touches */}
+        <div>
+          <label className="text-xs text-ice-muted arabic-text block mb-1">عدد اللمسات</label>
+          <input
+            type="number"
+            value={touches}
+            onChange={e => setTouches(e.target.value)}
+            placeholder="مثال: 45"
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-ice-white arabic-text focus:border-teal-prime/50 focus:outline-none"
+          />
+        </div>
+
+        {/* Speed */}
+        <div>
+          <label className="text-xs text-ice-muted arabic-text block mb-1">السرعة (كم/س)</label>
+          <input
+            type="number"
+            value={speed}
+            onChange={e => setSpeed(e.target.value)}
+            placeholder="مثال: 28"
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-ice-white arabic-text focus:border-teal-prime/50 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Activity Score Slider */}
+      <div>
+        <div className="flex justify-between text-xs mb-1">
+          <span className="text-ice-muted arabic-text">نشاط اللاعب</span>
+          <span className="text-teal-prime font-medium">{activityScore}%</span>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={activityScore}
+          onChange={e => setActivityScore(Number(e.target.value))}
+          className="w-full accent-teal-prime"
+        />
+      </div>
+
+      {/* Possession Involvement Slider */}
+      <div>
+        <div className="flex justify-between text-xs mb-1">
+          <span className="text-ice-muted arabic-text">مشاركة في الاستحواذ</span>
+          <span className="text-teal-prime font-medium">{possession}%</span>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={possession}
+          onChange={e => setPossession(Number(e.target.value))}
+          className="w-full accent-teal-prime"
+        />
+      </div>
+
+      {/* Movement Zones */}
+      <div>
+        <p className="text-xs text-ice-muted arabic-text mb-2">مناطق التحرك (يجب أن مجموعها 100%)</p>
+        <div className="space-y-2">
+          {[
+            { label: 'دفاعي', value: defensiveZone, setter: (v: number) => setZone('def', v) },
+            { label: 'وسط', value: midZone, setter: (v: number) => setZone('mid', v) },
+            { label: 'هجومي', value: attackingZone, setter: (v: number) => setZone('att', v) },
+          ].map(zone => (
+            <div key={zone.label} className="flex items-center gap-2">
+              <span className="text-xs text-ice-muted arabic-text w-12">{zone.label}</span>
+              <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-teal-prime to-scout-blue rounded-full transition-all"
+                  style={{ width: `${zone.value}%` }}
+                />
+              </div>
+              <span className="text-xs text-ice-white font-medium w-8 text-left">{zone.value}%</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={zone.value}
+                onChange={e => zone.setter(Number(e.target.value))}
+                className="w-16 accent-teal-prime"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Notes */}
+      <div>
+        <label className="text-xs text-ice-muted arabic-text block mb-1">ملاحظات</label>
+        <textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          rows={3}
+          placeholder="أضف ملاحظاتك عن أداء اللاعب..."
+          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-ice-white arabic-text focus:border-teal-prime/50 focus:outline-none resize-none"
+        />
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 pt-2">
+        <button
+          onClick={handleSubmit}
+          className="px-6 py-2 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text"
+        >
+          حفظ النتائج
+        </button>
+        <button
+          onClick={onCancel}
+          className="px-4 py-2 rounded-xl glass-card text-ice-muted text-sm hover:text-ice-white transition-colors arabic-text"
+        >
+          إلغاء
+        </button>
+      </div>
+    </motion.div>
+  )
+}
+
+// ── Main Component ────────────────────────────────────────────
+
+export default function CoachWorkspace() {
+  const navigate = useNavigate()
+  const { analyses: pending, loading: loadingPending } = usePendingAnalyses()
+  const { analyses: completed, loading: loadingCompleted } = useCompletedAnalyses()
+  const updateStatus = useUpdateAnalysisStatus()
+  const saveResults = useSaveAnalysisResults()
+
+  const [activeFormId, setActiveFormId] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  const handleStartProcessing = (id: string) => {
+    updateStatus.mutate({ id, status: 'processing' })
+  }
+
+  const handleMarkFailed = (id: string) => {
+    updateStatus.mutate({ id, status: 'failed' })
+  }
+
+  const handleSaveResults = (id: string, results: AnalysisResults) => {
+    saveResults.mutate(
+      { id, results },
+      {
+        onSuccess: () => {
+          setActiveFormId(null)
+        },
+      }
+    )
+  }
+
+  return (
+    <div dir="rtl" className="min-h-screen bg-navy">
+      <div className="absolute inset-0 bg-gradient-radial opacity-30" />
+      <div className="absolute inset-0 grid-pattern opacity-10" />
+
+      <div className="relative max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/coach')}
+              className="flex items-center gap-1.5 text-ice-muted text-sm hover:text-ice-white transition-colors arabic-text"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              رجوع
+            </button>
+          </div>
+          <h1 className="text-xl font-bold text-ice-white arabic-text">مساحة العمل</h1>
+        </div>
+
+        {/* ── SECTION A: Pending Analyses ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card rounded-2xl p-5"
+        >
+          <h2 className="font-bold text-ice-white flex items-center gap-2 mb-4 arabic-text">
+            <Clock className="w-5 h-5 text-amber-400" />
+            تحليلات قيد الانتظار
+          </h2>
+
+          {loadingPending ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 text-teal-prime animate-spin" />
+            </div>
+          ) : pending.length === 0 ? (
+            <div className="text-center py-8">
+              <CheckCircle className="w-10 h-10 text-teal-prime mx-auto mb-2" />
+              <p className="text-ice-muted text-sm arabic-text">لا توجد تحليلات معلقة حالياً</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {pending.map((analysis) => (
+                <div key={analysis.id} className="bg-white/5 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-prime/20 to-scout-blue/20 flex items-center justify-center">
+                        <Play className="w-5 h-5 text-teal-prime" />
+                      </div>
+                      <div>
+                        <p className="text-ice-white text-sm font-medium arabic-text">
+                          {analysis.title || 'تحليل فيديو'}
+                        </p>
+                        <p className="text-ice-muted text-xs arabic-text">
+                          {analysis.created_at
+                            ? new Date(analysis.created_at).toLocaleDateString('ar-SA')
+                            : '—'}
+                        </p>
+                      </div>
+                    </div>
+                    <StatusBadge status={analysis.status} />
+                  </div>
+
+                  {/* Video thumbnail or URL link */}
+                  {analysis.video_url && (
+                    <p className="text-xs text-ice-muted truncate mb-2" dir="ltr">
+                      {analysis.video_url}
+                    </p>
+                  )}
+
+                  {/* Action buttons */}
+                  <div className="flex gap-2">
+                    {analysis.status === 'queued' && (
+                      <button
+                        onClick={() => handleStartProcessing(analysis.id)}
+                        disabled={updateStatus.isPending}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-prime/10 text-teal-prime text-xs font-medium hover:bg-teal-prime/20 transition-colors arabic-text disabled:opacity-50"
+                      >
+                        <Play className="w-3.5 h-3.5" />
+                        بدء التحليل
+                      </button>
+                    )}
+                    {analysis.status === 'processing' && (
+                      <>
+                        <button
+                          onClick={() => setActiveFormId(analysis.id)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-prime/10 text-teal-prime text-xs font-medium hover:bg-teal-prime/20 transition-colors arabic-text"
+                        >
+                          <ClipboardList className="w-3.5 h-3.5" />
+                          تسجيل النتائج
+                        </button>
+                        <button
+                          onClick={() => handleMarkFailed(analysis.id)}
+                          disabled={updateStatus.isPending}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-400/10 text-red-400 text-xs font-medium hover:bg-red-400/20 transition-colors arabic-text disabled:opacity-50"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          فشل التحليل
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Inline Results Form */}
+                  <AnimatePresence>
+                    {activeFormId === analysis.id && (
+                      <div className="mt-3">
+                        <ResultsForm
+                          analysisId={analysis.id}
+                          onSave={handleSaveResults}
+                          onCancel={() => setActiveFormId(null)}
+                        />
+                      </div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+
+        {/* ── SECTION C: Completed Analyses ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="glass-card rounded-2xl p-5"
+        >
+          <h2 className="font-bold text-ice-white flex items-center gap-2 mb-4 arabic-text">
+            <BarChart3 className="w-5 h-5 text-teal-prime" />
+            التحليلات المكتملة
+          </h2>
+
+          {loadingCompleted ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 text-teal-prime animate-spin" />
+            </div>
+          ) : completed.length === 0 ? (
+            <div className="text-center py-8">
+              <BarChart3 className="w-10 h-10 text-ice-muted mx-auto mb-2" />
+              <p className="text-ice-muted text-sm arabic-text">لا توجد تحليلات مكتملة بعد</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {completed.map((analysis) => {
+                const results = analysis.analysis_data
+                const isExpanded = expandedId === analysis.id
+
+                return (
+                  <div key={analysis.id} className="bg-white/5 rounded-xl p-4">
+                    <div
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => setExpandedId(isExpanded ? null : analysis.id)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="w-5 h-5 text-teal-prime flex-shrink-0" />
+                        <div>
+                          <p className="text-ice-white text-sm font-medium arabic-text">
+                            {analysis.title || 'تحليل فيديو'}
+                          </p>
+                          <p className="text-ice-muted text-xs arabic-text">
+                            {analysis.updated_at
+                              ? new Date(analysis.updated_at).toLocaleDateString('ar-SA')
+                              : '—'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={analysis.status} />
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigate(`/player/${analysis.uploaded_by}`)
+                          }}
+                          className="text-xs text-teal-prime hover:underline arabic-text"
+                        >
+                          عرض اللاعب
+                        </button>
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-ice-muted" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-ice-muted" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Expanded Results */}
+                    <AnimatePresence>
+                      {isExpanded && results && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-3 pt-3 border-t border-white/5"
+                        >
+                          <div className="grid grid-cols-2 gap-3 mb-3">
+                            {results.activity_score != null && (
+                              <div className="bg-white/5 rounded-lg p-3 text-center">
+                                <div className="text-lg font-bold text-teal-prime">{results.activity_score}%</div>
+                                <div className="text-xs text-ice-muted arabic-text">نشاط اللاعب</div>
+                              </div>
+                            )}
+                            {results.touches_estimate != null && (
+                              <div className="bg-white/5 rounded-lg p-3 text-center">
+                                <div className="text-lg font-bold text-ice-white">{results.touches_estimate}</div>
+                                <div className="text-xs text-ice-muted arabic-text">لمسات</div>
+                              </div>
+                            )}
+                            {results.speed_estimate_kmh != null && (
+                              <div className="bg-white/5 rounded-lg p-3 text-center">
+                                <div className="text-lg font-bold text-ice-white">{results.speed_estimate_kmh}</div>
+                                <div className="text-xs text-ice-muted arabic-text">كم/س</div>
+                              </div>
+                            )}
+                            {results.possession_involvement != null && (
+                              <div className="bg-white/5 rounded-lg p-3 text-center">
+                                <div className="text-lg font-bold text-ice-white">{results.possession_involvement}%</div>
+                                <div className="text-xs text-ice-muted arabic-text">استحواذ</div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Movement Zones */}
+                          {results.movement_zones && results.movement_zones.length > 0 && (
+                            <div className="space-y-1.5 mb-3">
+                              <p className="text-xs text-ice-muted arabic-text">مناطق التحرك</p>
+                              {results.movement_zones.map((zone) => (
+                                <div key={zone.zone} className="flex items-center gap-2">
+                                  <span className="text-xs text-ice-muted arabic-text w-12">{zone.zone}</span>
+                                  <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full bg-gradient-to-r from-teal-prime to-scout-blue rounded-full"
+                                      style={{ width: `${zone.percentage}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-xs text-ice-white font-medium w-8">{zone.percentage}%</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Notes */}
+                          {results.notes && (
+                            <div className="bg-white/5 rounded-lg p-3">
+                              <p className="text-xs text-ice-muted arabic-text mb-1">ملاحظات المدرب</p>
+                              <p className="text-sm text-ice-white arabic-text">{results.notes}</p>
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </motion.div>
+      </div>
+    </div>
+  )
+}

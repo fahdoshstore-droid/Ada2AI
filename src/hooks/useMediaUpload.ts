@@ -12,6 +12,7 @@ import { useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { updatePlayerVideoUrl } from '../services/players'
+import { createAnalysisRecord } from '../services/analysis'
 import { trackEvent } from '../lib/analytics'
 
 // ── Types ──────────────────────────────────────
@@ -129,6 +130,13 @@ export function useMediaUpload() {
         throw new Error('فشل حفظ البيانات. حاول مجدداً')
       }
 
+      // Create analysis record so coach can pick it up — don't break upload if this fails
+      try {
+        await createAnalysisRecord(playerId, publicUrl)
+      } catch (analysisErr: any) {
+        console.warn('[MediaUpload] createAnalysisRecord failed (non-fatal):', analysisErr?.message)
+      }
+
       trackEvent('upload_success', { playerId })
       return { publicUrl, path: uploadData.path }
     },
@@ -137,6 +145,8 @@ export function useMediaUpload() {
       // Invalidate player queries so they refetch fresh data
       queryClient.invalidateQueries({ queryKey: ['players'] })
       queryClient.invalidateQueries({ queryKey: ['scout-players'] })
+      // Invalidate analysis queries so workspace picks up the new record
+      queryClient.invalidateQueries({ queryKey: ['analyses'] })
     },
     onError: (error) => {
       trackEvent('upload_failed', { reason: error.message })

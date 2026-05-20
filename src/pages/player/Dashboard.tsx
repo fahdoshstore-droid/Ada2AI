@@ -15,11 +15,12 @@ import { motion } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase, type Player, type Evaluation } from '../../lib/supabase'
 import { trackEvent } from '../../lib/analytics'
+import { usePlayerAnalyses } from '../../hooks/useAnalysis'
 import {
   User, Video, BarChart3, MessageSquare,
   Upload, Share2, Star, CheckCircle,
   Clock, AlertCircle, ChevronRight,
-  Trophy, Loader2
+  Trophy, Loader2, Activity
 } from 'lucide-react'
 
 // ── Analysis Status Badge ──────────────────────────────────────
@@ -73,6 +74,9 @@ export default function PlayerDashboard() {
   const [loadingPlayer, setLoadingPlayer] = useState(true)
   const [copied, setCopied] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
+
+  // Video analyses (real data from video_analyses table)
+  const { analyses: videoAnalyses } = usePlayerAnalyses(user?.id ?? '')
 
   // Fetch player record
   useEffect(() => {
@@ -344,6 +348,158 @@ export default function PlayerDashboard() {
             </div>
           )}
         </motion.div>
+
+        {/* ── ANALYSIS RESULTS (real data from video_analyses) ── */}
+        {videoAnalyses.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="glass-card rounded-2xl p-5"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-ice-white flex items-center gap-2 arabic-text">
+                <Activity className="w-4 h-4 text-teal-prime" />
+                نتائج التحليل
+              </h2>
+              <AnalysisBadge
+                status={
+                  videoAnalyses.find(a => a.status === 'completed')
+                    ? 'completed'
+                    : videoAnalyses.find(a => a.status === 'processing')
+                      ? 'processing'
+                      : videoAnalyses.find(a => a.status === 'queued')
+                        ? 'pending'
+                        : 'none'
+                }
+              />
+            </div>
+
+            {(() => {
+              const completed = videoAnalyses.find(a => a.status === 'completed' && a.analysis_data)
+              if (!completed?.analysis_data) {
+                return (
+                  <div className="text-center py-6">
+                    <p className="text-ice-muted text-sm arabic-text mb-3">لم يتم تحليل أي فيديو بعد</p>
+                    <button
+                      onClick={() => navigate('/player/upload')}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-prime/10 text-teal-prime text-sm font-medium hover:bg-teal-prime/20 transition-colors arabic-text mx-auto"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      ارفع فيديو
+                    </button>
+                  </div>
+                )
+              }
+
+              const results = completed.analysis_data
+              return (
+                <div className="space-y-4">
+                  {/* Quick stats grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {results.activity_score != null && (
+                      <div className="bg-white/5 rounded-xl p-3 text-center">
+                        <div className="text-2xl font-black text-gradient-teal">{results.activity_score}%</div>
+                        <div className="text-xs text-ice-muted arabic-text">نشاط اللاعب</div>
+                      </div>
+                    )}
+                    {results.touches_estimate != null && (
+                      <div className="bg-white/5 rounded-xl p-3 text-center">
+                        <div className="text-2xl font-bold text-ice-white">{results.touches_estimate}</div>
+                        <div className="text-xs text-ice-muted arabic-text">لمسات</div>
+                      </div>
+                    )}
+                    {results.speed_estimate_kmh != null && (
+                      <div className="bg-white/5 rounded-xl p-3 text-center">
+                        <div className="text-2xl font-bold text-ice-white">{results.speed_estimate_kmh}</div>
+                        <div className="text-xs text-ice-muted arabic-text">كم/س سرعة</div>
+                      </div>
+                    )}
+                    {results.possession_involvement != null && (
+                      <div className="bg-white/5 rounded-xl p-3 text-center">
+                        <div className="text-2xl font-bold text-ice-white">{results.possession_involvement}%</div>
+                        <div className="text-xs text-ice-muted arabic-text">استحواذ</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Activity Score Progress Bar */}
+                  {results.activity_score != null && (
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-ice-muted arabic-text">نشاط اللاعب</span>
+                        <span className="text-teal-prime font-medium">{results.activity_score}%</span>
+                      </div>
+                      <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${results.activity_score}%` }}
+                          transition={{ duration: 1.2 }}
+                          className="h-full bg-gradient-to-r from-teal-prime to-scout-blue rounded-full"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Movement Zones */}
+                  {results.movement_zones && results.movement_zones.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-ice-muted arabic-text">مناطق التحرك</p>
+                      {results.movement_zones.map((zone) => (
+                        <div key={zone.zone} className="flex items-center gap-2">
+                          <span className="text-xs text-ice-muted arabic-text w-12">{zone.zone}</span>
+                          <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${zone.percentage}%` }}
+                              transition={{ duration: 0.8, delay: 0.3 }}
+                              className="h-full bg-gradient-to-r from-teal-prime to-scout-blue rounded-full"
+                            />
+                          </div>
+                          <span className="text-xs text-ice-white font-medium w-8">{zone.percentage}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Coach Notes */}
+                  {results.notes && (
+                    <div className="bg-white/5 rounded-xl p-3">
+                      <p className="text-xs text-ice-muted arabic-text mb-1">ملاحظات المدرب</p>
+                      <p className="text-sm text-ice-white arabic-text">{results.notes}</p>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
+          </motion.div>
+        )}
+
+        {videoAnalyses.length === 0 && playerRecord.video_url && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="glass-card rounded-2xl p-5"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-ice-white flex items-center gap-2 arabic-text">
+                <Activity className="w-4 h-4 text-teal-prime" />
+                نتائج التحليل
+              </h2>
+            </div>
+            <div className="text-center py-6">
+              <p className="text-ice-muted text-sm arabic-text mb-3">لم يتم تحليل أي فيديو بعد</p>
+              <button
+                onClick={() => navigate('/player/upload')}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-prime/10 text-teal-prime text-sm font-medium hover:bg-teal-prime/20 transition-colors arabic-text mx-auto"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                ارفع فيديو
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         {/* ── COACH NOTES ── */}
         {latestEval?.notes && (

@@ -36,6 +36,7 @@ const PlayerUpload = React.lazy(() => import('./pages/player/Upload'))
 
 // Coach tools
 const EvaluationForm = React.lazy(() => import('./pages/coach/EvaluationForm'))
+const CoachWorkspace = React.lazy(() => import('./pages/coach/Workspace'))
 
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-navy flex items-center justify-center">
@@ -173,6 +174,14 @@ export default function App() {
               <ProtectedRoute allowedRoles={['coach']}>
                 <ErrorBoundary fallback={<RouteErrorFallback />}>
                   <EvaluationForm />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/coach/workspace" element={
+              <ProtectedRoute allowedRoles={['coach']}>
+                <ErrorBoundary fallback={<RouteErrorFallback />}>
+                  <CoachWorkspace />
                 </ErrorBoundary>
               </ProtectedRoute>
             } />
