@@ -537,16 +537,16 @@ export default function PlayerDashboard() {
           transition={{ delay: 0.4 }}
           className="glass-card rounded-2xl p-5"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="font-medium text-ice-white arabic-text">طلب مراجعة كاشف</h3>
-              <p className="text-xs text-ice-muted mt-0.5 arabic-text">
+              <p className="text-xs text-ice-muted mt-1 arabic-text">
                 أرسل ملفك للكشافين المسجلين في المنصة
               </p>
             </div>
             <button
               onClick={() => trackEvent('scoutReviewRequested')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-prime/10 text-teal-prime text-sm font-medium hover:bg-teal-prime/20 transition-colors arabic-text"
+              className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-teal-prime/10 text-teal-prime text-sm font-medium hover:bg-teal-prime/20 transition-colors arabic-text w-full sm:w-auto flex-shrink-0"
             >
               إرسال
               <ChevronRight className="w-4 h-4" />

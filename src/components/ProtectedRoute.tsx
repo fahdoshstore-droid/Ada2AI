@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 const PROFILE_TIMEOUT_MS = 5000
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, profile, loading, profileError, refreshProfile } = useAuth()
+  const { user, profile, loading, profileError, refreshProfile, signOut } = useAuth()
   const [profileTimedOut, setProfileTimedOut] = useState(false)
 
   // If user is authenticated but profile is null, start a timeout
@@ -51,12 +51,28 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
           <p className="text-ice-muted arabic-text text-sm mb-4">
             {profileError || 'تعذر تحميل بيانات الملف الشخصي. يرجى المحاولة مرة أخرى.'}
           </p>
-          <button
-            onClick={() => { setProfileTimedOut(false); refreshProfile() }}
-            className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-semibold arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all"
-          >
-            إعادة المحاولة
-          </button>
+          <div className="flex flex-col gap-2 mt-2">
+            <button
+              onClick={() => { setProfileTimedOut(false); refreshProfile() }}
+              className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-semibold arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all"
+            >
+              إعادة المحاولة
+            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => window.location.href = '/'}
+                className="flex-1 px-4 py-2 rounded-lg border border-ice-muted/20 text-ice-muted text-sm arabic-text hover:bg-white/5 transition-colors"
+              >
+                العودة للرئيسية
+              </button>
+              <button
+                onClick={() => { signOut(); window.location.href = '/login' }}
+                className="flex-1 px-4 py-2 rounded-lg border border-red-500/30 text-red-400 text-sm arabic-text hover:bg-red-500/10 transition-colors"
+              >
+                تسجيل الخروج
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     )

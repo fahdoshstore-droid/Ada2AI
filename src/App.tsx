@@ -39,6 +39,7 @@ const PlayerUpload = React.lazy(() => import('./pages/player/Upload'))
 // Coach tools
 const EvaluationForm = React.lazy(() => import('./pages/coach/EvaluationForm'))
 const CoachWorkspace = React.lazy(() => import('./pages/coach/Workspace'))
+const RawdhaDashboard = React.lazy(() => import('./pages/club/RawdhaDashboard'))
 
 // Admin
 const AdminDashboard = React.lazy(() => import('./pages/admin/Dashboard'))
@@ -195,6 +196,15 @@ export default function App() {
               <ProtectedRoute allowedRoles={['coach']}>
                 <ErrorBoundary fallback={<RouteErrorFallback />}>
                   <CoachWorkspace />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            } />
+
+            {/* Club Dashboard */}
+            <Route path="/club/rawdha" element={
+              <ProtectedRoute>
+                <ErrorBoundary fallback={<RouteErrorFallback />}>
+                  <RawdhaDashboard />
                 </ErrorBoundary>
               </ProtectedRoute>
             } />

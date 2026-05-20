@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = useCallback(async (userId: string, signal?: AbortSignal) => {
     const startTime = Date.now()
     try {
-      // Race: Supabase query vs 8s timeout
+      // Race: Supabase query vs 5s timeout (mobile-friendly)
       const queryPromise = supabase
         .from('profiles')
         .select('*')
@@ -36,17 +36,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle()
 
       const timeoutPromise = new Promise<never>((_, reject) => {
-        const t = setTimeout(() => reject(new Error('fetchProfile timeout (8s)')), 8000)
+        const t = setTimeout(() => reject(new Error('timeout')), 5000)
         signal?.addEventListener('abort', () => { clearTimeout(t); reject(new Error('aborted')) }, { once: true })
       })
 
       const { data, error } = await Promise.race([queryPromise, timeoutPromise])
-        .catch(e => ({ data: null, error: { message: e.message, code: 'TIMEOUT', details: null } }))
+        .catch(e => {
+          const msg = e?.message ?? ''
+          if (msg === 'timeout') return { data: null, error: { message: 'انتهت مهلة الاتصال — تحقق من الإنترنت', code: 'TIMEOUT', details: null } }
+          if (msg === 'aborted') return { data: null, error: { message: 'تم إلغاء الطلب', code: 'ABORTED', details: null } }
+          return { data: null, error: { message: e?.message ?? 'خطأ غير متوقع', code: 'UNKNOWN', details: null } }
+        })
 
       if (error) {
         console.error('[AUTH] fetchProfile error:', error.message, error.code, error.details)
         setProfile(null)
-        setProfileError(`فشل تحميل الملف الشخصي: ${error.message}`)
+        setProfileError(error.message)
         trackEvent('profileLoadError', { durationMs: Date.now() - startTime, reason: error.message })
       } else if (!data) {
         setProfile(null)

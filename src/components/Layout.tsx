@@ -14,6 +14,7 @@ const navLinks = [
       { name: 'لوحة الكشافين', path: '/scout', icon: 'person_search', desc: 'اكتشاف المواهب' },
       { name: 'لوحة المدربين', path: '/coach', icon: 'sports', desc: 'إدارة الفريق' },
       { name: 'لوحة المنشآت', path: '/organizations', icon: 'groups', desc: 'إدارة اللاعبين' },
+      { name: 'نادي الروضة', path: '/club/rawdha', icon: 'stadium', desc: 'لوحة تحكم النادي' },
     ]
   },
   { name: 'الترتيب', path: '/rankings' },
@@ -98,6 +99,7 @@ export default function Layout() {
                               {item.icon === 'person_search' && '\uEf3c'}
                               {item.icon === 'sports' && '\uEA43'}
                               {item.icon === 'groups' && '\uEf3d'}
+                              {item.icon === 'stadium' && '\uEA66'}
                             </span>
                           </div>
                           <div>
