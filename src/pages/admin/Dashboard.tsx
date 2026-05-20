@@ -3,20 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Users, Video, BarChart3, Briefcase, Search,
-  RefreshCw, Eye, Edit3, X, AlertCircle, CheckCircle2, Clock, Loader2,
+  RefreshCw, Eye, Edit3, X, AlertCircle, CheckCircle2, Loader2,
 } from 'lucide-react'
 import { useClubPlayers, useSearchClubPlayers, useUpdateClubPlayer, useClubAnalyses, useRetryAnalysis, useClubStats } from '../../hooks/useAdmin'
 import type { Player } from '../../lib/supabase'
 import type { AnalysisResults } from '../../services/analysis'
+import { StatusBadge } from '../../components/StatusBadge'
+import type { StatusKey } from '../../lib/tokens'
 
 type Tab = 'players' | 'analyses' | 'stats' | 'workspace'
-
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  queued: { label: 'في الانتظار', color: 'bg-amber-400/10 text-amber-400', icon: <Clock className="w-3 h-3" /> },
-  processing: { label: 'جارٍ التحليل', color: 'bg-blue-400/10 text-blue-400', icon: <Loader2 className="w-3 h-3 animate-spin" /> },
-  completed: { label: 'مكتمل', color: 'bg-teal-400/10 text-teal-400', icon: <CheckCircle2 className="w-3 h-3" /> },
-  failed: { label: 'فشل', color: 'bg-red-400/10 text-red-400', icon: <AlertCircle className="w-3 h-3" /> },
-}
 
 function EditPlayerModal({ player, onClose }: { player: Player; onClose: () => void }) {
   const updatePlayerMutation = useUpdateClubPlayer()
@@ -277,17 +272,13 @@ export default function AdminDashboard() {
             ) : (
               <div className="space-y-3">
                 {analyses.map(analysis => {
-                  const statusCfg = STATUS_CONFIG[analysis.status ?? 'queued'] ?? STATUS_CONFIG.queued
                   const results = (analysis.analysis_data ?? {}) as AnalysisResults
 
                   return (
                     <div key={analysis.id} className="glass-card rounded-xl p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg arabic-text ${statusCfg.color}`}>
-                            {statusCfg.icon}
-                            {statusCfg.label}
-                          </div>
+                          <StatusBadge status={(analysis.status ?? 'queued') as StatusKey} />
                           <div>
                             <p className="text-ice-white text-sm arabic-text">{analysis.title || 'تحليل فيديو'}</p>
                             <p className="text-ice-muted text-xs arabic-text">{analysis.created_at ? new Date(analysis.created_at).toLocaleDateString('ar-SA') : '-'}</p>

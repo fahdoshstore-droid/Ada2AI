@@ -7,6 +7,7 @@ module.exports = {
       fontFamily: {
         sans: ['Plus Jakarta Sans', 'Noto Kufi Arabic', 'system-ui', 'sans-serif'],
         arabic: ['Noto Kufi Arabic', 'system-ui', 'sans-serif'],
+        display: ['Barlow Condensed', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -38,10 +39,10 @@ module.exports = {
           light: "#E5C84B",
         },
         status: {
-          queued: "#f5a623",
-          processing: "#007aba",
-          completed: "#00c2a8",
-          failed: "#e74c3c",
+          queued: '#F59E0B',
+          processing: '#3B82F6',
+          completed: '#00C2A8',
+          failed: '#EF4444',
         },
         role: {
           player: "#00c2a8",

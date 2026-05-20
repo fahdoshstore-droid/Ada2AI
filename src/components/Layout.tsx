@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown, LogOut, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { Logo } from './Logo';
+import { AdaLogo } from './AdaLogo';
 
 const navLinks = [
   { name: 'الرئيسية', path: '/' },
@@ -53,7 +53,7 @@ export default function Layout() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <Logo size="md" variant="full" />
+              <AdaLogo size={36} showText={true} />
               <span className="text-[10px] lg:text-xs text-ice-muted -mt-1 arabic-text hidden sm:block">منصة اكتشاف المواهب</span>
             </Link>
 
@@ -238,7 +238,7 @@ export default function Layout() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {/* Brand */}
             <div className="space-y-4">
-              <Logo size="sm" variant="full" />
+              <AdaLogo size={28} showText={true} />
               <p className="text-ice-muted text-sm leading-relaxed arabic-text">
                 منصة سعودية رائدة في اكتشاف وتحليل المواهب الرياضية باستخدام الذكاء الاصطناعي. نبني المواهب بالتقنية.
               </p>

@@ -1,9 +1,9 @@
 export const statusColors = {
-  queued:     { bg: 'rgba(245,166,35,0.1)',  border: 'rgba(245,166,35,0.25)',  text: '#f5a623' },
-  processing: { bg: 'rgba(0,122,186,0.1)',   border: 'rgba(0,122,186,0.25)',   text: '#007aba' },
-  completed:  { bg: 'rgba(0,194,168,0.1)',   border: 'rgba(0,194,168,0.25)',   text: '#00c2a8' },
-  failed:     { bg: 'rgba(231,76,60,0.1)',   border: 'rgba(231,76,60,0.25)',   text: '#e74c3c' },
-  pending:    { bg: 'rgba(160,180,204,0.1)', border: 'rgba(160,180,204,0.2)',  text: '#a0b4cc' },
+  queued:     { bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.2)',  text: '#F59E0B' },
+  processing: { bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.2)',  text: '#3B82F6' },
+  completed:  { bg: 'rgba(0,194,168,0.1)',    border: 'rgba(0,194,168,0.2)',   text: '#00C2A8' },
+  failed:     { bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.2)',   text: '#EF4444' },
+  pending:    { bg: 'rgba(160,180,204,0.1)', border: 'rgba(160,180,204,0.2)', text: '#a0b4cc' },
 } as const
 
 export type StatusKey = keyof typeof statusColors

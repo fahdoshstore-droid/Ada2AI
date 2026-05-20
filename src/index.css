@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100;200;300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -53,6 +53,31 @@
     --sidebar-accent-foreground: 213 50% 97%;
     --sidebar-border: 210 30% 18%;
     --sidebar-ring: 170 100% 38%;
+
+    /* Ada2AI Status Colors — Analysis Lifecycle */
+    --status-queued: #F59E0B;
+    --status-queued-bg: rgba(245, 158, 11, 0.1);
+    --status-queued-border: rgba(245, 158, 11, 0.2);
+
+    --status-processing: #3B82F6;
+    --status-processing-bg: rgba(59, 130, 246, 0.1);
+    --status-processing-border: rgba(59, 130, 246, 0.2);
+
+    --status-completed: #00C2A8;
+    --status-completed-bg: rgba(0, 194, 168, 0.1);
+    --status-completed-border: rgba(0, 194, 168, 0.2);
+
+    --status-failed: #EF4444;
+    --status-failed-bg: rgba(239, 68, 68, 0.1);
+    --status-failed-border: rgba(239, 68, 68, 0.2);
+
+    /* Ada2AI Spacing Scale */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-8: 32px;
   }
 }
 
@@ -191,6 +216,63 @@
   
   .arabic-text {
     font-family: 'Noto Kufi Arabic', system-ui, sans-serif;
+  }
+
+  /* Status Badge System — يُستخدم في كل الصفحات */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  .status-badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  .status-queued {
+    color: var(--status-queued);
+    background: var(--status-queued-bg);
+    border-color: var(--status-queued-border);
+  }
+
+  .status-processing {
+    color: var(--status-processing);
+    background: var(--status-processing-bg);
+    border-color: var(--status-processing-border);
+    animation: pulse-status 2s ease-in-out infinite;
+  }
+
+  .status-completed {
+    color: var(--status-completed);
+    background: var(--status-completed-bg);
+    border-color: var(--status-completed-border);
+  }
+
+  .status-failed {
+    color: var(--status-failed);
+    background: var(--status-failed-bg);
+    border-color: var(--status-failed-border);
+  }
+
+  @keyframes pulse-status {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* Ada2AI Logo font utility */
+  .font-display {
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    letter-spacing: -0.02em;
   }
 }
 
