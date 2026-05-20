@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown, LogOut, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { AdaLogo } from './AdaLogo';
@@ -22,10 +22,16 @@ const navLinks = [
 
 export default function Layout() {
   const { user, signOut } = useAuth()
+  const navigate = useNavigate()
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
+
+  const handleLogout = async () => {
+    await signOut()
+    navigate('/login', { replace: true })
+  }
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -120,7 +126,7 @@ export default function Layout() {
                     <span className="arabic-text truncate max-w-[150px]">{user.email}</span>
                   </Link>
                   <button 
-                    onClick={() => signOut()}
+                    onClick={handleLogout}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all duration-300"
                   >
                     <LogOut className="w-4 h-4" />
@@ -198,7 +204,7 @@ export default function Layout() {
                       <span className="arabic-text">مرحباً، {user.email}</span>
                     </Link>
                     <button 
-                      onClick={() => signOut()}
+                      onClick={handleLogout}
                       className="block w-full text-center px-5 py-3 rounded-lg text-sm font-semibold border border-red-500/30 text-red-400 hover:bg-red-500/10"
                     >
                       خروج

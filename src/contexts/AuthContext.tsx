@@ -114,11 +114,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut().catch(() => null)
-    setUser(null)
-    setProfile(null)
-    setSession(null)
-    setProfileError(null)
+    try {
+      await supabase.auth.signOut()
+    } catch {
+      // silent — session may already be invalid
+    } finally {
+      setUser(null)
+      setProfile(null)
+      setSession(null)
+      setProfileError(null)
+      trackEvent('auth_signed_out')
+    }
   }, [])
 
   const refreshProfile = useCallback(async () => {

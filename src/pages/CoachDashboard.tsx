@@ -45,7 +45,7 @@ export default function CoachDashboard() {
               <Dumbbell className="w-4 h-4" />
               <span className="arabic-text">لوحة المدربين</span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display mb-6">
               <span className="text-gradient-teal arabic-text">إدارة فريقك</span>
               <br />
               <span className="text-ice-white arabic-text">باحترافية عالية</span>
@@ -126,7 +126,7 @@ export default function CoachDashboard() {
                       </div>
                       <span className="text-sm text-ice-muted arabic-text">{stat.label}</span>
                     </div>
-                    <div className="text-3xl font-bold text-ice-white">{stat.value}</div>
+                    <div className="text-3xl font-bold font-display text-ice-white">{stat.value}</div>
                   </motion.div>
                 );
               })}
@@ -167,7 +167,7 @@ export default function CoachDashboard() {
                               <span className="text-ice-white font-medium arabic-text">{match.home_team && match.away_team ? `${match.home_team} vs ${match.away_team}` : 'مباراة'}</span>
                             </div>
                             <div className="flex items-center gap-4">
-                              <span className="text-ice-white font-bold">{score}</span>
+                              <span className="text-ice-white font-bold font-display">{score}</span>
                               <span className={`text-xs px-2 py-1 rounded-lg ${
                                 isWin ? 'bg-green-400/10 text-green-400' : 
                                 isDraw ? 'bg-gold/10 text-gold' : 'bg-red-400/10 text-red-400'
@@ -219,13 +219,13 @@ export default function CoachDashboard() {
                             {player.age && (
                               <div className="text-center">
                                 <div className="text-xs text-ice-muted arabic-text">العمر</div>
-                                <div className="text-ice-white font-bold">{player.age}</div>
+                                <div className="text-ice-white font-bold font-display">{player.age}</div>
                               </div>
                             )}
                             {player.height_cm && (
                               <div className="text-center">
                                 <div className="text-xs text-ice-muted arabic-text">الطول</div>
-                                <div className="text-ice-white font-bold">{player.height_cm}</div>
+                                <div className="text-ice-white font-bold font-display">{player.height_cm}</div>
                               </div>
                             )}
                             <button
