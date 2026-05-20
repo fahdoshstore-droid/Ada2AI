@@ -54,6 +54,7 @@ export function AdaLogo({
             lineHeight: 1,
             display: 'flex',
             alignItems: 'baseline',
+            direction: 'ltr',
           }}
         >
           <span style={{ color: textColor }}>Ada</span>
