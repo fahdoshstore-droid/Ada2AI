@@ -23,6 +23,12 @@ export interface AnalysisResults {
   activity_score?: number
   possession_involvement?: number
   notes?: string
+  // YOLO backend fields (v1)
+  heatmap?: number[][]
+  total_detections?: number
+  duration_seconds?: number
+  version?: string
+  error?: string
 }
 
 export interface VideoAnalysis {
