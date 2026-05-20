@@ -37,6 +37,18 @@ module.exports = {
           DEFAULT: "#D4AF37",
           light: "#E5C84B",
         },
+        status: {
+          queued: "#f5a623",
+          processing: "#007aba",
+          completed: "#00c2a8",
+          failed: "#e74c3c",
+        },
+        role: {
+          player: "#00c2a8",
+          coach: "#d4af37",
+          scout: "#007aba",
+          admin: "#9b59b6",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

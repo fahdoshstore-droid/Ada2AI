@@ -135,6 +135,44 @@
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
+
+  .text-label-caps {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(240,246,255,0.4);
+  }
+
+  .accent-line {
+    width: 4px;
+    height: 20px;
+    background: #00C2A8;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .brand-glow {
+    box-shadow: 0 0 20px rgba(0,194,168,0.15), 0 0 40px rgba(0,194,168,0.05);
+  }
+
+  .op-card {
+    background: rgba(13,31,53,0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0,194,168,0.12);
+    border-radius: 16px;
+    padding: 20px;
+  }
+
+  .op-card-hover {
+    transition: all 0.25s ease;
+  }
+
+  .op-card-hover:hover {
+    border-color: rgba(0,194,168,0.3);
+    box-shadow: 0 8px 24px rgba(0,194,168,0.08);
+    transform: translateY(-2px);
+  }
   
   .animate-pulse-slow {
     animation: pulse-slow 4s ease-in-out infinite;

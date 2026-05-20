@@ -19,28 +19,12 @@ import { usePlayerAnalyses } from '../../hooks/useAnalysis'
 import {
   User, Video, BarChart3, MessageSquare,
   Upload, Share2, Star, CheckCircle,
-  Clock, AlertCircle, ChevronRight,
-  Trophy, Loader2, Activity
+  AlertCircle, ChevronRight,
+  Trophy, Activity
 } from 'lucide-react'
-
-// ── Analysis Status Badge ──────────────────────────────────────
-
-function AnalysisBadge({ status }: { status: 'pending' | 'processing' | 'completed' | 'none' }) {
-  const config = {
-    none: { icon: AlertCircle, label: 'لا يوجد تقييم', color: 'text-ice-muted bg-white/5' },
-    pending: { icon: Clock, label: 'بانتظار التقييم', color: 'text-amber-400 bg-amber-400/10' },
-    processing: { icon: Loader2, label: 'جارٍ التحليل', color: 'text-blue-400 bg-blue-400/10' },
-    completed: { icon: CheckCircle, label: 'مكتمل', color: 'text-teal-prime bg-teal-prime/10' },
-  }
-  const { icon: Icon, label, color } = config[status]
-
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${color} arabic-text`}>
-      <Icon className={`w-3.5 h-3.5 ${status === 'processing' ? 'animate-spin' : ''}`} />
-      {label}
-    </span>
-  )
-}
+import { StatusBadge } from '../../components/StatusBadge'
+import { SectionHeader } from '../../components/SectionHeader'
+import type { StatusKey } from '../../lib/tokens'
 
 // ── Skill Bar ──────────────────────────────────────────────────
 
@@ -274,17 +258,15 @@ export default function PlayerDashboard() {
           className="glass-card rounded-2xl p-5"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-ice-white flex items-center gap-2 arabic-text">
-              <Video className="w-4 h-4 text-teal-prime" />
-              الفيديوهات
-            </h2>
-            <button
-              onClick={() => navigate('/player/upload')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-prime/10 text-teal-prime text-xs font-medium hover:bg-teal-prime/20 transition-colors arabic-text"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              رفع فيديو
-            </button>
+            <SectionHeader title="الفيديوهات" icon={<Video className="w-4 h-4" />} action={
+              <button
+                onClick={() => navigate('/player/upload')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-prime/10 text-teal-prime text-xs font-medium hover:bg-teal-prime/20 transition-colors arabic-text"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                رفع فيديو
+              </button>
+            } />
           </div>
 
           {playerRecord.video_url ? (
@@ -320,7 +302,7 @@ export default function PlayerDashboard() {
               <BarChart3 className="w-4 h-4 text-teal-prime" />
               التحليل والتقييم
             </h2>
-            <AnalysisBadge status={analysisStatus} />
+            <StatusBadge status={analysisStatus === 'none' ? 'pending' : analysisStatus === 'pending' ? 'queued' : analysisStatus as StatusKey} />
           </div>
 
           {latestEval ? (
@@ -362,15 +344,15 @@ export default function PlayerDashboard() {
                 <Activity className="w-4 h-4 text-teal-prime" />
                 نتائج التحليل
               </h2>
-              <AnalysisBadge
+              <StatusBadge
                 status={
                   videoAnalyses.find(a => a.status === 'completed')
-                    ? 'completed'
+                    ? 'completed' as StatusKey
                     : videoAnalyses.find(a => a.status === 'processing')
-                      ? 'processing'
+                      ? 'processing' as StatusKey
                       : videoAnalyses.find(a => a.status === 'queued')
-                        ? 'pending'
-                        : 'none'
+                        ? 'queued' as StatusKey
+                        : 'pending' as StatusKey
                 }
               />
             </div>

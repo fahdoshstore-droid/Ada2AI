@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, Sparkles, LogOut, User } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Logo } from './Logo';
 
 const navLinks = [
   { name: 'الرئيسية', path: '/' },
@@ -52,16 +53,8 @@ export default function Layout() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="relative w-10 h-10 lg:w-12 lg:h-12">
-                <div className="absolute inset-0 bg-gradient-to-br from-teal-prime to-scout-blue rounded-xl rotate-45 scale-75 group-hover:scale-85 transition-transform duration-300" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-lg lg:text-xl font-bold tracking-tight text-gradient-teal">Ada2AI</span>
-                <span className="text-[10px] lg:text-xs text-ice-muted -mt-1 arabic-text hidden sm:block">منصة اكتشاف المواهب</span>
-              </div>
+              <Logo size="md" variant="full" />
+              <span className="text-[10px] lg:text-xs text-ice-muted -mt-1 arabic-text hidden sm:block">منصة اكتشاف المواهب</span>
             </Link>
 
             {/* Desktop Nav */}
@@ -245,12 +238,7 @@ export default function Layout() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {/* Brand */}
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-teal-prime to-scout-blue rounded-xl flex items-center justify-center rotate-45 scale-75">
-                  <Sparkles className="w-5 h-5 text-white -rotate-45" />
-                </div>
-                <span className="text-xl font-bold text-gradient-teal">Ada2AI</span>
-              </div>
+              <Logo size="sm" variant="full" />
               <p className="text-ice-muted text-sm leading-relaxed arabic-text">
                 منصة سعودية رائدة في اكتشاف وتحليل المواهب الرياضية باستخدام الذكاء الاصطناعي. نبني المواهب بالتقنية.
               </p>

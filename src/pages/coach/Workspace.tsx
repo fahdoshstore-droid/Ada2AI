@@ -26,28 +26,12 @@ import {
 import { useCoachPlayers } from '../../hooks/useCoachPlayers'
 import { type AnalysisResults } from '../../services/analysis'
 import { createAnalysisRecord } from '../../services/analysis'
+import { StatusBadge } from '../../components/StatusBadge'
+import { SectionHeader } from '../../components/SectionHeader'
+import type { StatusKey } from '../../lib/tokens'
 import PitchView from '../../components/coach/PitchView'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
-
-// ── Status Badge ──────────────────────────────────────────────
-
-function StatusBadge({ status }: { status: string | null }) {
-  const config: Record<string, { icon: typeof Clock; label: string; color: string; spin?: boolean }> = {
-    queued: { icon: Clock, label: 'في الانتظار', color: 'text-amber-400 bg-amber-400/10' },
-    processing: { icon: Loader2, label: 'جارٍ التحليل', color: 'text-blue-400 bg-blue-400/10', spin: true },
-    completed: { icon: CheckCircle, label: 'مكتمل', color: 'text-teal-prime bg-teal-prime/10' },
-    failed: { icon: XCircle, label: 'فشل', color: 'text-red-400 bg-red-400/10' },
-  }
-  const { icon: Icon, label, color, spin } = config[status ?? 'queued'] ?? config.queued
-
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${color} arabic-text`}>
-      <Icon className={`w-3.5 h-3.5 ${spin ? 'animate-spin' : ''}`} />
-      {label}
-    </span>
-  )
-}
 
 // ── Results Form ──────────────────────────────────────────────
 
@@ -376,10 +360,7 @@ export default function CoachWorkspace() {
           animate={{ opacity: 1, y: 0 }}
           className="glass-card rounded-2xl p-5"
         >
-          <h2 className="font-bold text-ice-white flex items-center gap-2 mb-4 arabic-text">
-            <Users className="w-5 h-5 text-teal-prime" />
-            تشكيل الفريق
-          </h2>
+          <SectionHeader title="تشكيل الفريق" icon={<Users className="w-4 h-4" />} />
           <PitchView
             players={players ?? []}
             formation={formation}
@@ -393,10 +374,7 @@ export default function CoachWorkspace() {
           animate={{ opacity: 1, y: 0 }}
           className="glass-card rounded-2xl p-5"
         >
-          <h2 className="font-bold text-ice-white flex items-center gap-2 mb-4 arabic-text">
-            <Clock className="w-5 h-5 text-amber-400" />
-            تحليلات قيد الانتظار
-          </h2>
+          <SectionHeader title="تحليلات قيد الانتظار" icon={<Clock className="w-4 h-4" />} />
 
           {loadingPending ? (
             <div className="flex items-center justify-center py-8">
@@ -427,7 +405,7 @@ export default function CoachWorkspace() {
                         </p>
                       </div>
                     </div>
-                    <StatusBadge status={analysis.status} />
+                    <StatusBadge status={analysis.status as StatusKey} />
                   </div>
 
                   {/* Video thumbnail or URL link */}
@@ -495,10 +473,7 @@ export default function CoachWorkspace() {
           transition={{ delay: 0.1 }}
           className="glass-card rounded-2xl p-5"
         >
-          <h2 className="font-bold text-ice-white flex items-center gap-2 mb-4 arabic-text">
-            <BarChart3 className="w-5 h-5 text-teal-prime" />
-            التحليلات المكتملة
-          </h2>
+          <SectionHeader title="التحليلات المكتملة" icon={<BarChart3 className="w-4 h-4" />} />
 
           {loadingCompleted ? (
             <div className="flex items-center justify-center py-8">
@@ -535,7 +510,7 @@ export default function CoachWorkspace() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <StatusBadge status={analysis.status} />
+                        <StatusBadge status={analysis.status as StatusKey} />
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
