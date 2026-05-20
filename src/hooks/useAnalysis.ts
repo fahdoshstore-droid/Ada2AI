@@ -3,6 +3,10 @@
  *
  * React Query hooks for video_analyses operations.
  * hook → service → supabase (always)
+ *
+ * Status mapping: DB stores Arabic ('قيد المعالجة','مكتمل','فشل')
+ * UI uses English StatusKey ('queued','processing','completed','failed')
+ * toUiStatus() converts DB→UI when needed for StatusBadge.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -12,8 +16,8 @@ import {
   updateAnalysisStatus,
   saveAnalysisResults,
   type AnalysisResults,
-  type AnalysisStatus,
 } from '../services/analysis'
+import type { StatusKey } from '../lib/tokens'
 
 /** Player's own analyses */
 export function usePlayerAnalyses(uploadedBy: string) {
@@ -25,7 +29,7 @@ export function usePlayerAnalyses(uploadedBy: string) {
   return { analyses: data ?? [], loading: isLoading, error: error?.message }
 }
 
-/** Coach: pending analyses (queued or processing) */
+/** Coach: pending analyses (قيد المعالجة in DB) */
 export function usePendingAnalyses() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['analyses', 'pending'],
@@ -36,7 +40,7 @@ export function usePendingAnalyses() {
   return { analyses: data ?? [], loading: isLoading, error: error?.message }
 }
 
-/** Coach: completed analyses for history view */
+/** Coach: completed analyses (مكتمل in DB) for history view */
 export function useCompletedAnalyses(limit = 10) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['analyses', 'completed', limit],
@@ -45,11 +49,11 @@ export function useCompletedAnalyses(limit = 10) {
   return { analyses: data ?? [], loading: isLoading, error: error?.message }
 }
 
-/** Coach: change status (queued → processing, processing → failed) */
+/** Coach: change status — pass English StatusKey, service maps to Arabic DB value */
 export function useUpdateAnalysisStatus() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: AnalysisStatus }) =>
+    mutationFn: ({ id, status }: { id: string; status: StatusKey }) =>
       updateAnalysisStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['analyses'] })

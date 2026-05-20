@@ -16,6 +16,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase, type Player, type Evaluation } from '../../lib/supabase'
 import { trackEvent } from '../../lib/analytics'
 import { usePlayerAnalyses } from '../../hooks/useAnalysis'
+import { toUiStatus } from '../../services/analysis'
 import {
   User, Video, BarChart3, MessageSquare,
   Upload, Share2, Star, CheckCircle,
@@ -346,11 +347,11 @@ export default function PlayerDashboard() {
               </h2>
               <StatusBadge
                 status={
-                  videoAnalyses.find(a => a.status === 'completed')
+                  videoAnalyses.find(a => toUiStatus(a.status) === 'completed')
                     ? 'completed' as StatusKey
-                    : videoAnalyses.find(a => a.status === 'processing')
+                    : videoAnalyses.find(a => toUiStatus(a.status) === 'processing')
                       ? 'processing' as StatusKey
-                      : videoAnalyses.find(a => a.status === 'queued')
+                      : videoAnalyses.find(a => toUiStatus(a.status) === 'queued')
                         ? 'queued' as StatusKey
                         : 'pending' as StatusKey
                 }
@@ -358,7 +359,7 @@ export default function PlayerDashboard() {
             </div>
 
             {(() => {
-              const completed = videoAnalyses.find(a => a.status === 'completed' && a.analysis_data)
+              const completed = videoAnalyses.find(a => toUiStatus(a.status) === 'completed' && a.analysis_data)
               if (!completed?.analysis_data) {
                 return (
                   <div className="text-center py-6">

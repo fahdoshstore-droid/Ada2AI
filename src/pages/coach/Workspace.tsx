@@ -24,11 +24,9 @@ import {
   useSaveAnalysisResults,
 } from '../../hooks/useAnalysis'
 import { useCoachPlayers } from '../../hooks/useCoachPlayers'
-import { type AnalysisResults } from '../../services/analysis'
-import { createAnalysisRecord } from '../../services/analysis'
+import { type AnalysisResults, createAnalysisRecord, toUiStatus } from '../../services/analysis'
 import { StatusBadge } from '../../components/StatusBadge'
 import { SectionHeader } from '../../components/SectionHeader'
-import type { StatusKey } from '../../lib/tokens'
 import PitchView from '../../components/coach/PitchView'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
@@ -264,36 +262,17 @@ export default function CoachWorkspace() {
       const { data: urlData } = supabase.storage.from('player-media').getPublicUrl(filePath)
       const publicUrl = urlData.publicUrl
 
-      await createAnalysisRecord(user.id, publicUrl)
-      // Update the title to indicate opponent analysis
-      // We update via a direct query since createAnalysisRecord doesn't accept title
-      const { data: latestAnalysis } = await supabase
-        .from('video_analyses')
-        .select('id')
-        .eq('video_url', publicUrl)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (latestAnalysis) {
-        await supabase
-          .from('video_analyses')
-          .update({
-            title: `تحليل منافس: ${opponentTeam}`,
-            match: opponentTeam,
-            date: matchDate || undefined,
-          })
-          .eq('id', latestAnalysis.id)
-      }
+      const record = await createAnalysisRecord(user.id, publicUrl, {
+        title: `تحليل منافس: ${opponentTeam}`,
+        date: matchDate || undefined,
+      })
 
       setUploadMsg('تم الرفع — التحليل سيبدأ قريباً')
       setOpponentTeam('')
       setMatchDate('')
       setOpponentVideo(null)
-      // Save tactical notes to localStorage as temporary storage
       if (tacticalNotes.trim()) {
-        // TODO: Persist to evaluations.notes when opponent player_id is available
-        const key = `opponent_notes_${latestAnalysis?.id || Date.now()}`
+        const key = `opponent_notes_${record.id}`
         localStorage.setItem(key, tacticalNotes)
         setTacticalNotes('')
       }
@@ -405,7 +384,7 @@ export default function CoachWorkspace() {
                         </p>
                       </div>
                     </div>
-                    <StatusBadge status={analysis.status as StatusKey} />
+                    <StatusBadge status={toUiStatus(analysis.status)} />
                   </div>
 
                   {/* Video thumbnail or URL link */}
@@ -415,19 +394,19 @@ export default function CoachWorkspace() {
                     </p>
                   )}
 
-                  {/* Action buttons */}
+                  {/* Action buttons — use toUiStatus() since DB stores Arabic */}
                   <div className="flex gap-2">
-                    {analysis.status === 'queued' && (
+                    {toUiStatus(analysis.status) === 'queued' && (
                       <button
                         onClick={() => handleStartProcessing(analysis.id)}
                         disabled={updateStatus.isPending}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-prime/10 text-teal-prime text-xs font-medium hover:bg-teal-prime/20 transition-colors arabic-text disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-scout-blue/10 text-scout-blue text-xs font-medium hover:bg-scout-blue/20 transition-colors arabic-text disabled:opacity-50"
                       >
                         <Play className="w-3.5 h-3.5" />
                         بدء التحليل
                       </button>
                     )}
-                    {analysis.status === 'processing' && (
+                    {toUiStatus(analysis.status) === 'processing' && (
                       <>
                         <button
                           onClick={() => setActiveFormId(analysis.id)}
@@ -510,7 +489,7 @@ export default function CoachWorkspace() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <StatusBadge status={analysis.status as StatusKey} />
+                        <StatusBadge status={toUiStatus(analysis.status)} />
                         <button
                           onClick={(e) => {
                             e.stopPropagation()

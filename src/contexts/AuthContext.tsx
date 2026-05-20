@@ -25,14 +25,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [profileError, setProfileError] = useState<string | null>(null)
 
-  const fetchProfile = useCallback(async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string, signal?: AbortSignal) => {
     const startTime = Date.now()
     try {
-      const { data, error } = await supabase
+      // Race: Supabase query vs 8s timeout
+      const queryPromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle()
+
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        const t = setTimeout(() => reject(new Error('fetchProfile timeout (8s)')), 8000)
+        signal?.addEventListener('abort', () => { clearTimeout(t); reject(new Error('aborted')) }, { once: true })
+      })
+
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise])
+        .catch(e => ({ data: null, error: { message: e.message, code: 'TIMEOUT', details: null } }))
 
       if (error) {
         console.error('[AUTH] fetchProfile error:', error.message, error.code, error.details)
