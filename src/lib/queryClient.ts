@@ -13,8 +13,8 @@ export const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5,
       // Cache kept for 10 minutes after component unmounts
       gcTime: 1000 * 60 * 10,
-      // 2 retries on failure (with exponential backoff)
-      retry: 2,
+      // 1 retry on failure (with exponential backoff)
+      retry: 1,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
       // Don't refetch just because user switched tabs
       refetchOnWindowFocus: false,

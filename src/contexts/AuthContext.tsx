@@ -61,6 +61,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // onAuthStateChange with INITIAL_SESSION handles the initial load
     // No manual getSession needed — onAuthStateChange fires after getSession resolves
 
+    // Safety timeout: if Auth takes > 5s, force loading=false to prevent infinite hang
+    const timeout = setTimeout(() => {
+      setLoading(prev => {
+        if (prev) {
+          console.warn('[AUTH] Session load timeout (5s) — forcing loading=false')
+          trackEvent('auth_timeout')
+        }
+        return false
+      })
+    }, 5000)
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, s) => {
 
       // Token refreshed successfully — update session state
@@ -97,7 +108,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+    }
   }, [fetchProfile])
 
   const signIn = useCallback(async (email: string, password: string) => {
