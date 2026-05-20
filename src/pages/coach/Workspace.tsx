@@ -5,8 +5,9 @@
  * No fake AI — buttons trigger actual state changes in video_analyses.
  *
  * SECTION A: Pending analyses queue
- * SECTION B: Inline results form
- * SECTION C: Completed analyses history
+ * SECTION B: Team formation (interactive pitch)
+ * SECTION C: Inline results form (triggered from pending)
+ * SECTION D: Completed analyses history
  */
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -14,7 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Clock, Loader2, CheckCircle, XCircle,
   Play, ClipboardList, BarChart3,
-  ChevronDown, ChevronUp, ArrowLeft
+  ChevronDown, ChevronUp, ArrowLeft, Users
 } from 'lucide-react'
 import {
   usePendingAnalyses,
@@ -22,7 +23,9 @@ import {
   useUpdateAnalysisStatus,
   useSaveAnalysisResults,
 } from '../../hooks/useAnalysis'
+import { useCoachPlayers } from '../../hooks/useCoachPlayers'
 import { type AnalysisResults } from '../../services/analysis'
+import PitchView from '../../components/coach/PitchView'
 
 // ── Status Badge ──────────────────────────────────────────────
 
@@ -227,9 +230,11 @@ export default function CoachWorkspace() {
   const { analyses: completed, loading: loadingCompleted } = useCompletedAnalyses()
   const updateStatus = useUpdateAnalysisStatus()
   const saveResults = useSaveAnalysisResults()
+  const { players } = useCoachPlayers()
 
   const [activeFormId, setActiveFormId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [formation, setFormation] = useState<'4-3-3' | '4-4-2' | '3-5-2'>('4-3-3')
 
   const handleStartProcessing = (id: string) => {
     updateStatus.mutate({ id, status: 'processing' })
@@ -269,6 +274,23 @@ export default function CoachWorkspace() {
           </div>
           <h1 className="text-xl font-bold text-ice-white arabic-text">مساحة العمل</h1>
         </div>
+
+        {/* ── SECTION B: Team Formation (Interactive Pitch) ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card rounded-2xl p-5"
+        >
+          <h2 className="font-bold text-ice-white flex items-center gap-2 mb-4 arabic-text">
+            <Users className="w-5 h-5 text-teal-prime" />
+            تشكيل الفريق
+          </h2>
+          <PitchView
+            players={players ?? []}
+            formation={formation}
+            onFormationChange={(f: string) => setFormation(f as '4-3-3' | '4-4-2' | '3-5-2')}
+          />
+        </motion.div>
 
         {/* ── SECTION A: Pending Analyses ── */}
         <motion.div
