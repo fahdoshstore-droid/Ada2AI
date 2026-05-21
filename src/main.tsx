@@ -5,11 +5,11 @@
  * Changes from original:
  * 1. Added QueryClientProvider (TanStack React Query)
  * 2. Added ErrorBoundary at root level
- * 3. Kept HashRouter (Vercel config dependent — change to BrowserRouter after verifying vercel.json rewrites)
+ * 3. Switched to BrowserRouter (vercel.json rewrites verified — SPA fallback works)
  */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { HashRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthProvider } from './contexts/AuthContext'
@@ -33,11 +33,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <HashRouter>
+        <BrowserRouter>
           <AuthProvider>
             <App />
           </AuthProvider>
-        </HashRouter>
+        </BrowserRouter>
         {/* DevTools only in development — tree-shaken in production build */}
         {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>
