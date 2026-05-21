@@ -1,6 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import { isAdmin } from '../contexts/AuthContext'
+import { useAuth, roleDashboard, isAdmin } from '../contexts/AuthContext'
 
 export default function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuth()
@@ -14,7 +13,7 @@ export default function AdminRoute({ children }: { children: React.ReactNode }) 
   }
 
   if (!user) return <Navigate to="/login" replace />
-  if (!isAdmin(profile)) return <Navigate to="/" replace />
+  if (!isAdmin(profile)) return <Navigate to={profile ? roleDashboard(profile.user_type) : '/login'} replace />
 
   return <>{children}</>
 }
