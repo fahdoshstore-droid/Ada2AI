@@ -18,6 +18,7 @@ module.exports = {
         teal: {
           prime: "#00C2A8",
           light: "#00DCC8",
+          glow: "#00F0D0",
           dark: "#009E8A",
         },
         scout: {
@@ -28,7 +29,7 @@ module.exports = {
         navy: {
           DEFAULT: "#0a1628",
           light: "#0d1f35",
-          dark: "#070e1a",
+          dark: "#060d18",
         },
         ice: {
           white: "#f0f6ff",
@@ -98,6 +99,11 @@ module.exports = {
       },
       boxShadow: {
         xs: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        glow: "0 0 20px rgba(0,194,168,0.15), 0 0 40px rgba(0,194,168,0.05)",
+        "glow-strong": "0 0 30px rgba(0,194,168,0.3), 0 0 80px rgba(0,194,168,0.1)",
+        depth: "0 4px 6px -1px rgba(0,0,0,0.1), 0 25px 50px -12px rgba(0,0,0,0.4)",
+        "depth-lg": "0 8px 16px rgba(0,0,0,0.15), 0 32px 64px rgba(0,0,0,0.3)",
+        "depth-xl": "0 16px 32px rgba(0,0,0,0.2), 0 48px 96px rgba(0,0,0,0.35)",
       },
       keyframes: {
         "accordion-down": {

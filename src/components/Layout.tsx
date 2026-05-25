@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown, LogOut, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { AdaLogo } from './AdaLogo';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const navLinks = [
   { name: 'الرئيسية', path: '/' },
@@ -35,7 +36,7 @@ export default function Layout() {
   }
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    const handleScroll = () => setIsScrolled(window.scrollY > 30);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -47,12 +48,12 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-navy text-ice-white">
-      {/* Header */}
+    <div className="min-h-screen bg-[#060d18] text-ice-white">
+      {/* ── Header ── */}
       <header 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled 
-            ? 'bg-navy-dark/90 backdrop-blur-xl border-b border-teal-prime/10 shadow-lg shadow-teal-prime/5' 
+            ? 'bg-[#060d18]/90 backdrop-blur-[40px] saturate-[180%] border-b border-teal-prime/8 shadow-lg shadow-black/20' 
             : 'bg-transparent'
         }`}
       >
@@ -68,37 +69,50 @@ export default function Layout() {
             <nav className="hidden lg:flex items-center gap-1">
               {navLinks.map((link) => (
                 <div 
-                  key={link.name} 
+                  key={link.name}
                   className="relative"
                   onMouseEnter={() => link.dropdown && setDropdownOpen(true)}
                   onMouseLeave={() => link.dropdown && setDropdownOpen(false)}
                 >
                   <Link
                     to={link.path}
-                    className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    className={`relative flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                       location.pathname === link.path
-                        ? 'text-teal-prime bg-teal-prime/10'
-                        : 'text-ice-muted hover:text-ice-white hover:bg-white/5'
+                        ? 'text-teal-prime'
+                        : 'text-ice-muted hover:text-ice-white'
                     }`}
                   >
                     {link.name}
-                    {link.dropdown && <ChevronDown className="w-4 h-4" />}
+                    {link.dropdown && <ChevronDown className="w-3.5 h-3.5" />}
+                    {location.pathname === link.path && (
+                      <motion.div
+                        layoutId="nav-indicator"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-prime rounded-full"
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      />
+                    )}
                   </Link>
                   
                   {link.dropdown && dropdownOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-72 glass-card rounded-xl p-2 shadow-xl shadow-black/20">
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full right-0 mt-2 w-72 glass-premium rounded-xl p-2 shadow-xl border border-white/[0.06]"
+                    >
                       {link.dropdown.map((item) => (
                         <Link
                           key={item.path}
                           to={item.path}
-                          className="flex items-start gap-3 p-3 rounded-lg hover:bg-teal-prime/10 transition-colors group/item"
+                          className="flex items-start gap-3 p-3 rounded-lg hover:bg-teal-prime/8 transition-colors group/item"
                         >
-                          <div className="w-10 h-10 rounded-lg bg-teal-prime/10 flex items-center justify-center flex-shrink-0 group-hover/item:bg-teal-prime/20 transition-colors">
+                          <div className="w-10 h-10 rounded-lg bg-teal-prime/8 flex items-center justify-center flex-shrink-0 group-hover/item:bg-teal-prime/15 transition-colors border border-teal-prime/10">
                             <span className="text-teal-prime text-lg">
-                              {item.icon === 'badge' && '\uEf3b'}
-                              {item.icon === 'person_search' && '\uEf3c'}
+                              {item.icon === 'badge' && '\uEF3B'}
+                              {item.icon === 'person_search' && '\uEF3C'}
                               {item.icon === 'sports' && '\uEA43'}
-                              {item.icon === 'groups' && '\uEf3d'}
+                              {item.icon === 'groups' && '\uEF3D'}
                               {item.icon === 'stadium' && '\uEA66'}
                             </span>
                           </div>
@@ -106,11 +120,11 @@ export default function Layout() {
                             <div className="font-semibold text-ice-white text-sm group-hover/item:text-teal-prime transition-colors">
                               {item.name}
                             </div>
-                            <div className="text-xs text-ice-muted mt-0.5">{item.desc}</div>
+                            <div className="text-xs text-ice-muted/60 mt-0.5">{item.desc}</div>
                           </div>
                         </Link>
                       ))}
-                    </div>
+                    </motion.div>
                   )}
                 </div>
               ))}
@@ -129,7 +143,7 @@ export default function Layout() {
                   </Link>
                   <button 
                     onClick={handleLogout}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all duration-300"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm border border-red-500/20 text-red-400 hover:bg-red-500/8 transition-all duration-300"
                   >
                     <LogOut className="w-4 h-4" />
                     <span className="arabic-text">خروج</span>
@@ -139,15 +153,15 @@ export default function Layout() {
                 <>
                   <Link 
                     to="/sport-id" 
-                    className="px-5 py-2.5 rounded-lg text-sm font-semibold border border-teal-prime/30 text-teal-prime hover:bg-teal-prime/10 transition-all duration-300"
+                    className="btn-ghost-interactive"
                   >
                     تحليل اللاعب
                   </Link>
                   <Link 
                     to="/login" 
-                    className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark hover:shadow-lg hover:shadow-teal-prime/25 transition-all duration-300"
+                    className="btn-primary text-sm"
                   >
-                    تسجيل الدخول
+                    <span>تسجيل الدخول</span>
                   </Link>
                 </>
               )}
@@ -164,98 +178,107 @@ export default function Layout() {
         </div>
 
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-navy-dark/95 backdrop-blur-xl border-t border-teal-prime/10">
-            <div className="px-4 py-4 space-y-1">
-              {navLinks.map((link) => (
-                <div key={link.name}>
-                  {link.dropdown ? (
-                    <div className="space-y-1">
-                      <div className="px-4 py-2 text-sm font-semibold text-ice-muted">{link.name}</div>
-                      {link.dropdown.map((item) => (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm hover:bg-teal-prime/10 transition-colors"
-                        >
-                          <span className="text-teal-prime">{item.desc}</span>
-                        </Link>
-                      ))}
-                    </div>
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="lg:hidden bg-[#060d18]/95 backdrop-blur-[40px] saturate-[180%] border-t border-teal-prime/8 overflow-hidden"
+            >
+              <div className="px-4 py-4 space-y-1">
+                {navLinks.map((link) => (
+                  <div key={link.name}>
+                    {link.dropdown ? (
+                      <div className="space-y-1">
+                        <div className="px-4 py-2 text-sm font-semibold text-ice-muted/60 arabic-text">{link.name}</div>
+                        {link.dropdown.map((item) => (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm hover:bg-teal-prime/8 transition-colors"
+                          >
+                            <span className="text-teal-prime arabic-text">{item.desc}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <Link
+                        to={link.path}
+                        className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors arabic-text ${
+                          location.pathname === link.path
+                            ? 'text-teal-prime bg-teal-prime/8'
+                            : 'text-ice-muted hover:text-ice-white hover:bg-white/5'
+                        }`}
+                      >
+                        {link.name}
+                      </Link>
+                    )}
+                  </div>
+                ))}
+                <div className="pt-4 flex flex-col gap-2">
+                  {user ? (
+                    <>
+                      <Link 
+                        to="/sport-id"
+                        className="block text-center px-5 py-3 rounded-lg text-sm font-semibold border border-teal-prime/20 text-teal-prime arabic-text"
+                      >
+                        مرحباً، {user.email}
+                      </Link>
+                      <button 
+                        onClick={handleLogout}
+                        className="block w-full text-center px-5 py-3 rounded-lg text-sm font-semibold border border-red-500/20 text-red-400 hover:bg-red-500/8 arabic-text"
+                      >
+                        خروج
+                      </button>
+                    </>
                   ) : (
-                    <Link
-                      to={link.path}
-                      className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                        location.pathname === link.path
-                          ? 'text-teal-prime bg-teal-prime/10'
-                          : 'text-ice-muted hover:text-ice-white hover:bg-white/5'
-                      }`}
-                    >
-                      {link.name}
-                    </Link>
+                    <>
+                      <Link 
+                        to="/sport-id" 
+                        className="block text-center px-5 py-3 rounded-lg text-sm font-semibold border border-teal-prime/20 text-teal-prime arabic-text"
+                      >
+                        تحليل اللاعب
+                      </Link>
+                      <Link 
+                        to="/login"
+                        className="block w-full text-center px-5 py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-teal-prime to-scout-blue text-[#060d18] arabic-text"
+                      >
+                        تسجيل الدخول
+                      </Link>
+                    </>
                   )}
                 </div>
-              ))}
-              <div className="pt-4 flex flex-col gap-2">
-                {user ? (
-                  <>
-                    <Link 
-                      to="/sport-id"
-                      className="block text-center px-5 py-3 rounded-lg text-sm font-semibold border border-teal-prime/30 text-teal-prime"
-                    >
-                      <span className="arabic-text">مرحباً، {user.email}</span>
-                    </Link>
-                    <button 
-                      onClick={handleLogout}
-                      className="block w-full text-center px-5 py-3 rounded-lg text-sm font-semibold border border-red-500/30 text-red-400 hover:bg-red-500/10"
-                    >
-                      خروج
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link 
-                      to="/sport-id" 
-                      className="block text-center px-5 py-3 rounded-lg text-sm font-semibold border border-teal-prime/30 text-teal-prime"
-                    >
-                      تحليل اللاعب
-                    </Link>
-                    <Link 
-                      to="/login"
-                      className="block w-full text-center px-5 py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark"
-                    >
-                      تسجيل الدخول
-                    </Link>
-                  </>
-                )}
               </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* Main Content */}
+      {/* ── Main Content ── */}
       <main className="pt-16 lg:pt-20">
         <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer className="relative bg-navy-dark border-t border-teal-prime/10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial opacity-50" />
+      {/* ── Footer ── */}
+      <footer className="relative bg-[#060d18] border-t border-white/[0.04] overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-radial opacity-30" />
+        <div className="grain-overlay" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {/* Brand */}
             <div className="space-y-4">
               <AdaLogo size={28} showText={true} />
-              <p className="text-ice-muted text-sm leading-relaxed arabic-text">
-                منصة سعودية رائدة في اكتشاف وتحليل المواهب الرياضية باستخدام الذكاء الاصطناعي. نبني المواهب بالتقنية.
+              <p className="text-ice-muted/60 text-sm leading-relaxed arabic-text">
+                منصة سعودية رائدة في اكتشاف وتحليل المواهب الرياضية باستخدام الذكاء الاصطناعي.
               </p>
               <div className="flex items-center gap-3 pt-2">
                 {['X', 'in', 'ig'].map((social) => (
                   <a 
                     key={social}
                     href="#" 
-                    className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-ice-muted hover:text-teal-prime hover:bg-teal-prime/10 transition-all"
+                    className="w-9 h-9 rounded-lg bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-ice-muted/40 hover:text-teal-prime hover:border-teal-prime/20 hover:bg-teal-prime/5 transition-all"
                   >
                     {social === 'X' && <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>}
                     {social === 'in' && <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>}
@@ -277,7 +300,7 @@ export default function Layout() {
                   { name: 'تحليل الفيديو', path: '/video-analysis' },
                 ].map((item) => (
                   <li key={item.path}>
-                    <Link to={item.path} className="text-sm text-ice-muted hover:text-teal-prime transition-colors arabic-text">
+                    <Link to={item.path} className="text-sm text-ice-muted/60 hover:text-teal-prime transition-colors arabic-text">
                       {item.name}
                     </Link>
                   </li>
@@ -297,7 +320,7 @@ export default function Layout() {
                   { name: 'وثائق API', path: '#' },
                 ].map((item) => (
                   <li key={item.name}>
-                    <Link to={item.path} className="text-sm text-ice-muted hover:text-teal-prime transition-colors arabic-text">
+                    <Link to={item.path} className="text-sm text-ice-muted/60 hover:text-teal-prime transition-colors arabic-text">
                       {item.name}
                     </Link>
                   </li>
@@ -308,21 +331,19 @@ export default function Layout() {
             {/* Contact */}
             <div>
               <h4 className="font-semibold text-ice-white mb-4 arabic-text">تواصل معنا</h4>
-              <ul className="space-y-3 text-sm text-ice-muted">
-                <li className="flex items-center gap-2">
-                  <span className="arabic-text">الرياض، المملكة العربية السعودية</span>
-                </li>
+              <ul className="space-y-3 text-sm text-ice-muted/60">
+                <li className="arabic-text">الرياض، المملكة العربية السعودية</li>
                 <li className="arabic-text">البريد: info@ada2ai.sa</li>
                 <li className="arabic-text">الدعم: support@ada2ai.sa</li>
               </ul>
             </div>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-ice-muted">
+          <div className="mt-12 pt-8 border-t border-white/[0.04] flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-ice-muted/40">
               &copy; 2026 Ada2AI. جميع الحقوق محفوظة.
             </p>
-            <div className="flex items-center gap-6 text-sm text-ice-muted">
+            <div className="flex items-center gap-6 text-sm text-ice-muted/40">
               <a href="#" className="hover:text-teal-prime transition-colors arabic-text">سياسة الخصوصية</a>
               <a href="#" className="hover:text-teal-prime transition-colors arabic-text">شروط الاستخدام</a>
             </div>
