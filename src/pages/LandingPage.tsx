@@ -5,7 +5,7 @@ import {
   Badge, UserSearch, Dumbbell, Users, TrendingUp,
   Bot, School, Play, ArrowLeft, BarChart3,
   Shield, Zap, Globe, Award, ChevronLeft,
-  Sparkles, Cpu, Eye, Target
+  Sparkles, Eye
 } from 'lucide-react';
 
 // ─── Product Data ───
@@ -86,7 +86,7 @@ const fadeInUp = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }
+    transition: { delay: i * 0.08, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }
   })
 };
 
@@ -98,10 +98,6 @@ const staggerContainer = {
   }
 };
 
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } }
-};
 
 // ─── Count-Up Component ───
 function CountUpStat({ value, label, suffix }: { value: string; label: string; suffix: string }) {
@@ -116,7 +112,7 @@ function CountUpStat({ value, label, suffix }: { value: string; label: string; s
       ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
       className="glass-premium rounded-2xl p-8 text-center card-depth-hover"
     >
       <div className="text-3xl md:text-4xl font-bold font-display tracking-tightest mb-2">
@@ -233,7 +229,7 @@ function HeroSection() {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
         >
           {/* Badge */}
           <motion.div
@@ -310,7 +306,7 @@ function HeroSection() {
           transition={{ delay: 1, duration: 0.8 }}
           className="mt-24 md:mt-32 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
         >
-          {stats.map((stat, i) => (
+          {stats.map((stat) => (
             <CountUpStat key={stat.label} value={stat.value} label={stat.label} suffix={stat.suffix} />
           ))}
         </motion.div>
@@ -371,7 +367,7 @@ function ProductsSection() {
                 key={product.id}
                 initial={{ opacity: 0, y: 40 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: i * 0.1, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                transition={{ delay: i * 0.1, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
                 onMouseEnter={() => setHoveredProduct(product.id)}
                 onMouseLeave={() => setHoveredProduct(null)}
               >
@@ -456,7 +452,7 @@ function FeaturesSection() {
                 key={feature.title}
                 initial={{ opacity: 0, y: 30 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: i * 0.08, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                transition={{ delay: i * 0.08, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
                 className={feature.wide ? 'bento-wide' : ''}
               >
                 <div className={`glass-premium rounded-2xl p-8 h-full group card-depth-hover border border-white/[0.06] ${feature.wide ? 'md:flex md:items-start md:gap-6' : ''}`}>
@@ -492,7 +488,7 @@ function CTASection() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={isInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
           className="relative glass-premium rounded-3xl p-10 md:p-16 lg:p-20 overflow-hidden border border-white/[0.06]"
         >
           {/* Background glow */}
