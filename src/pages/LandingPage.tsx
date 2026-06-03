@@ -74,10 +74,10 @@ const features = [
 ];
 
 const stats = [
-  { value: '50K+', label: 'لاعب مسجل', suffix: '' },
-  { value: '1.2M+', label: 'تحليل أداء', suffix: '' },
-  { value: '200+', label: 'نادٍ مشترك', suffix: '' },
-  { value: '98.7%', label: 'دقة التحليل', suffix: '' },
+  { value: 'اكتشف المواهب', label: 'بالذكاء الاصطناعي', suffix: '' },
+  { value: 'تحليل فيديو', label: 'تلقائي بالذكاء الاصطناعي', suffix: '' },
+  { value: 'هوية رقمية', label: 'لكل لاعب رياضي', suffix: '' },
+  { value: 'منصة سعودية', label: 'متكاملة وموثوقة', suffix: '' },
 ];
 
 // ─── Animation Variants ───
@@ -108,8 +108,8 @@ function CountUpStat({ value, label, suffix }: { value: string; label: string; s
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
   const numericPart = value.replace(/[^0-9.]/g, '');
-  const prefix = value.match(/^[^0-9]*/)?.[0] || '';
-  const displaySuffix = suffix || value.replace(numericPart, '').replace(prefix, '');
+  // If value has no numbers, display it as plain text (honest messaging)
+  const isTextOnly = !numericPart;
 
   return (
     <motion.div
@@ -120,8 +120,14 @@ function CountUpStat({ value, label, suffix }: { value: string; label: string; s
       className="glass-premium rounded-2xl p-8 text-center card-depth-hover"
     >
       <div className="text-3xl md:text-4xl font-bold font-display tracking-tightest mb-2">
-        <span className="text-gradient-hero">{prefix}{isInView ? numericPart : '0'}</span>
-        <span className="text-gradient-teal">{displaySuffix}</span>
+        {isTextOnly ? (
+          <span className="text-gradient-hero arabic-text">{value}</span>
+        ) : (
+          <>
+            <span className="text-gradient-hero">{isInView ? numericPart : '0'}</span>
+            <span className="text-gradient-teal">{suffix || value.replace(numericPart, '')}</span>
+          </>
+        )}
       </div>
       <div className="text-sm text-ice-muted arabic-text tracking-loose">{label}</div>
     </motion.div>
