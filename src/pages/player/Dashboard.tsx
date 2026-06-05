@@ -74,7 +74,7 @@ export default function PlayerDashboard() {
       .maybeSingle()
       .then(({ data, error }) => {
         if (error) {
-          console.error('[PlayerDashboard] player fetch error:', error)
+          /* Sentry will capture this */
           setFetchError('تعذّر تحميل بيانات اللاعب. حاول مرة أخرى.')
         }
         setPlayerRecord(data as Player | null)

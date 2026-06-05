@@ -60,7 +60,7 @@ export default function LoginPage() {
         // onSuccess: onAuthStateChange will trigger → profile loads → useEffect redirects
       }
     } catch (err) {
-      console.error('[LOGIN] handleSubmit exception:', err)
+      /* Sentry will capture this */
       setError('حدث خطأ غير متوقع. حاول مرة أخرى.')
     } finally {
       setLoading(false)

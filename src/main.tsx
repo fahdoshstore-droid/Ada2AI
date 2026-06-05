@@ -25,7 +25,7 @@ const REQUIRED_ENV = [
 ]
 REQUIRED_ENV.forEach(key => {
   if (!import.meta.env[key]) {
-    console.error(`[Ada2AI] Missing required env var: ${key}`)
+    /* Sentry will capture this */
   }
 })
 

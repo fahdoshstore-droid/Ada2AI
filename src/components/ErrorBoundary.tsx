@@ -28,7 +28,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     captureError(error, { componentStack: info.componentStack ?? '' })
-    console.error('[ErrorBoundary] Caught:', error, info)
+    /* Sentry will capture this */
   }
 
   handleReset = () => {
