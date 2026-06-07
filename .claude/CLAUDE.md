@@ -1,6 +1,6 @@
-# Ada2AI — Agent Rules
+# Ada2AI — Agent Rules (دستور التنفيذ)
 
-## Mandatory Standards (دستور التنفيذ)
+## Mandatory Standards
 
 1. **الاكتمال واجب** — Every task: implementation + testing + documentation. No "partially done".
 2. **لا أنصاف حلول** — Root solution only. No patches over broken architecture.
@@ -16,19 +16,19 @@
 ## Code Standards
 - **Arabic RTL** — All user-facing text in Arabic. Use `dir="rtl"` and RTL-safe CSS.
 - **Design tokens** — Use existing vars: `teal-prime`, `navy-dark`, `scout-blue`, `ice-white`, `ice-muted`.
-- **No shadcn/ui** — The existing `components/ui/` directory is DEAD CODE. Do NOT use it. Build with TailwindCSS directly.
-- **Services layer** — The `services/` directory is bypassed. AuthContext calls `supabase.auth.*` directly. For new code, use hooks pattern (like `usePlayers`, `useCoachPlayers`).
-- **No console.log** — Remove all debug console.log before committing. Use Sentry `captureError` for errors.
+- **No shadcn/ui** — components/ui/ was removed. Build with TailwindCSS directly.
+- **Services layer** — hooks call services/ which wraps Supabase. Use hooks pattern for new code (like `usePlayers`, `useCoachPlayers`).
+- **No console.log** — Use Sentry `captureError` for errors.
 - **TypeScript strict** — All code must pass `npx tsc --noEmit` with zero errors.
 
 ## Known Pitfalls
 - **Never delete `api` schema** in Supabase — it's required by PostgREST.
 - **Local .env ANON_KEY is truncated** — use `vercel env pull` for production values.
 - **Vercel `--prod` builds from git** — use `vercel build --prod && vercel deploy --prebuilt --prod` for local deploys.
-- **UserType is only player|coach|scout** — `organization` role is missing from type and `roleDashboard()`.
-- **RLS is enabled but has zero policies** — tables may be fully locked. Create policies before testing data access.
+- **UserType is only player|coach|scout** — `organization` role is missing.
 - **`services/auth.ts` is dead** — AuthContext bypasses it. Don't add new auth logic there.
-- **Demo mode (`useDemoMode`) is broken** — toggles URL param but no data source switching. Don't rely on it.
+- **Demo mode (`useDemoMode`) is broken** — toggles URL param but no data source switching.
+- **RLS policies exist** — profiles (auth.uid = id), reports (scout/coach access). Don't drop them.
 
 ## Before Committing
 ```bash

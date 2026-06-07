@@ -519,7 +519,7 @@ function CTASection() {
               transition={{ delay: 0.4 }}
               className="text-ice-muted text-lg mb-10 arabic-text leading-relaxed"
             >
-              انضم إلى أكثر من 200 نادٍ و50,000 لاعب يثقون بـ Ada2AI في تحليل المواهب وتطوير الأداء الرياضي
+              انضم إلى المنصة الرائدة في اكتشاف المواهب الرياضية وتطوير الأداء بالمملكة العربية السعودية
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
