@@ -3,7 +3,7 @@ import { queryClient } from '../lib/queryClient'
 import {
   getClubPlayers, searchClubPlayers,
   updateClubPlayer, getClubAnalyses, retryFailedAnalysis,
-  getClubStats,
+  getClubStats, createPlayerViaEdgeFunction,
 } from '../services/admin'
 
 export function useClubPlayers() {
@@ -58,4 +58,14 @@ export function useClubStats() {
     queryFn: getClubStats,
   })
   return { stats: data ?? { playersCount: 0, videosCount: 0, completedCount: 0, failedCount: 0, ratingsCount: 0 }, loading: isLoading, error: error?.message }
+}
+
+export function useCreatePlayer() {
+  return useMutation({
+    mutationFn: createPlayerViaEdgeFunction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'players'] })
+      queryClient.invalidateQueries({ queryKey: ['players'] })
+    },
+  })
 }

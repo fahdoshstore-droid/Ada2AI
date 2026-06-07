@@ -4,14 +4,15 @@ import { motion } from 'framer-motion'
 import {
   Users, Video, BarChart3, Briefcase, Search,
   RefreshCw, Eye, Edit3, X, AlertCircle, CheckCircle2, Loader2,
+  UserPlus, Copy, Check,
 } from 'lucide-react'
-import { useClubPlayers, useSearchClubPlayers, useUpdateClubPlayer, useClubAnalyses, useRetryAnalysis, useClubStats } from '../../hooks/useAdmin'
+import { useClubPlayers, useSearchClubPlayers, useUpdateClubPlayer, useClubAnalyses, useRetryAnalysis, useClubStats, useCreatePlayer } from '../../hooks/useAdmin'
 import type { Player } from '../../lib/supabase'
 import type { AnalysisResults } from '../../services/analysis'
 import { StatusBadge } from '../../components/StatusBadge'
 import type { StatusKey } from '../../lib/tokens'
 
-type Tab = 'players' | 'analyses' | 'stats' | 'workspace'
+type Tab = 'players' | 'analyses' | 'stats' | 'workspace' | 'add-player'
 
 function EditPlayerModal({ player, onClose }: { player: Player; onClose: () => void }) {
   const updatePlayerMutation = useUpdateClubPlayer()
@@ -122,9 +123,19 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('')
   const { results: searchResults, loading: searchLoading } = useSearchClubPlayers(searchQuery)
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null)
+  const [newPlayer, setNewPlayer] = useState({
+    firstName: '', email: '', position: '',
+    age: '', dominantFoot: 'right', jerseyNumber: '',
+  })
+  const [createdPlayer, setCreatedPlayer] = useState<{
+    email: string; tempPassword: string
+  } | null>(null)
+  const [copied, setCopied] = useState(false)
+  const createPlayer = useCreatePlayer()
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'players', label: 'اللاعبون', icon: <Users className="w-4 h-4" /> },
+    { id: 'add-player', label: 'إضافة لاعب', icon: <UserPlus className="w-4 h-4" /> },
     { id: 'analyses', label: 'التحليلات', icon: <Video className="w-4 h-4" /> },
     { id: 'stats', label: 'الإحصائيات', icon: <BarChart3 className="w-4 h-4" /> },
     { id: 'workspace', label: 'مساحة العمل', icon: <Briefcase className="w-4 h-4" /> },
@@ -337,6 +348,120 @@ export default function AdminDashboard() {
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB — Add Player */}
+        {activeTab === 'add-player' && (
+          <div className="max-w-lg mx-auto" dir="rtl">
+            <div className="glass-card rounded-2xl p-6">
+              <h2 className="text-lg font-bold text-ice-white arabic-text mb-6">
+                إضافة لاعب جديد — نادي الروضة
+              </h2>
+
+              <div className="flex flex-col gap-4">
+                {[
+                  { key: 'firstName', label: 'الاسم الأول*', type: 'text', placeholder: 'اسم اللاعب' },
+                  { key: 'email', label: 'البريد الإلكتروني*', type: 'email', placeholder: 'player@email.com' },
+                  { key: 'position', label: 'المركز', type: 'text', placeholder: 'مهاجم، مدافع...' },
+                  { key: 'age', label: 'العمر', type: 'number', placeholder: '16' },
+                  { key: 'jerseyNumber', label: 'رقم القميص', type: 'number', placeholder: '10' },
+                ].map(field => (
+                  <div key={field.key}>
+                    <label className="text-sm text-ice-muted arabic-text mb-1 block">
+                      {field.label}
+                    </label>
+                    <input
+                      type={field.type}
+                      placeholder={field.placeholder}
+                      value={newPlayer[field.key as keyof typeof newPlayer]}
+                      onChange={e => setNewPlayer(prev => ({
+                        ...prev, [field.key]: e.target.value
+                      }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white arabic-text focus:border-teal-prime/50 focus:outline-none"
+                    />
+                  </div>
+                ))}
+
+                <div>
+                  <label className="text-sm text-ice-muted arabic-text mb-1 block">
+                    القدم المفضلة
+                  </label>
+                  <select
+                    value={newPlayer.dominantFoot}
+                    onChange={e => setNewPlayer(prev => ({
+                      ...prev, dominantFoot: e.target.value
+                    }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ice-white arabic-text focus:border-teal-prime/50 focus:outline-none"
+                  >
+                    <option value="right">اليمنى</option>
+                    <option value="left">اليسرى</option>
+                    <option value="both">كلتاهما</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={async () => {
+                    try {
+                      const result = await createPlayer.mutateAsync(newPlayer)
+                      setCreatedPlayer(result)
+                      setCopied(false)
+                      setNewPlayer({
+                        firstName: '', email: '', position: '',
+                        age: '', dominantFoot: 'right', jerseyNumber: '',
+                      })
+                    } catch (err) {
+                      alert(err instanceof Error ? err.message : 'فشل إنشاء الحساب')
+                    }
+                  }}
+                  disabled={createPlayer.isPending || !newPlayer.firstName || !newPlayer.email}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold arabic-text disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-teal-prime/25 transition-all"
+                >
+                  {createPlayer.isPending ? 'جارٍ الإنشاء...' : 'إنشاء حساب اللاعب'}
+                </button>
+              </div>
+
+              {createPlayer.isError && (
+                <div className="mt-4 p-3 rounded-lg bg-red-400/10 text-red-400 text-sm arabic-text">
+                  {createPlayer.error instanceof Error ? createPlayer.error.message : 'فشل إنشاء الحساب'}
+                </div>
+              )}
+
+              {createdPlayer && (
+                <div className="mt-6 p-4 rounded-xl border border-teal-prime/30 bg-teal-prime/5">
+                  <p className="text-green-400 font-bold arabic-text mb-3">
+                    ✅ تم إنشاء الحساب بنجاح
+                  </p>
+                  <div className="flex flex-col gap-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-ice-muted arabic-text">البريد:</span>
+                      <span className="text-ice-white font-mono">{createdPlayer.email}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-ice-muted arabic-text">كلمة المرور المؤقتة:</span>
+                      <span className="text-teal-prime font-mono font-bold">
+                        {createdPlayer.tempPassword}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `البريد: ${createdPlayer.email}\nكلمة المرور: ${createdPlayer.tempPassword}\nالرابط: https://ada2ai.com/login`
+                      ).catch(() => {})
+                      setCopied(true)
+                      setTimeout(() => setCopied(false), 2000)
+                    }}
+                    className="mt-3 w-full py-2 rounded-lg border border-teal-prime/30 text-teal-prime text-sm arabic-text hover:bg-teal-prime/10 transition-colors flex items-center justify-center gap-2"
+                  >
+                    {copied ? <><Check className="w-4 h-4" /> تم النسخ</> : <><Copy className="w-4 h-4" /> نسخ البيانات</>}
+                  </button>
+                  <p className="text-ice-muted text-xs arabic-text mt-2 text-center">
+                    أرسل هذه البيانات للاعب — سيغير كلمة المرور عند أول دخول
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

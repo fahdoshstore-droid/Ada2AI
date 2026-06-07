@@ -124,3 +124,38 @@ export async function getClubStats(): Promise<{
     ratingsCount: reportsRes.count ?? 0,
   }
 }
+
+/** Create a player account via Supabase Edge Function (admin-only).
+ *  The Edge Function handles auth user creation + profile + player record server-side.
+ *  No service_role key is ever exposed to the frontend.
+ */
+export async function createPlayerViaEdgeFunction(data: {
+  firstName: string
+  email: string
+  position?: string
+  age?: string
+  dominantFoot?: string
+  jerseyNumber?: string
+}): Promise<{ userId: string; email: string; tempPassword: string }> {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error('غير مسجل دخول')
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-player`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify(data),
+    }
+  )
+
+  const result = await response.json()
+  if (!response.ok) throw new Error(result.error || 'فشل إنشاء الحساب')
+
+  trackEvent('admin_player_created', { email: data.email })
+  return result
+}
