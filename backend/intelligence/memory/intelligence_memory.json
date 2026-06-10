@@ -71,7 +71,7 @@
       "best_role": null,
       "dna_vector": [],
       "dna_labels": [],
-      "matches_analyzed": 2,
+      "matches_analyzed": 4,
       "last_updated": 0.0,
       "temporal_snapshots": [
         {
@@ -113,6 +113,48 @@
           },
           "dna_labels": [
             "ممرر محافظ",
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 8500.0,
+          "avg_speed": 6.2,
+          "max_speed": 9.8,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.96,
+            "positional_stability": 1.0,
+            "tempo_control": -0.265,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test",
+          "total_distance": 333.3333333333333,
+          "avg_speed": 11.11111111111111,
+          "max_speed": 14.444444444444445,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 1.0,
+            "positional_stability": 1.0,
+            "tempo_control": -0.538,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
             "لاعب آمن",
             "متحول",
             "مثبت مواقعي"
@@ -410,7 +452,7 @@
       "best_role": null,
       "dna_vector": [],
       "dna_labels": [],
-      "matches_analyzed": 6,
+      "matches_analyzed": 7,
       "last_updated": 0.0,
       "temporal_snapshots": [
         {
@@ -535,6 +577,27 @@
           },
           "dna_labels": [
             "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 7200.0,
+          "avg_speed": 5.4,
+          "max_speed": 8.5,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 1.0,
+            "transition_focus": 0.7,
+            "positional_stability": 1.0,
+            "tempo_control": -0.271,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "صانع مخاطر",
             "متحول",
             "مثبت مواقعي"
           ]
