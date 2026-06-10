@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
@@ -6,34 +6,51 @@ import { LoadingState } from '../../components/LoadingState'
 import { EmptyState } from '../../components/EmptyState'
 import { ErrorState } from '../../components/ErrorState'
 
+const QUERY_TIMEOUT_MS = 8000
+
 export function CoachDashboard() {
   const { signOut } = useAuth()
-  const [players, setPlayers] = useState<Array<{ id: string; user_id: string }>>([])
+  const [players, setPlayers] = useState<Array<{ id: string; user_id: string | null; name?: string }>>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [formation, setFormation] = useState('4-3-3')
   const [tacticalNotes, setTacticalNotes] = useState('')
+  const mountedRef = useRef(true)
 
   const fetchPlayers = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const { data, error: fetchError } = await supabase
+      // Race: query vs timeout
+      const queryPromise = supabase
         .from('players')
-        .select('id, user_id')
-        .eq('is_active', true)
+        .select('id, user_id, name')
+        .eq('is_verified', true)
 
-      if (fetchError) throw fetchError
-      setPlayers(data || [])
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), QUERY_TIMEOUT_MS)
+      )
+
+      const result: any = await Promise.race([queryPromise, timeoutPromise])
+        .catch(() => ({ data: null, error: new Error('timeout') }))
+
+      if (!mountedRef.current) return
+      if (result.error) throw result.error
+      setPlayers(result.data || [])
     } catch (err) {
+      if (!mountedRef.current) return
       setError('فشل في تحميل بيانات اللاعبين')
     } finally {
-      setLoading(false)
+      if (mountedRef.current) setLoading(false)
     }
   }
 
-  useEffect(() => { fetchPlayers() }, [])
+  useEffect(() => {
+    mountedRef.current = true
+    fetchPlayers()
+    return () => { mountedRef.current = false }
+  }, [])
 
   const handleSignOut = async () => { await signOut() }
 
@@ -81,8 +98,8 @@ export function CoachDashboard() {
               {players.map(player => (
                 <div key={player.id} style={{ padding: '12px', backgroundColor: '#f8fafc', borderRadius: '8px', textAlign: 'center' }}>
                   <div style={{ width: '48px', height: '48px', backgroundColor: '#e0e7ff', borderRadius: '50%', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>⚽</div>
-                  <div style={{ fontSize: '14px', fontWeight: 500, color: '#1e293b' }}>لاعب</div>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>{player.user_id.slice(0, 8)}...</div>
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: '#1e293b' }}>{player.name || 'لاعب'}</div>
+                  <div style={{ fontSize: '12px', color: '#64748b' }}>{player.user_id ? player.user_id.slice(0, 8) + '...' : '—'}</div>
                 </div>
               ))}
             </div>

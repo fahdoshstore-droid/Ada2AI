@@ -1,41 +1,63 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { LoadingState } from '../../components/LoadingState'
 import { ErrorState } from '../../components/ErrorState'
 
+const QUERY_TIMEOUT_MS = 8000
+
 export function AdminDashboard() {
   const { email, signOut } = useAuth()
   const [stats, setStats] = useState({ players: 0, coaches: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
 
   const fetchData = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const { count: playerCount } = await supabase
+      const playerPromise = supabase
         .from('players')
         .select('*', { count: 'exact', head: true })
 
-      const { count: coachCount } = await supabase
+      const coachPromise = supabase
         .from('coaches')
         .select('*', { count: 'exact', head: true })
 
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), QUERY_TIMEOUT_MS)
+      )
+
+      const results: any = await Promise.race([
+        Promise.all([playerPromise, coachPromise]),
+        timeoutPromise
+      ]).catch(() => [{ count: null, error: new Error('timeout') }, { count: null, error: null }])
+
+      if (!mountedRef.current) return
+
+      const playerResult = results?.[0] || { count: null }
+      const coachResult = results?.[1] || { count: null }
+
       setStats({
-        players: playerCount ?? 0,
-        coaches: coachCount ?? 0,
+        players: playerResult.count ?? 0,
+        coaches: coachResult.count ?? 0,
       })
     } catch (err) {
+      if (!mountedRef.current) return
       setError('فشل في تحميل البيانات')
     } finally {
-      setLoading(false)
+      if (mountedRef.current) setLoading(false)
     }
   }
 
-  useEffect(() => { fetchData() }, [])
+  useEffect(() => {
+    mountedRef.current = true
+    fetchData()
+    return () => { mountedRef.current = false }
+  }, [])
 
   if (loading) return <LoadingState />
   if (error) return <ErrorState message={error} onRetry={fetchData} />

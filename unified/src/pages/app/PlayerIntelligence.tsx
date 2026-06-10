@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { LoadingState } from '../../components/LoadingState'
 import { EmptyState } from '../../components/EmptyState'
@@ -56,6 +56,7 @@ const ROLE_LABELS: Record<string, { ar: string; en: string }> = {
 
 // ═══ Helpers ═══
 const API_BASE = import.meta.env.VITE_API_BASE || ''
+const FETCH_TIMEOUT_MS = 8000
 
 function confidenceBadge(confidence: number) {
   if (confidence >= 0.7) return { label: 'ثقة عالية', color: '#10b981', bg: '#d1fae5' }
@@ -76,32 +77,52 @@ export function PlayerIntelligence() {
   const [data, setData] = useState<PlayerIntelligenceData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [apiUnavailable, setApiUnavailable] = useState(false)
   const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null)
   const [availablePlayers, setAvailablePlayers] = useState<{ track_id: number; team: number; labels: string[] }[]>([])
   const [loadingPlayers, setLoadingPlayers] = useState(false)
+  const mountedRef = useRef(true)
+
+  // Fetch with timeout
+  const fetchWithTimeout = async (url: string, timeoutMs: number = FETCH_TIMEOUT_MS) => {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
+    try {
+      const res = await fetch(url, { signal: controller.signal })
+      clearTimeout(timer)
+      return res
+    } catch (err: any) {
+      clearTimeout(timer)
+      if (err.name === 'AbortError') {
+        setApiUnavailable(true)
+      }
+      throw err
+    }
+  }
 
   // Step 1: Fetch available players from latest analysis
   const fetchPlayers = async () => {
     try {
       setLoadingPlayers(true)
-      const res = await fetch(`${API_BASE}/intelligence/players`)
+      const res = await fetchWithTimeout(`${API_BASE}/intelligence/players`)
       if (!res.ok) {
         if (res.status === 404) {
-          setAvailablePlayers([])
+          if (mountedRef.current) setAvailablePlayers([])
           return
         }
         throw new Error(`HTTP ${res.status}`)
       }
       const json = await res.json()
-      setAvailablePlayers(json.players || [])
-      if (json.players?.length > 0 && !selectedTrackId) {
-        setSelectedTrackId(json.players[0].track_id)
+      if (mountedRef.current) {
+        setAvailablePlayers(json.players || [])
+        if (json.players?.length > 0 && !selectedTrackId) {
+          setSelectedTrackId(json.players[0].track_id)
+        }
       }
     } catch (err: any) {
-      // Don't fail the page — just show no players available
-      setAvailablePlayers([])
+      if (mountedRef.current) setAvailablePlayers([])
     } finally {
-      setLoadingPlayers(false)
+      if (mountedRef.current) setLoadingPlayers(false)
     }
   }
 
@@ -110,21 +131,25 @@ export function PlayerIntelligence() {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch(`${API_BASE}/intelligence/player/${trackId}`)
+      const res = await fetchWithTimeout(`${API_BASE}/intelligence/player/${trackId}`)
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}))
         throw new Error(errBody.detail || `HTTP ${res.status}`)
       }
       const json = await res.json()
-      setData(json)
+      if (mountedRef.current) setData(json)
     } catch (err: any) {
-      setError(err.message || 'فشل في تحميل بيانات الذكاء')
+      if (mountedRef.current) setError(err.message || 'فشل في تحميل بيانات الذكاء')
     } finally {
-      setLoading(false)
+      if (mountedRef.current) setLoading(false)
     }
   }
 
-  useEffect(() => { fetchPlayers() }, [])
+  useEffect(() => {
+    mountedRef.current = true
+    fetchPlayers()
+    return () => { mountedRef.current = false }
+  }, [])
 
   useEffect(() => {
     if (selectedTrackId !== null) fetchIntelligence(selectedTrackId)
@@ -155,10 +180,20 @@ export function PlayerIntelligence() {
       </header>
 
       <main style={{ padding: '32px', maxWidth: '960px', margin: '0 auto' }}>
-        {/* No analysis data yet */}
-        {loadingPlayers && availablePlayers.length === 0 && !data && <LoadingState />}
+        {/* API unavailable */}
+        {apiUnavailable && (
+          <div style={{ textAlign: 'center', padding: '48px 24px', backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #fde68a' }}>
+            <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔧</div>
+            <h3 style={{ fontSize: '18px', color: '#1e293b', margin: '0 0 8px' }}>ميزة التحليل الذكي غير متاحة حالياً</h3>
+            <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 16px' }}>خادم التحليل غير متصل. يتطلب تشغيل خادم التحليل محلياً أو نشره على بيئة الإنتاج.</p>
+            <button onClick={() => { setApiUnavailable(false); fetchPlayers() }} style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}>إعادة المحاولة</button>
+          </div>
+        )}
 
-        {!loadingPlayers && availablePlayers.length === 0 && !data && (
+        {/* No analysis data yet */}
+        {!apiUnavailable && loadingPlayers && availablePlayers.length === 0 && !data && <LoadingState />}
+
+        {!apiUnavailable && !loadingPlayers && availablePlayers.length === 0 && !data && (
           <EmptyState
             title="لا توجد بيانات تحليل بعد"
             description="سيظهر الذكاء الرياضي هنا بعد رفع فيديو وتحليله عبر النظام. البيانات حقيقية فقط — لا بيانات تجريبية."

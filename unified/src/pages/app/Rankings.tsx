@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { LoadingState } from '../../components/LoadingState'
@@ -6,50 +6,64 @@ import { EmptyState } from '../../components/EmptyState'
 import { ErrorState } from '../../components/ErrorState'
 
 // ⚠️ NO DEMO DATA — rankings must come from real analysis only
-// Rankings are derived from IntelligenceBridge role_fit scores
-// If no analysis data exists, show empty state
+
+const QUERY_TIMEOUT_MS = 8000
 
 export function Rankings() {
   const [rankings, setRankings] = useState<Array<{ rank: number; player_name: string; team: string; score: number }>>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
 
   const fetchRankings = async () => {
     try {
       setLoading(true)
       setError(null)
-      // Fetch players with real analysis data only
-      const { data, error: fetchError } = await supabase
+
+      const queryPromise = supabase
         .from('players')
-        .select('id, user_id, name, name_ar, position, rating')
-        .eq('is_active', true)
+        .select('id, user_id, name, position, rating')
+        .eq('is_verified', true)
 
-      if (fetchError) throw fetchError
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), QUERY_TIMEOUT_MS)
+      )
 
-      if (data && data.length > 0 && data.some(p => p.rating !== null && p.rating !== undefined)) {
-        // Use real rating scores — NO random generation
+      const result: any = await Promise.race([queryPromise, timeoutPromise])
+        .catch(() => ({ data: null, error: new Error('timeout') }))
+
+      if (!mountedRef.current) return
+      if (result.error) throw result.error
+
+      const data = result.data
+
+      if (data && data.length > 0 && data.some((p: any) => p.rating !== null && p.rating !== undefined)) {
         const ranked = data
-          .filter(p => p.rating !== null && p.rating !== undefined)
-          .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
-          .map((p, i) => ({
+          .filter((p: any) => p.rating !== null && p.rating !== undefined)
+          .sort((a: any, b: any) => (b.rating ?? 0) - (a.rating ?? 0))
+          .map((p: any, i: number) => ({
             rank: i + 1,
-            player_name: p.name_ar || p.name || `لاعب ${p.id.slice(0, 8)}`,
+            player_name: p.name || `لاعب ${p.id.slice(0, 8)}`,
             team: '—',
-            score: Math.round(p.rating!),
+            score: Math.round(p.rating),
           }))
         setRankings(ranked)
       } else {
-        // No real ratings — show empty state
         setRankings([])
       }
     } catch (err) {
+      if (!mountedRef.current) return
       setError('فشل في تحميل التصنيفات')
     } finally {
-      setLoading(false)
+      if (mountedRef.current) setLoading(false)
     }
   }
 
-  useEffect(() => { fetchRankings() }, [])
+  useEffect(() => {
+    mountedRef.current = true
+    fetchRankings()
+    return () => { mountedRef.current = false }
+  }, [])
 
   if (loading) return <LoadingState />
   if (error) return <ErrorState message={error} onRetry={fetchRankings} />

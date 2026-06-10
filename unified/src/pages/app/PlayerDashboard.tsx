@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { LoadingState } from '../../components/LoadingState'
@@ -8,7 +8,6 @@ import { ErrorState } from '../../components/ErrorState'
 interface PlayerData {
   id: string
   name: string
-  name_ar: string | null
   position: string | null
   age: number | null
   rating: number
@@ -19,36 +18,53 @@ interface PlayerData {
   academy_name: string | null
   avatar_url: string | null
   bio: string | null
-  is_active: boolean
+  is_verified: boolean
 }
+
+const QUERY_TIMEOUT_MS = 8000
 
 export function PlayerDashboard() {
   const { userId, signOut } = useAuth()
   const [player, setPlayer] = useState<PlayerData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
 
   const fetchPlayer = async () => {
     if (!userId) return
     try {
       setLoading(true)
       setError(null)
-      const { data, error: fetchError } = await supabase
+
+      const queryPromise = supabase
         .from('players')
-        .select('id, name, name_ar, position, age, rating, speed, agility, technique, stamina, academy_name, avatar_url, bio, is_active')
+        .select('id, name, position, age, rating, speed, agility, technique, stamina, academy_name, avatar_url, bio, is_verified')
         .eq('user_id', userId)
         .single()
 
-      if (fetchError) throw fetchError
-      setPlayer(data)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), QUERY_TIMEOUT_MS)
+      )
+
+      const result: any = await Promise.race([queryPromise, timeoutPromise])
+        .catch(() => ({ data: null, error: new Error('timeout') }))
+
+      if (!mountedRef.current) return
+      if (result.error) throw result.error
+      setPlayer(result.data)
     } catch (err: any) {
+      if (!mountedRef.current) return
       setError(err.message || 'فشل في تحميل بيانات اللاعب')
     } finally {
-      setLoading(false)
+      if (mountedRef.current) setLoading(false)
     }
   }
 
-  useEffect(() => { fetchPlayer() }, [userId])
+  useEffect(() => {
+    mountedRef.current = true
+    fetchPlayer()
+    return () => { mountedRef.current = false }
+  }, [userId])
 
   const handleSignOut = async () => { await signOut() }
 
@@ -85,7 +101,7 @@ export function PlayerDashboard() {
       <header style={{ backgroundColor: '#fff', borderBottom: '1px solid #e5e7eb', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '24px', color: '#1e293b' }}>لوحة اللاعب</h1>
-          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>{player.name_ar || player.name}</p>
+          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>{player.name}</p>
         </div>
         <button onClick={handleSignOut} style={{ padding: '8px 16px', backgroundColor: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}>خروج</button>
       </header>
@@ -96,7 +112,7 @@ export function PlayerDashboard() {
           <div style={{ width: '80px', height: '80px', backgroundColor: '#e0e7ff', borderRadius: '50%', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px' }}>
             {player.avatar_url ? <img src={player.avatar_url} alt={player.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : '⚽'}
           </div>
-          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#1e293b', margin: '0 0 4px' }}>{player.name_ar || player.name}</h2>
+          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#1e293b', margin: '0 0 4px' }}>{player.name}</h2>
           {player.position && <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 4px' }}>{player.position}</p>}
           {player.academy_name && <p style={{ color: '#64748b', fontSize: '13px', margin: 0 }}>{player.academy_name}</p>}
           {player.bio && <p style={{ color: '#94a3b8', fontSize: '13px', margin: '8px 0 0', fontStyle: 'italic' }}>{player.bio}</p>}

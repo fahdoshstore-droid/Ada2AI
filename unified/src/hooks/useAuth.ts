@@ -10,6 +10,19 @@ interface AuthState {
   role: Role | null
 }
 
+const AUTH_TIMEOUT_MS = 5000
+const ROLE_TIMEOUT_MS = 5000
+
+// Wrap any promise with a hard timeout — returns null on timeout/error
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+  return new Promise<T | null>((resolve) => {
+    const timer = setTimeout(() => resolve(null), ms)
+    promise
+      .then((val) => { clearTimeout(timer); resolve(val) })
+      .catch(() => { clearTimeout(timer); resolve(null) })
+  })
+}
+
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
     userId: null,
@@ -19,28 +32,36 @@ export function useAuth() {
   })
 
   const fetchRole = useCallback(async (userId: string): Promise<Role | null> => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('user_type')
-      .eq('id', userId)
-      .maybeSingle()
-
-    if (error) {
-      console.error('Error fetching role:', error)
+    try {
+      const result = await withTimeout(
+        supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', userId)
+          .maybeSingle() as any as Promise<any>,
+        ROLE_TIMEOUT_MS
+      )
+      if (!result || result.error || !result.data) return null
+      return (result.data.user_type as Role) ?? null
+    } catch {
       return null
     }
-    return (data?.user_type as Role) ?? null
   }, [])
 
   const checkAuth = useCallback(async () => {
     try {
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+      // getUser() with 5s hard timeout
+      const authResult = await withTimeout(
+        supabase.auth.getUser() as any as Promise<any>,
+        AUTH_TIMEOUT_MS
+      )
 
-      if (authError || !authUser) {
+      if (!authResult || authResult.error || !authResult.data?.user) {
         setState({ userId: null, email: null, loading: false, role: null })
         return
       }
 
+      const authUser = authResult.data.user
       const role = await fetchRole(authUser.id)
 
       setState({
@@ -50,7 +71,6 @@ export function useAuth() {
         role,
       })
     } catch (err) {
-      console.error('Auth check failed:', err)
       setState({ userId: null, email: null, loading: false, role: null })
     }
   }, [fetchRole])
