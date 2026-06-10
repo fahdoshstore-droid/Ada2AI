@@ -70,40 +70,40 @@ export function Rankings() {
   if (rankings.length === 0) return <EmptyState title="لا توجد تصنيفات حالياً" description="سيظهر التصنيف عند توفر بيانات اللاعبين" />
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', direction: 'rtl', fontFamily: 'system-ui, sans-serif' }}>
-      <header style={{ backgroundColor: '#fff', borderBottom: '1px solid #e5e7eb', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ margin: 0, fontSize: '24px', color: '#1e293b' }}>التصنيفات</h1>
-        <Link to="/app" style={{ padding: '8px 16px', backgroundColor: '#2563eb', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontSize: '14px' }}>العودة</Link>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #000A0F 0%, #0A0E1A 100%)', direction: 'rtl', fontFamily: "'Cairo', sans-serif" }}>
+      <header style={{ backgroundColor: '#0A0E1A', borderBottom: '1px solid rgba(0, 220, 200, 0.15)', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 style={{ margin: 0, fontSize: '24px', color: '#EEEFEE', fontFamily: "'Orbitron', sans-serif", fontWeight: 700, letterSpacing: '-0.01em' }}>التصنيفات</h1>
+        <Link to="/app" style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #007ABA 0%, #00DCC8 100%)', color: '#EEEFEE', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontFamily: "'Cairo', sans-serif", fontWeight: 600 }}>العودة</Link>
       </header>
 
       <main style={{ padding: '32px', maxWidth: '900px', margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
           {rankings.slice(0, 3).map((p, i) => (
-            <div key={p.rank} style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e5e7eb', textAlign: 'center', order: i === 0 ? -1 : i }}>
+            <div key={p.rank} style={{ backgroundColor: '#0A0E1A', padding: '20px', borderRadius: '12px', border: i === 0 ? '1px solid rgba(0, 220, 200, 0.3)' : '1px solid rgba(0, 220, 200, 0.15)', textAlign: 'center', order: i === 0 ? -1 : i, boxShadow: i === 0 ? '0 0 20px rgba(0, 220, 200, 0.15)' : 'none' }}>
               <div style={{ fontSize: '32px', marginBottom: '8px' }}>{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</div>
-              <div style={{ fontSize: '18px', fontWeight: 600, color: '#1e293b' }}>{p.player_name}</div>
-              <div style={{ fontSize: '13px', color: '#64748b' }}>{p.team}</div>
-              <div style={{ fontSize: '24px', fontWeight: 700, color: '#2563eb', marginTop: '8px' }}>{p.score}</div>
+              <div style={{ fontSize: '18px', fontWeight: 600, color: '#EEEFEE', fontFamily: "'Cairo', sans-serif" }}>{p.player_name}</div>
+              <div style={{ fontSize: '13px', color: '#6B7280' }}>{p.team}</div>
+              <div style={{ fontSize: '24px', fontWeight: 700, color: '#00DCC8', marginTop: '8px', fontFamily: "'Orbitron', sans-serif" }}>{p.score}</div>
             </div>
           ))}
         </div>
 
-        <div style={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+        <div style={{ backgroundColor: '#0A0E1A', borderRadius: '12px', border: '1px solid rgba(0, 220, 200, 0.15)', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e5e7eb' }}>
+              <tr style={{ backgroundColor: '#111827', borderBottom: '1px solid rgba(0, 220, 200, 0.15)' }}>
                 {['#', 'اللاعب', 'الفريق', 'النقاط'].map(h => (
-                  <th key={h} style={{ padding: '12px 16px', textAlign: 'right', fontSize: '13px', color: '#64748b', fontWeight: 500 }}>{h}</th>
+                  <th key={h} style={{ padding: '12px 16px', textAlign: 'right', fontSize: '13px', color: '#6B7280', fontWeight: 500, fontFamily: "'Cairo', sans-serif" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {rankings.map((player, i) => (
-                <tr key={player.rank} style={{ borderBottom: i < rankings.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                  <td style={{ padding: '12px 16px', fontWeight: 600, color: player.rank <= 3 ? '#d97706' : '#374151' }}>{player.rank}</td>
-                  <td style={{ padding: '12px 16px', color: '#1e293b' }}>{player.player_name}</td>
-                  <td style={{ padding: '12px 16px', color: '#64748b', fontSize: '14px' }}>{player.team}</td>
-                  <td style={{ padding: '12px 16px', fontWeight: 600, color: '#2563eb' }}>{player.score}</td>
+                <tr key={player.rank} style={{ borderBottom: i < rankings.length - 1 ? '1px solid rgba(238, 239, 238, 0.06)' : 'none' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: 600, color: player.rank <= 3 ? '#F59E0B' : '#EEEFEE', fontFamily: "'Orbitron', sans-serif" }}>{player.rank}</td>
+                  <td style={{ padding: '12px 16px', color: '#EEEFEE' }}>{player.player_name}</td>
+                  <td style={{ padding: '12px 16px', color: '#6B7280', fontSize: '14px' }}>{player.team}</td>
+                  <td style={{ padding: '12px 16px', fontWeight: 600, color: '#00DCC8', fontFamily: "'Orbitron', sans-serif" }}>{player.score}</td>
                 </tr>
               ))}
             </tbody>

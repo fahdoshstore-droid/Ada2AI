@@ -75,10 +75,10 @@ export function PlayerDashboard() {
   // No player record linked to this user yet
   if (!player) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', direction: 'rtl', fontFamily: 'system-ui, sans-serif' }}>
-        <header style={{ backgroundColor: '#fff', borderBottom: '1px solid #e5e7eb', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ margin: 0, fontSize: '24px', color: '#1e293b' }}>لوحة اللاعب</h1>
-          <button onClick={handleSignOut} style={{ padding: '8px 16px', backgroundColor: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}>خروج</button>
+      <div style={{ minHeight: '100vh', backgroundColor: '#000A0F', direction: 'rtl', fontFamily: "'Cairo', sans-serif" }}>
+        <header style={{ backgroundColor: '#0D1E35', borderBottom: '1px solid rgba(0, 220, 200, 0.15)', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1 style={{ margin: 0, fontSize: '24px', fontFamily: "'Orbitron', sans-serif", fontWeight: 700, color: '#00DCC8', letterSpacing: '-0.01em' }}>لوحة اللاعب</h1>
+          <button onClick={handleSignOut} style={{ padding: '8px 16px', backgroundColor: '#FF4444', color: '#000A0F', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>خروج</button>
         </header>
         <main style={{ padding: '32px', maxWidth: '800px', margin: '0 auto' }}>
           <EmptyState title="لم يتم ربط ملف اللاعب بعد" description="سيتم ربط ملفك تلقائياً عند تسجيل بياناتك" />
@@ -88,34 +88,34 @@ export function PlayerDashboard() {
   }
 
   const stats = [
-    { label: 'السرعة', value: player.speed || '—', color: '#3b82f6' },
-    { label: 'الرشاقة', value: player.agility || '—', color: '#10b981' },
-    { label: 'التقنية', value: player.technique || '—', color: '#f59e0b' },
-    { label: 'اللياقة', value: player.stamina || '—', color: '#ef4444' },
-    { label: 'التقييم العام', value: player.rating || '—', color: '#8b5cf6' },
-    { label: 'المركز', value: player.position || '—', color: '#06b6d4' },
+    { label: 'السرعة', value: player.speed || '—', color: '#00DCC8' },
+    { label: 'الرشاقة', value: player.agility || '—', color: '#10B981' },
+    { label: 'التقنية', value: player.technique || '—', color: '#F59E0B' },
+    { label: 'اللياقة', value: player.stamina || '—', color: '#FF4444' },
+    { label: 'التقييم العام', value: player.rating || '—', color: '#007ABA' },
+    { label: 'المركز', value: player.position || '—', color: '#00DCC8' },
   ]
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', direction: 'rtl', fontFamily: 'system-ui, sans-serif' }}>
-      <header style={{ backgroundColor: '#fff', borderBottom: '1px solid #e5e7eb', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#000A0F', direction: 'rtl', fontFamily: "'Cairo', sans-serif" }}>
+      <header style={{ backgroundColor: '#0D1E35', borderBottom: '1px solid rgba(0, 220, 200, 0.15)', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '24px', color: '#1e293b' }}>لوحة اللاعب</h1>
-          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>{player.name}</p>
+          <h1 style={{ margin: 0, fontSize: '24px', fontFamily: "'Orbitron', sans-serif", fontWeight: 700, color: '#00DCC8', letterSpacing: '-0.01em' }}>لوحة اللاعب</h1>
+          <p style={{ margin: '4px 0 0', color: '#6B8099', fontSize: '14px' }}>{player.name}</p>
         </div>
-        <button onClick={handleSignOut} style={{ padding: '8px 16px', backgroundColor: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}>خروج</button>
+        <button onClick={handleSignOut} style={{ padding: '8px 16px', backgroundColor: '#FF4444', color: '#000A0F', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>خروج</button>
       </header>
 
       <main style={{ padding: '32px', maxWidth: '800px', margin: '0 auto' }}>
         {/* Player Profile Card */}
-        <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '24px', textAlign: 'center' }}>
-          <div style={{ width: '80px', height: '80px', backgroundColor: '#e0e7ff', borderRadius: '50%', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px' }}>
+        <div style={{ backgroundColor: '#0D1E35', padding: '24px', borderRadius: '12px', border: '1px solid rgba(0, 220, 200, 0.12)', marginBottom: '24px', textAlign: 'center' }}>
+          <div style={{ width: '80px', height: '80px', backgroundColor: '#0A1628', borderRadius: '50%', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', border: '1px solid rgba(0, 220, 200, 0.2)' }}>
             {player.avatar_url ? <img src={player.avatar_url} alt={player.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : '⚽'}
           </div>
-          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#1e293b', margin: '0 0 4px' }}>{player.name}</h2>
-          {player.position && <p style={{ color: '#64748b', fontSize: '14px', margin: '0 0 4px' }}>{player.position}</p>}
-          {player.academy_name && <p style={{ color: '#64748b', fontSize: '13px', margin: 0 }}>{player.academy_name}</p>}
-          {player.bio && <p style={{ color: '#94a3b8', fontSize: '13px', margin: '8px 0 0', fontStyle: 'italic' }}>{player.bio}</p>}
+          <h2 style={{ fontSize: '20px', fontWeight: 700, fontFamily: "'Orbitron', sans-serif", color: '#EEEFEE', margin: '0 0 4px', letterSpacing: '-0.01em' }}>{player.name}</h2>
+          {player.position && <p style={{ color: '#6B8099', fontSize: '14px', margin: '0 0 4px' }}>{player.position}</p>}
+          {player.academy_name && <p style={{ color: '#6B8099', fontSize: '13px', margin: 0 }}>{player.academy_name}</p>}
+          {player.bio && <p style={{ color: '#6B8099', fontSize: '13px', margin: '8px 0 0', fontStyle: 'italic' }}>{player.bio}</p>}
         </div>
 
         {/* Real Stats from Supabase */}

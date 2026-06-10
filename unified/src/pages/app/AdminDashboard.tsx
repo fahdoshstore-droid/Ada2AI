@@ -63,29 +63,29 @@ export function AdminDashboard() {
   if (error) return <ErrorState message={error} onRetry={fetchData} />
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', direction: 'rtl', fontFamily: 'system-ui, sans-serif' }}>
-      <header style={{ backgroundColor: '#fff', borderBottom: '1px solid #e5e7eb', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#000A0F', direction: 'rtl', fontFamily: "'Cairo', sans-serif" }}>
+      <header style={{ backgroundColor: '#0A0E1A', borderBottom: '1px solid rgba(0, 220, 200, 0.15)', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '24px', color: '#1e293b' }}>لوحة المسؤول</h1>
-          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>
+          <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: '#EEEFEE', fontFamily: "'Orbitron', sans-serif", letterSpacing: '-0.01em' }}>لوحة المسؤول</h1>
+          <p style={{ margin: '4px 0 0', color: '#6B7280', fontSize: '14px' }}>
             {email}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <Link to="/app/rankings" style={{ padding: '8px 16px', backgroundColor: '#2563eb', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontSize: '14px' }}>التصنيفات</Link>
-          <button onClick={signOut} style={{ padding: '8px 16px', backgroundColor: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}>تسجيل الخروج</button>
+          <Link to="/app/rankings" style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #007ABA 0%, #00DCC8 100%)', color: '#fff', borderRadius: '6px', textDecoration: 'none', fontSize: '14px', fontWeight: 600 }}>التصنيفات</Link>
+          <button onClick={signOut} style={{ padding: '8px 16px', backgroundColor: '#EF4444', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>تسجيل الخروج</button>
         </div>
       </header>
 
       <main style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
           {[
-            { label: 'اللاعبين', value: stats.players, color: '#059669' },
-            { label: 'المدربين', value: stats.coaches, color: '#d97706' },
+            { label: 'اللاعبين', value: stats.players, color: '#10B981' },
+            { label: 'المدربين', value: stats.coaches, color: '#F59E0B' },
           ].map(stat => (
-            <div key={stat.label} style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '12px', border: '1px solid #e5e7eb', textAlign: 'center' }}>
-              <div style={{ fontSize: '36px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
-              <div style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>{stat.label}</div>
+            <div key={stat.label} style={{ backgroundColor: '#0A0E1A', padding: '24px', borderRadius: '12px', border: '1px solid rgba(0, 220, 200, 0.12)', textAlign: 'center', boxShadow: '0 0 20px rgba(0, 220, 200, 0.08)' }}>
+              <div style={{ fontSize: '36px', fontWeight: 700, color: stat.color, fontFamily: "'Orbitron', sans-serif", textShadow: `0 0 12px ${stat.color}40` }}>{stat.value}</div>
+              <div style={{ color: '#6B7280', fontSize: '14px', marginTop: '4px' }}>{stat.label}</div>
             </div>
           ))}
         </div>

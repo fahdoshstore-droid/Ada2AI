@@ -1,4 +1,142 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: system-ui, -apple-system, sans-serif; direction: rtl; background: #f8fafc; }
-button { font-family: inherit; }
-input, select, textarea { font-family: inherit; }
+/* ═══════════════════════════════════════════════════════
+ * ADA2AI — Master Brand Design System 2026
+ * "Empowering Athletic Performance Through AI"
+ * 
+ * Source: BRAND.md + client/src/index.css
+ * 
+ * Colors:
+ *   PRIMARY TEAL:  #00DCC8  — Movement & Pulse
+ *   DEEP OCEAN:    #007ABA  — Stability & Professionalism
+ *   NAVY ABYSS:    #000A0F  — Background & Depth (MAIN BG)
+ *   PURE TECH:     #EEEFEE  — High Contrast Text
+ * 
+ * Typography:
+ *   Headlines:  Orbitron Black 900 (H1: 36px) / Bold 700 (H2: 24px)
+ *   Body/UI:    Cairo Regular 400 (16px) — Arabic + English
+ *   Numbers:    Orbitron (data, KPIs, scores)
+ * ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* Ada2ai Core Colors */
+  --ada-teal: #00DCC8;
+  --ada-ocean: #007ABA;
+  --ada-navy: #000A0F;
+  --ada-surface: #0A1628;
+  --ada-card: #0D1E35;
+  --ada-text: #EEEFEE;
+  --ada-muted: #6B8099;
+  --ada-amber: #FFA500;
+  --ada-red: #FF4444;
+  --ada-success: #10B981;
+  --ada-warning: #F59E0B;
+  --ada-error: #EF4444;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #007ABA 0%, #00DCC8 100%);
+  --gradient-accent: linear-gradient(135deg, #00DCC8 0%, #FFA500 100%);
+  --gradient-dark: linear-gradient(180deg, #000A0F 0%, #0A0E1A 100%);
+
+  /* Shadows */
+  --shadow-elevation-1: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-elevation-3: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --glow-teal: 0 0 20px rgba(0, 220, 200, 0.3);
+  --glow-ocean: 0 0 20px rgba(0, 122, 186, 0.3);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* ── Global Reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000A0F;
+  color: #EEEFEE;
+  font-family: 'Cairo', 'Space Grotesk', system-ui, sans-serif;
+  direction: rtl;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Orbitron', 'Cairo', sans-serif;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0A1628;
+}
+::-webkit-scrollbar-thumb {
+  background: #007ABA;
+  border-radius: 3px;
+}
+
+/* ── Selection ── */
+::selection {
+  background: rgba(0, 220, 200, 0.3);
+  color: #EEEFEE;
+}
+
+/* ── Focus ── */
+:focus-visible {
+  outline: 2px solid #00DCC8;
+  outline-offset: 2px;
+}
+
+/* ── Teal Glow ── */
+.teal-glow {
+  color: #00DCC8;
+  text-shadow: 0 0 20px rgba(0, 220, 200, 0.6), 0 0 40px rgba(0, 220, 200, 0.3);
+}
+
+.teal-border {
+  border: 1px solid rgba(0, 220, 200, 0.3);
+  box-shadow: 0 0 15px rgba(0, 220, 200, 0.08), inset 0 0 15px rgba(0, 220, 200, 0.03);
+}
+
+/* ── Ada2ai Card System ── */
+.ada-card {
+  background: #0D1E35;
+  border: 1px solid rgba(0, 220, 200, 0.12);
+  border-radius: 12px;
+}
+
+.ada-card:hover {
+  border-color: rgba(0, 220, 200, 0.25);
+  box-shadow: 0 0 20px rgba(0, 220, 200, 0.1);
+}
+
+/* ── Animations ── */
+@keyframes pulse-teal {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 220, 200, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(0, 220, 200, 0.6); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

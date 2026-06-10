@@ -64,30 +64,32 @@ export function Auth() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#f8fafc',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
+      backgroundColor: '#000A0F',
+      fontFamily: "'Cairo', sans-serif",
       direction: 'rtl',
     }}>
       <div style={{
         width: '100%',
         maxWidth: '400px',
         padding: '32px',
-        backgroundColor: '#fff',
+        backgroundColor: '#0D1E35',
         borderRadius: '16px',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        border: '1px solid rgba(0, 220, 200, 0.15)',
+        boxShadow: '0 0 30px rgba(0, 220, 200, 0.08)',
       }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '24px', color: '#1e293b' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '24px', fontFamily: "'Orbitron', sans-serif", fontWeight: 700, color: '#00DCC8', letterSpacing: '-0.01em' }}>
           {mode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب'}
         </h2>
 
         {error && (
           <div style={{
             padding: '12px',
-            backgroundColor: '#fef2f2',
-            color: '#dc2626',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            color: '#FF4444',
             borderRadius: '8px',
             marginBottom: '16px',
             fontSize: '14px',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
           }}>
             {error}
           </div>
@@ -96,11 +98,12 @@ export function Auth() {
         {message && (
           <div style={{
             padding: '12px',
-            backgroundColor: '#f0fdf4',
-            color: '#16a34a',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            color: '#10B981',
             borderRadius: '8px',
             marginBottom: '16px',
             fontSize: '14px',
+            border: '1px solid rgba(16, 185, 129, 0.2)',
           }}>
             {message}
           </div>
@@ -108,7 +111,7 @@ export function Auth() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#374151' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#6B8099' }}>
               البريد الإلكتروني
             </label>
             <input
@@ -119,17 +122,19 @@ export function Auth() {
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                border: '1px solid #d1d5db',
+                border: '1px solid rgba(0, 220, 200, 0.2)',
                 borderRadius: '8px',
                 fontSize: '16px',
                 direction: 'ltr',
                 textAlign: 'right',
+                backgroundColor: '#0A1628',
+                color: '#EEEFEE',
               }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#374151' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#6B8099' }}>
               كلمة المرور
             </label>
             <input
@@ -141,11 +146,13 @@ export function Auth() {
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                border: '1px solid #d1d5db',
+                border: '1px solid rgba(0, 220, 200, 0.2)',
                 borderRadius: '8px',
                 fontSize: '16px',
                 direction: 'ltr',
                 textAlign: 'right',
+                backgroundColor: '#0A1628',
+                color: '#EEEFEE',
               }}
             />
           </div>
@@ -155,8 +162,8 @@ export function Auth() {
             disabled={loading}
             style={{
               padding: '12px',
-              backgroundColor: loading ? '#93c5fd' : '#2563eb',
-              color: '#fff',
+              background: loading ? 'rgba(0, 220, 200, 0.3)' : 'linear-gradient(135deg, #007ABA 0%, #00DCC8 100%)',
+              color: loading ? '#6B8099' : '#000A0F',
               border: 'none',
               borderRadius: '8px',
               fontSize: '16px',
@@ -179,7 +186,7 @@ export function Auth() {
             style={{
               background: 'none',
               border: 'none',
-              color: '#2563eb',
+              color: '#00DCC8',
               cursor: 'pointer',
               fontSize: '14px',
             }}
