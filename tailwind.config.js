@@ -5,9 +5,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Noto Kufi Arabic', 'system-ui', 'sans-serif'],
-        arabic: ['Noto Kufi Arabic', 'system-ui', 'sans-serif'],
-        display: ['Barlow Condensed', 'system-ui', 'sans-serif'],
+        sans: ['Cairo', 'Space Grotesk', 'system-ui', 'sans-serif'],
+        arabic: ['Cairo', 'system-ui', 'sans-serif'],
+        display: ['Orbitron', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -16,7 +16,7 @@ module.exports = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         teal: {
-          prime: "#00C2A8",
+          prime: "#00DCC8",
           light: "#00DCC8",
           glow: "#00F0D0",
           dark: "#009E8A",
@@ -27,13 +27,13 @@ module.exports = {
           dark: "#005F8F",
         },
         navy: {
-          DEFAULT: "#0a1628",
-          light: "#0d1f35",
-          dark: "#060d18",
+          DEFAULT: "#000A0F",
+          light: "#0D1E35",
+          dark: "#000A0F",
         },
         ice: {
-          white: "#f0f6ff",
-          muted: "#a0b4cc",
+          white: "#EEEFEE",
+          muted: "#6B7280",
         },
         gold: {
           DEFAULT: "#D4AF37",
@@ -42,14 +42,14 @@ module.exports = {
         status: {
           queued: '#F59E0B',
           processing: '#3B82F6',
-          completed: '#00C2A8',
+          completed: '#00DCC8',
           failed: '#EF4444',
         },
         role: {
-          player: "#00c2a8",
-          coach: "#d4af37",
-          scout: "#007aba",
-          admin: "#9b59b6",
+          player: "#00DCC8",
+          coach: "#D4AF37",
+          scout: "#007ABA",
+          admin: "#9B59B6",
         },
         primary: {
           DEFAULT: "hsl(var(--primary))",
@@ -99,8 +99,8 @@ module.exports = {
       },
       boxShadow: {
         xs: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-        glow: "0 0 20px rgba(0,194,168,0.15), 0 0 40px rgba(0,194,168,0.05)",
-        "glow-strong": "0 0 30px rgba(0,194,168,0.3), 0 0 80px rgba(0,194,168,0.1)",
+        glow: "0 0 20px rgba(0,220,200,0.15), 0 0 40px rgba(0,220,200,0.05)",
+        "glow-strong": "0 0 30px rgba(0,220,200,0.3), 0 0 80px rgba(0,220,200,0.1)",
         depth: "0 4px 6px -1px rgba(0,0,0,0.1), 0 25px 50px -12px rgba(0,0,0,0.4)",
         "depth-lg": "0 8px 16px rgba(0,0,0,0.15), 0 32px 64px rgba(0,0,0,0.3)",
         "depth-xl": "0 16px 32px rgba(0,0,0,0.2), 0 48px 96px rgba(0,0,0,0.35)",

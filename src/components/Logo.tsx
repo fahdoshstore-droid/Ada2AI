@@ -21,7 +21,7 @@ export function Logo({ size = 'md', variant = 'full', className = '' }: LogoProp
         <path d="M22 8L14 21H20L18 32L26 19H20L22 8Z" fill="white" fillOpacity="0.95" />
         <defs>
           <linearGradient id="ada2ai-grad" x1="4" y1="2" x2="36" y2="38">
-            <stop offset="0%" stopColor="#00C2A8" />
+            <stop offset="0%" stopColor="#00DCC8" />
             <stop offset="100%" stopColor="#007ABA" />
           </linearGradient>
         </defs>
@@ -29,7 +29,7 @@ export function Logo({ size = 'md', variant = 'full', className = '' }: LogoProp
       {variant === 'full' && (
         <span
           className="font-bold tracking-tight text-ice-white"
-          style={{ fontSize: textSizes[size], fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          style={{ fontSize: textSizes[size], fontFamily: "Cairo, sans-serif" }}
         >
           Ada2AI
         </span>

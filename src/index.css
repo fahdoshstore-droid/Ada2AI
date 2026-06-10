@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Cairo:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -22,12 +22,12 @@
 @layer base {
   :root {
     /* ── Core Brand ── */
-    --teal-prime: #00C2A8;
+    --teal-prime: #00DCC8;
     --teal-glow: #00F0D0;
     --scout-blue: #007ABA;
-    --deep-navy: #0a1628;
-    --hero-black: #060d18;
-    --ice-white: #f0f6ff;
+    --deep-navy: #000A0F;
+    --hero-black: #000A0F;
+    --ice-white: #EEEFEE;
     --accent-gold: #D4AF37;
     --accent-cyan: #00DCC8;
 
@@ -68,9 +68,9 @@
     --status-processing: #3B82F6;
     --status-processing-bg: rgba(59, 130, 246, 0.1);
     --status-processing-border: rgba(59, 130, 246, 0.2);
-    --status-completed: #00C2A8;
-    --status-completed-bg: rgba(0, 194, 168, 0.1);
-    --status-completed-border: rgba(0, 194, 168, 0.2);
+    --status-completed: #00DCC8;
+    --status-completed-bg: rgba(0, 220, 200, 0.1);
+    --status-completed-border: rgba(0, 220, 200, 0.2);
     --status-failed: #EF4444;
     --status-failed-bg: rgba(239, 68, 68, 0.1);
     --status-failed-border: rgba(239, 68, 68, 0.2);
@@ -123,15 +123,15 @@
   }
 
   body {
-    @apply bg-[#060d18] text-[#f0f6ff] font-sans antialiased;
-    font-family: 'Plus Jakarta Sans', 'Noto Kufi Arabic', system-ui, sans-serif;
+    @apply bg-[#000A0F] text-[#EEEFEE] font-sans antialiased;
+    font-family: Cairo, Cairo, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
-    background: rgba(0, 194, 168, 0.3);
-    color: #f0f6ff;
+    background: rgba(0, 220, 200, 0.3);
+    color: #EEEFEE;
   }
 }
 
@@ -142,14 +142,14 @@
 @layer utilities {
   /* ── Gradients ── */
   .text-gradient-teal {
-    background: linear-gradient(135deg, #00C2A8, #007ABA);
+    background: linear-gradient(135deg, #00DCC8, #007ABA);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .text-gradient-hero {
-    background: linear-gradient(135deg, #f0f6ff 0%, #00C2A8 40%, #00DCC8 70%, #007ABA 100%);
+    background: linear-gradient(135deg, #EEEFEE 0%, #00DCC8 40%, #00DCC8 70%, #007ABA 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -158,11 +158,11 @@
   .text-gradient-shimmer {
     background: linear-gradient(
       90deg,
-      #00C2A8 0%,
+      #00DCC8 0%,
       #00F0D0 25%,
-      #f0f6ff 50%,
+      #EEEFEE 50%,
       #00F0D0 75%,
-      #00C2A8 100%
+      #00DCC8 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -172,15 +172,15 @@
   }
 
   .bg-gradient-navy {
-    background: linear-gradient(180deg, #060d18 0%, #0a1628 50%, #060d18 100%);
+    background: linear-gradient(180deg, #000A0F 0%, #000A0F 50%, #000A0F 100%);
   }
 
   .bg-gradient-radial {
-    background: radial-gradient(ellipse at center, rgba(0, 194, 168, 0.08) 0%, transparent 70%);
+    background: radial-gradient(ellipse at center, rgba(0, 220, 200, 0.08) 0%, transparent 70%);
   }
 
   .bg-gradient-hero-orb-1 {
-    background: radial-gradient(circle at 70% 30%, rgba(0, 194, 168, 0.15) 0%, transparent 60%);
+    background: radial-gradient(circle at 70% 30%, rgba(0, 220, 200, 0.15) 0%, transparent 60%);
   }
 
   .bg-gradient-hero-orb-2 {
@@ -192,14 +192,14 @@
     background: rgba(13, 31, 53, 0.6);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(0, 194, 168, 0.15);
+    border: 1px solid rgba(0, 220, 200, 0.15);
   }
 
   .glass-premium {
-    background: rgba(6, 13, 24, 0.8);
+    background: rgba(0, 10, 15, 0.8);
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
-    border: 1px solid rgba(0, 194, 168, 0.1);
+    border: 1px solid rgba(0, 220, 200, 0.1);
   }
 
   .glass-card-hover {
@@ -208,9 +208,9 @@
 
   .glass-card-hover:hover {
     background: rgba(13, 31, 53, 0.9);
-    border-color: rgba(0, 194, 168, 0.4);
+    border-color: rgba(0, 220, 200, 0.4);
     transform: translateY(-4px);
-    box-shadow: 0 25px 50px rgba(0, 194, 168, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 25px 50px rgba(0, 220, 200, 0.15), 0 8px 20px rgba(0, 0, 0, 0.3);
   }
 
   .glass-premium-hover {
@@ -218,10 +218,10 @@
   }
 
   .glass-premium-hover:hover {
-    background: rgba(6, 13, 24, 0.95);
-    border-color: rgba(0, 194, 168, 0.3);
+    background: rgba(0, 10, 15, 0.95);
+    border-color: rgba(0, 220, 200, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 20px 40px rgba(0, 194, 168, 0.1), 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 220, 200, 0.1), 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 
   .glow-teal {
@@ -241,7 +241,7 @@
     position: absolute;
     inset: -1px;
     border-radius: inherit;
-    background: linear-gradient(135deg, rgba(0, 194, 168, 0.5), rgba(0, 122, 186, 0.3), transparent 60%);
+    background: linear-gradient(135deg, rgba(0, 220, 200, 0.5), rgba(0, 122, 186, 0.3), transparent 60%);
     z-index: -1;
     opacity: 0;
     transition: opacity 0.4s ease;
@@ -279,15 +279,15 @@
   /* ── Grid Pattern ── */
   .grid-pattern {
     background-image:
-      linear-gradient(rgba(0, 194, 168, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 194, 168, 0.03) 1px, transparent 1px);
+      linear-gradient(rgba(0, 220, 200, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 220, 200, 0.03) 1px, transparent 1px);
     background-size: 60px 60px;
   }
 
   .grid-pattern-fine {
     background-image:
-      linear-gradient(rgba(0, 194, 168, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 194, 168, 0.05) 1px, transparent 1px);
+      linear-gradient(rgba(0, 220, 200, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 220, 200, 0.05) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
@@ -298,8 +298,8 @@
     gap: 0.5rem;
     padding: 0.75rem 2rem;
     border-radius: 0.75rem;
-    background: linear-gradient(135deg, #00C2A8, #007ABA);
-    color: #060d18;
+    background: linear-gradient(135deg, #00DCC8, #007ABA);
+    color: #000A0F;
     font-weight: 700;
     font-size: 1rem;
     transition: all 0.3s var(--ease-spring);
@@ -317,7 +317,7 @@
   }
 
   .btn-primary:hover {
-    box-shadow: 0 20px 40px rgba(0, 194, 168, 0.3), 0 4px 12px rgba(0, 122, 186, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 220, 200, 0.3), 0 4px 12px rgba(0, 122, 186, 0.2);
     transform: translateY(-2px);
   }
 
@@ -337,16 +337,16 @@
     gap: 0.5rem;
     padding: 0.75rem 2rem;
     border-radius: 0.75rem;
-    border: 1px solid rgba(0, 194, 168, 0.3);
-    color: #00C2A8;
+    border: 1px solid rgba(0, 220, 200, 0.3);
+    color: #00DCC8;
     font-weight: 600;
     font-size: 1rem;
     transition: all 0.3s var(--ease-out-expo);
   }
 
   .btn-ghost:hover {
-    background: rgba(0, 194, 168, 0.08);
-    border-color: rgba(0, 194, 168, 0.6);
+    background: rgba(0, 220, 200, 0.08);
+    border-color: rgba(0, 220, 200, 0.6);
     transform: translateY(-1px);
   }
 
@@ -356,17 +356,17 @@
     gap: 0.5rem;
     padding: 0.75rem 2rem;
     border-radius: 0.75rem;
-    border: 1px solid rgba(0, 194, 168, 0.2);
-    color: #00C2A8;
+    border: 1px solid rgba(0, 220, 200, 0.2);
+    color: #00DCC8;
     font-weight: 600;
     font-size: 0.875rem;
     transition: all 0.3s var(--ease-out-expo);
   }
 
   .btn-ghost-interactive:hover {
-    background: rgba(0, 194, 168, 0.1);
-    border-color: rgba(0, 194, 168, 0.5);
-    box-shadow: 0 0 20px rgba(0, 194, 168, 0.1);
+    background: rgba(0, 220, 200, 0.1);
+    border-color: rgba(0, 220, 200, 0.5);
+    box-shadow: 0 0 20px rgba(0, 220, 200, 0.1);
   }
 
   /* ── Depth Shadows ── */
@@ -377,11 +377,11 @@
 
   /* ── Typography ── */
   .arabic-text {
-    font-family: 'Noto Kufi Arabic', system-ui, sans-serif;
+    font-family: Cairo, system-ui, sans-serif;
   }
 
   .font-display {
-    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-family: Orbitron, system-ui, sans-serif;
     letter-spacing: -0.02em;
   }
 
@@ -390,7 +390,7 @@
     font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: rgba(240,246,255,0.4);
+    color: rgba(238,239,238,0.4);
   }
 
   .tracking-tightest {
@@ -451,7 +451,7 @@
   .accent-line {
     width: 4px;
     height: 20px;
-    background: #00C2A8;
+    background: #00DCC8;
     border-radius: 2px;
     flex-shrink: 0;
   }
@@ -575,9 +575,9 @@
 .card-depth-hover:hover {
   transform: translateY(-4px);
   box-shadow:
-    0 25px 50px rgba(0, 194, 168, 0.12),
+    0 25px 50px rgba(0, 220, 200, 0.12),
     0 8px 20px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(0, 194, 168, 0.2);
+    0 0 0 1px rgba(0, 220, 200, 0.2);
 }
 
 /* ── Bento Grid ── */
@@ -630,9 +630,9 @@
 .skeleton-pulse {
   background: linear-gradient(
     90deg,
-    rgba(0, 194, 168, 0.05) 25%,
-    rgba(0, 194, 168, 0.1) 50%,
-    rgba(0, 194, 168, 0.05) 75%
+    rgba(0, 220, 200, 0.05) 25%,
+    rgba(0, 220, 200, 0.1) 50%,
+    rgba(0, 220, 200, 0.05) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;

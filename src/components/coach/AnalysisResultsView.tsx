@@ -31,7 +31,7 @@ function HeatmapGrid({ heatmap }: { heatmap: number[][] }) {
               key={i}
               className="rounded h-6 flex items-center justify-center"
               style={{
-                background: `rgba(0, 194, 168, ${Math.max(0.05, intensity)})`,
+                background: `rgba(0, 220, 200, ${Math.max(0.05, intensity)})`,
                 minHeight: '24px',
               }}
               title={`${val} detections`}
@@ -112,7 +112,7 @@ export function AnalysisResultsView({ results, playerName }: Props) {
       {/* Progress bars */}
       <div className="space-y-3">
         {results.activity_score != null && (
-          <StatBar label="نشاط اللاعب" value={results.activity_score} color="#00C2A8" />
+          <StatBar label="نشاط اللاعب" value={results.activity_score} color="#00DCC8" />
         )}
         {results.possession_involvement != null && (
           <StatBar label="مشاركة في الاستحواذ" value={results.possession_involvement} color="#00D4FF" />

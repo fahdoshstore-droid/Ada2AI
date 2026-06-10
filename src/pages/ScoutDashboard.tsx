@@ -74,7 +74,7 @@ export default function ScoutDashboard() {
   // ── Render ─────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#060d18]">
+    <div className="min-h-screen bg-[#000A0F]">
       {/* Hero */}
       <section className="relative min-h-[50vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero-orb-1" />
@@ -130,7 +130,7 @@ export default function ScoutDashboard() {
                 onClick={() => handleFilterChange(f)}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 arabic-text ${
                   activeFilter === f
-                    ? 'bg-gradient-to-r from-teal-prime to-scout-blue text-[#060d18] shadow-lg shadow-teal-prime/20'
+                    ? 'bg-gradient-to-r from-teal-prime to-scout-blue text-[#000A0F] shadow-lg shadow-teal-prime/20'
                     : 'glass-card text-ice-muted hover:text-ice-white hover:border-teal-prime/30'
                 }`}
               >

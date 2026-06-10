@@ -48,12 +48,12 @@ export default function Layout() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-[#060d18] text-ice-white">
+    <div className="min-h-screen bg-[#000A0F] text-ice-white">
       {/* ── Header ── */}
       <header 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled 
-            ? 'bg-[#060d18]/90 backdrop-blur-[40px] saturate-[180%] border-b border-teal-prime/8 shadow-lg shadow-black/20' 
+            ? 'bg-[#000A0F]/90 backdrop-blur-[40px] saturate-[180%] border-b border-teal-prime/8 shadow-lg shadow-black/20' 
             : 'bg-transparent'
         }`}
       >
@@ -185,7 +185,7 @@ export default function Layout() {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="lg:hidden bg-[#060d18]/95 backdrop-blur-[40px] saturate-[180%] border-t border-teal-prime/8 overflow-hidden"
+              className="lg:hidden bg-[#000A0F]/95 backdrop-blur-[40px] saturate-[180%] border-t border-teal-prime/8 overflow-hidden"
             >
               <div className="px-4 py-4 space-y-1">
                 {navLinks.map((link) => (
@@ -243,7 +243,7 @@ export default function Layout() {
                       </Link>
                       <Link 
                         to="/login"
-                        className="block w-full text-center px-5 py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-teal-prime to-scout-blue text-[#060d18] arabic-text"
+                        className="block w-full text-center px-5 py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-teal-prime to-scout-blue text-[#000A0F] arabic-text"
                       >
                         تسجيل الدخول
                       </Link>
@@ -262,7 +262,7 @@ export default function Layout() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="relative bg-[#060d18] border-t border-white/[0.04] overflow-hidden">
+      <footer className="relative bg-[#000A0F] border-t border-white/[0.04] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial opacity-30" />
         <div className="grain-overlay" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

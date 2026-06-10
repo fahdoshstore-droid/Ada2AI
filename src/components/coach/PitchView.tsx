@@ -135,14 +135,14 @@ export default function PitchView({ players, formation, onFormationChange }: Pit
             style={{
               background: 'rgba(0,194,168,0.1)',
               border: '1px solid rgba(0,194,168,0.3)',
-              color: '#00C2A8',
+              color: '#00DCC8',
             }}
           >
             {Object.keys(FORMATIONS).map(f => (
               <option key={f} value={f} style={{ background: '#0D1526' }}>{f}</option>
             ))}
           </select>
-          <ChevronDown size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#00C2A8' }} />
+          <ChevronDown size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#00DCC8' }} />
         </div>
       </div>
 
@@ -229,7 +229,7 @@ export default function PitchView({ players, formation, onFormationChange }: Pit
         })}
 
         {/* Formation label */}
-        <div className="absolute bottom-3 left-3 px-3 py-1 rounded-lg text-xs font-black" style={{ background: 'rgba(0,0,0,0.5)', color: '#00C2A8', border: '1px solid rgba(0,194,168,0.2)' }}>
+        <div className="absolute bottom-3 left-3 px-3 py-1 rounded-lg text-xs font-black" style={{ background: 'rgba(0,0,0,0.5)', color: '#00DCC8', border: '1px solid rgba(0,194,168,0.2)' }}>
           {formation}
         </div>
 

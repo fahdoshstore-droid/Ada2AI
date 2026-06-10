@@ -213,7 +213,7 @@ function HeroSection() {
   }, []);
 
   return (
-    <section ref={containerRef} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#060d18]">
+    <section ref={containerRef} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#000A0F]">
       <canvas ref={canvasRef} className="absolute inset-0 z-0" />
       <div className="grain-overlay grain-overlay-animated" />
 
@@ -372,7 +372,7 @@ function ProductsSection() {
                 onMouseLeave={() => setHoveredProduct(null)}
               >
                 <Link to={product.path} className="block h-full">
-                  <div className={`glass-premium rounded-2xl p-8 lg:p-10 h-full card-depth-hover border border-white/[0.06] ${isHovered ? 'border-teal-prime/30 bg-[#060d18]/95' : ''}`}>
+                  <div className={`glass-premium rounded-2xl p-8 lg:p-10 h-full card-depth-hover border border-white/[0.06] ${isHovered ? 'border-teal-prime/30 bg-[#000A0F]/95' : ''}`}>
                     <div className="flex items-start gap-5 mb-6">
                       <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${product.color} flex items-center justify-center flex-shrink-0 shadow-lg depth-sm`}>
                         <Icon className="w-7 h-7 text-white" />
@@ -480,7 +480,7 @@ function CTASection() {
 
   return (
     <section className="relative section-spacing" ref={ref}>
-      <div className="absolute inset-0 bg-[#060d18]" />
+      <div className="absolute inset-0 bg-[#000A0F]" />
       <div className="absolute inset-0 bg-gradient-hero-orb-1" />
       <div className="absolute inset-0 bg-gradient-hero-orb-2" />
       <div className="grain-overlay" />
@@ -550,7 +550,7 @@ function CTASection() {
 // ─── Main Landing Page ───
 export default function LandingPage() {
   return (
-    <div className="bg-[#060d18]">
+    <div className="bg-[#000A0F]">
       <HeroSection />
       <ProductsSection />
       <FeaturesSection />

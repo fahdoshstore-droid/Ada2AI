@@ -2,15 +2,15 @@
  * StatBar — Ada2AI Coach Components
  *
  * Simple progress bar for displaying player/analysis stats.
- * Colors default to teal-prime (#00C2A8) matching project design system.
+ * Colors default to teal-prime (#00DCC8) matching project design system.
  */
 interface StatBarProps {
   label: string
   value: number      // 0-100
-  color?: string     // default: '#00C2A8' (teal-prime)
+  color?: string     // default: '#00DCC8' (teal-prime)
 }
 
-export function StatBar({ label, value, color = '#00C2A8' }: StatBarProps) {
+export function StatBar({ label, value, color = '#00DCC8' }: StatBarProps) {
   return (
     <div>
       <div className="flex justify-between mb-1">

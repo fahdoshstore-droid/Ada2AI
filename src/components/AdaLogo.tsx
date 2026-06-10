@@ -15,8 +15,8 @@ export function AdaLogo({
 }: AdaLogoProps) {
   const uid = React.useId().replace(/:/g, '')
   const isLight = variant === 'light'
-  const iconFill = isLight ? '#0a1628' : `url(#g-${uid})`
-  const textColor = isLight ? '#0a1628' : '#ffffff'
+  const iconFill = isLight ? '#000A0F' : `url(#g-${uid})`
+  const textColor = isLight ? '#000A0F' : '#ffffff'
 
   return (
     <div className={`inline-flex items-center gap-3 ${className}`}>
@@ -29,7 +29,7 @@ export function AdaLogo({
       >
         <defs>
           <linearGradient id={`g-${uid}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#00C2A8" />
+            <stop offset="0%" stopColor="#00DCC8" />
             <stop offset="100%" stopColor="#007ABA" />
           </linearGradient>
         </defs>
@@ -47,7 +47,7 @@ export function AdaLogo({
       {showText && (
         <span
           style={{
-            fontFamily: "'Barlow Condensed', system-ui, sans-serif",
+            fontFamily: "Orbitron, system-ui, sans-serif",
             fontWeight: 800,
             fontSize: size * 0.85,
             letterSpacing: '-0.04em',
@@ -58,7 +58,7 @@ export function AdaLogo({
           }}
         >
           <span style={{ color: textColor }}>Ada</span>
-          <span style={{ color: '#00C2A8' }}>2</span>
+          <span style={{ color: '#00DCC8' }}>2</span>
           <span style={{ color: textColor }}>AI</span>
         </span>
       )}

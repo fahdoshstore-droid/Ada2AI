@@ -90,7 +90,7 @@ export default function PlayerUpload() {
   // Loading player
   if (loadingPlayer) {
     return (
-      <div dir="rtl" className="min-h-screen bg-[#060d18] flex items-center justify-center">
+      <div dir="rtl" className="min-h-screen bg-[#000A0F] flex items-center justify-center">
         <div className="relative">
           <div className="w-12 h-12 border-4 border-teal-prime border-t-transparent rounded-full animate-spin" />
           <div className="absolute inset-0 w-12 h-12 border-4 border-teal-prime/20 rounded-full" />
@@ -100,7 +100,7 @@ export default function PlayerUpload() {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#060d18] relative overflow-hidden">
+    <div dir="rtl" className="min-h-screen bg-[#000A0F] relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-radial opacity-30" />
       <div className="absolute inset-0 grid-pattern-fine opacity-[0.03]" />
 

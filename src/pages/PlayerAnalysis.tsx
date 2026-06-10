@@ -41,7 +41,7 @@ export default function PlayerAnalysis() {
   const selectedEval = selectedPlayer ? getLatestEvaluation(selectedPlayer.id) : null;
 
   return (
-    <div className="min-h-screen bg-[#060d18]">
+    <div className="min-h-screen bg-[#000A0F]">
       {/* Hero */}
       <section className="relative min-h-[50vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero-orb-1" />
