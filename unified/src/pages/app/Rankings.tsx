@@ -5,16 +5,12 @@ import { LoadingState } from '../../components/LoadingState'
 import { EmptyState } from '../../components/EmptyState'
 import { ErrorState } from '../../components/ErrorState'
 
-const DEMO_RANKINGS = [
-  { rank: 1, player_name: 'أحمد محمد', team: 'نادي النهضة', score: 95 },
-  { rank: 2, player_name: 'خالد العتيبي', team: 'أكاديمية الأمل', score: 92 },
-  { rank: 3, player_name: 'سامي القحطاني', team: 'نادي الشباب', score: 89 },
-  { rank: 4, player_name: 'محمد الدوسري', team: 'نادي الهلال', score: 87 },
-  { rank: 5, player_name: 'عبدالله السالم', team: 'أكاديمية النخبة', score: 85 },
-]
+// ⚠️ NO DEMO DATA — rankings must come from real analysis only
+// Rankings are derived from IntelligenceBridge role_fit scores
+// If no analysis data exists, show empty state
 
 export function Rankings() {
-  const [rankings, setRankings] = useState(DEMO_RANKINGS)
+  const [rankings, setRankings] = useState<Array<{ rank: number; player_name: string; team: string; score: number }>>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -22,19 +18,29 @@ export function Rankings() {
     try {
       setLoading(true)
       setError(null)
-      const { data } = await supabase
+      // Fetch players with real analysis data only
+      const { data, error: fetchError } = await supabase
         .from('players')
-        .select('id, user_id')
+        .select('id, user_id, name, name_ar, position, rating')
         .eq('is_active', true)
 
-      if (data && data.length > 0) {
-        const withScores = data.map((_p, i) => ({
-          rank: i + 1,
-          player_name: `لاعب ${i + 1}`,
-          team: 'فريق',
-          score: Math.floor(Math.random() * 30) + 70,
-        }))
-        setRankings(withScores.sort((a, b) => b.score - a.score).map((r, i) => ({ ...r, rank: i + 1 })))
+      if (fetchError) throw fetchError
+
+      if (data && data.length > 0 && data.some(p => p.rating !== null && p.rating !== undefined)) {
+        // Use real rating scores — NO random generation
+        const ranked = data
+          .filter(p => p.rating !== null && p.rating !== undefined)
+          .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+          .map((p, i) => ({
+            rank: i + 1,
+            player_name: p.name_ar || p.name || `لاعب ${p.id.slice(0, 8)}`,
+            team: '—',
+            score: Math.round(p.rating!),
+          }))
+        setRankings(ranked)
+      } else {
+        // No real ratings — show empty state
+        setRankings([])
       }
     } catch (err) {
       setError('فشل في تحميل التصنيفات')

@@ -1,0 +1,695 @@
+{
+  "players": {
+    "7": {
+      "name": "Ahmed",
+      "team": null,
+      "role_fits": {},
+      "best_role": null,
+      "dna_vector": [],
+      "dna_labels": [],
+      "matches_analyzed": 2,
+      "last_updated": 1781043209.026488,
+      "temporal_snapshots": [
+        {
+          "match_id": "test_match_v2.mp4",
+          "total_distance": 10200,
+          "avg_speed": 3.4,
+          "max_speed": 8.5,
+          "dna_traits": {
+            "press_aggression": -0.867,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 1.0,
+            "transition_focus": 0.7,
+            "positional_stability": 1.0,
+            "tempo_control": 0.2,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "صانع مخاطر",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test.mp4",
+          "total_distance": 10200,
+          "avg_speed": 3.4,
+          "max_speed": 8.5,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 0.0,
+            "transition_focus": 0.7,
+            "positional_stability": 1.0,
+            "tempo_control": 0.2,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        }
+      ],
+      "role_fit_history": [],
+      "dna_history": [],
+      "scout_notes": [
+        {
+          "note": "متحول ممتاز",
+          "author": "scout",
+          "timestamp": 1781043209.026619
+        }
+      ],
+      "coach_corrections": [],
+      "recommendation_history": []
+    },
+    "1": {
+      "name": null,
+      "team": null,
+      "role_fits": {},
+      "best_role": null,
+      "dna_vector": [],
+      "dna_labels": [],
+      "matches_analyzed": 2,
+      "last_updated": 0.0,
+      "temporal_snapshots": [
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 9500,
+          "avg_speed": 3.2,
+          "max_speed": 7.8,
+          "dna_traits": {
+            "press_aggression": -0.867,
+            "carry_vs_pass": -1.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.56,
+            "positional_stability": 1.0,
+            "tempo_control": 0.179,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "ممرر محافظ",
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 9500,
+          "avg_speed": 3.2,
+          "max_speed": 7.8,
+          "dna_traits": {
+            "press_aggression": -0.867,
+            "carry_vs_pass": -1.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.56,
+            "positional_stability": 1.0,
+            "tempo_control": 0.179,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "ممرر محافظ",
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        }
+      ],
+      "role_fit_history": [],
+      "dna_history": [],
+      "scout_notes": [],
+      "coach_corrections": [],
+      "recommendation_history": []
+    },
+    "5": {
+      "name": null,
+      "team": null,
+      "role_fits": {},
+      "best_role": null,
+      "dna_vector": [],
+      "dna_labels": [],
+      "matches_analyzed": 5,
+      "last_updated": 0.0,
+      "temporal_snapshots": [
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 11200,
+          "avg_speed": 3.5,
+          "max_speed": 8.1,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 1.0,
+            "transition_focus": 0.62,
+            "positional_stability": 1.0,
+            "tempo_control": 0.136,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "صانع مخاطر",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 11200,
+          "avg_speed": 3.5,
+          "max_speed": 8.1,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 1.0,
+            "transition_focus": 0.62,
+            "positional_stability": 1.0,
+            "tempo_control": 0.136,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "صانع مخاطر",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 7600,
+          "avg_speed": 2.5,
+          "max_speed": 6.2,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": -1.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.24,
+            "positional_stability": 1.0,
+            "tempo_control": 0.194,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "ممرر محافظ",
+            "لاعب آمن",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 7600,
+          "avg_speed": 2.5,
+          "max_speed": 6.2,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": -1.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.24,
+            "positional_stability": 1.0,
+            "tempo_control": 0.194,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "ممرر محافظ",
+            "لاعب آمن",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 7600,
+          "avg_speed": 2.5,
+          "max_speed": 6.2,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": -1.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.24,
+            "positional_stability": 1.0,
+            "tempo_control": 0.194,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "ممرر محافظ",
+            "لاعب آمن",
+            "مثبت مواقعي"
+          ]
+        }
+      ],
+      "role_fit_history": [],
+      "dna_history": [],
+      "scout_notes": [],
+      "coach_corrections": [],
+      "recommendation_history": []
+    },
+    "3": {
+      "name": null,
+      "team": null,
+      "role_fits": {},
+      "best_role": null,
+      "dna_vector": [],
+      "dna_labels": [],
+      "matches_analyzed": 2,
+      "last_updated": 0.0,
+      "temporal_snapshots": [
+        {
+          "match_id": "test_match_v2.mp4",
+          "total_distance": 8700,
+          "avg_speed": 2.9,
+          "max_speed": 7.2,
+          "dna_traits": {
+            "press_aggression": -0.867,
+            "carry_vs_pass": -1.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.44,
+            "positional_stability": 1.0,
+            "tempo_control": 0.194,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "ممرر محافظ",
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test.mp4",
+          "total_distance": 8700,
+          "avg_speed": 2.9,
+          "max_speed": 7.2,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": -1.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.44,
+            "positional_stability": 1.0,
+            "tempo_control": 0.194,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "ممرر محافظ",
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        }
+      ],
+      "role_fit_history": [],
+      "dna_history": [],
+      "scout_notes": [],
+      "coach_corrections": [],
+      "recommendation_history": []
+    },
+    "11": {
+      "name": null,
+      "team": null,
+      "role_fits": {},
+      "best_role": null,
+      "dna_vector": [],
+      "dna_labels": [],
+      "matches_analyzed": 4,
+      "last_updated": 0.0,
+      "temporal_snapshots": [
+        {
+          "match_id": "test_match_v2.mp4",
+          "total_distance": 9800,
+          "avg_speed": 3.1,
+          "max_speed": 7.9,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 1.0,
+            "transition_focus": 0.58,
+            "positional_stability": 1.0,
+            "tempo_control": 0.215,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "صانع مخاطر",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 8200,
+          "avg_speed": 2.7,
+          "max_speed": 6.8,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 0.0,
+            "transition_focus": 0.36,
+            "positional_stability": 1.0,
+            "tempo_control": 0.206,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 8200,
+          "avg_speed": 2.7,
+          "max_speed": 6.8,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 0.0,
+            "transition_focus": 0.36,
+            "positional_stability": 1.0,
+            "tempo_control": 0.206,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 8200,
+          "avg_speed": 2.7,
+          "max_speed": 6.8,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 0.0,
+            "transition_focus": 0.36,
+            "positional_stability": 1.0,
+            "tempo_control": 0.206,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "مثبت مواقعي"
+          ]
+        }
+      ],
+      "role_fit_history": [],
+      "dna_history": [],
+      "scout_notes": [],
+      "coach_corrections": [],
+      "recommendation_history": []
+    },
+    "2": {
+      "name": null,
+      "team": null,
+      "role_fits": {},
+      "best_role": null,
+      "dna_vector": [],
+      "dna_labels": [],
+      "matches_analyzed": 6,
+      "last_updated": 0.0,
+      "temporal_snapshots": [
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 9800,
+          "avg_speed": 3.1,
+          "max_speed": 7.8,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.56,
+            "positional_stability": 1.0,
+            "tempo_control": 0.205,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 9800,
+          "avg_speed": 3.1,
+          "max_speed": 7.8,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.56,
+            "positional_stability": 1.0,
+            "tempo_control": 0.205,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 9800,
+          "avg_speed": 3.1,
+          "max_speed": 7.8,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.56,
+            "positional_stability": 1.0,
+            "tempo_control": 0.205,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test.mp4",
+          "total_distance": 9800,
+          "avg_speed": 3.1,
+          "max_speed": 7.8,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.56,
+            "positional_stability": 1.0,
+            "tempo_control": 0.205,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test.mp4",
+          "total_distance": 9800,
+          "avg_speed": 3.1,
+          "max_speed": 7.8,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.56,
+            "positional_stability": 1.0,
+            "tempo_control": 0.205,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test.mp4",
+          "total_distance": 9800,
+          "avg_speed": 3.1,
+          "max_speed": 7.8,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": -1.0,
+            "transition_focus": 0.56,
+            "positional_stability": 1.0,
+            "tempo_control": 0.205,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "لاعب آمن",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        }
+      ],
+      "role_fit_history": [],
+      "dna_history": [],
+      "scout_notes": [],
+      "coach_corrections": [],
+      "recommendation_history": []
+    },
+    "9": {
+      "name": null,
+      "team": null,
+      "role_fits": {},
+      "best_role": null,
+      "dna_vector": [],
+      "dna_labels": [],
+      "matches_analyzed": 6,
+      "last_updated": 0.0,
+      "temporal_snapshots": [
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 11500,
+          "avg_speed": 3.8,
+          "max_speed": 9.1,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 1.0,
+            "transition_focus": 0.82,
+            "positional_stability": 1.0,
+            "tempo_control": 0.165,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "صانع مخاطر",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 11500,
+          "avg_speed": 3.8,
+          "max_speed": 9.1,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 1.0,
+            "transition_focus": 0.82,
+            "positional_stability": 1.0,
+            "tempo_control": 0.165,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "صانع مخاطر",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test_match.mp4",
+          "total_distance": 11500,
+          "avg_speed": 3.8,
+          "max_speed": 9.1,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 1.0,
+            "transition_focus": 0.82,
+            "positional_stability": 1.0,
+            "tempo_control": 0.165,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "صانع مخاطر",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test.mp4",
+          "total_distance": 11500,
+          "avg_speed": 3.8,
+          "max_speed": 9.1,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 1.0,
+            "transition_focus": 0.82,
+            "positional_stability": 1.0,
+            "tempo_control": 0.165,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "صانع مخاطر",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test.mp4",
+          "total_distance": 11500,
+          "avg_speed": 3.8,
+          "max_speed": 9.1,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 1.0,
+            "transition_focus": 0.82,
+            "positional_stability": 1.0,
+            "tempo_control": 0.165,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "صانع مخاطر",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        },
+        {
+          "match_id": "test.mp4",
+          "total_distance": 11500,
+          "avg_speed": 3.8,
+          "max_speed": 9.1,
+          "dna_traits": {
+            "press_aggression": -1.0,
+            "carry_vs_pass": 0.0,
+            "risk_appetite": 1.0,
+            "transition_focus": 0.82,
+            "positional_stability": 1.0,
+            "tempo_control": 0.165,
+            "half_space_tendency": -1.0,
+            "box_presence": -1.0
+          },
+          "dna_labels": [
+            "صانع مخاطر",
+            "متحول",
+            "مثبت مواقعي"
+          ]
+        }
+      ],
+      "role_fit_history": [],
+      "dna_history": [],
+      "scout_notes": [],
+      "coach_corrections": [],
+      "recommendation_history": []
+    }
+  },
+  "clubs": {},
+  "global_notes": []
+}

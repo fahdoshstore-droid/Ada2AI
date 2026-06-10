@@ -1,0 +1,485 @@
+# ═══════════════════════════════════════════════════════════
+# Ada2AI Football Ontology — v1.0.0
+# Semantic understanding of football: roles, concepts, events
+# Extensible · Versioned · YAML-driven
+# ═══════════════════════════════════════════════════════════
+
+version: "1.1.0"
+language_support: [ar, en]
+last_updated: "2026-06-10"
+
+# ── ROLES ────────────────────────────────────────────────
+# Tactical role definitions with behavioral signatures
+# Each role has: zone tendency, event weights, movement patterns
+
+roles:
+  pressing_forward:
+    name:
+      ar: "مهاجم ضاغط"
+      en: "Pressing Forward"
+    description:
+      ar: "مهاجم يضغط بكثافة على حامل الكرة في الثلث الأخير للخصم"
+      en: "Forward who aggressively presses ball carriers in the opponent's final third"
+    zone_tendency: [attacking_third, penalty_area]
+    key_events: [sprint_press, recovery_run, defensive_duel, shot_creation_action]
+    key_traits:
+      pressing_intensity: 0.9
+      transition_speed: 0.7
+      positional_discipline: 0.4
+      creative_output: 0.5
+    movement_signature:
+      preferred_channels: [central, left_channel, right_channel]
+      vertical_tendency: high
+      lateral_frequency: medium
+
+  inverted_fullback:
+    name:
+      ar: "ظهير معكوس"
+      en: "Inverted Fullback"
+    description:
+      ar: "ظهير يتحرك للداخل ليملء المساحات الوسطى ويدعم البناء"
+      en: "Fullback who inverts into midfield spaces to support build-up"
+    zone_tendency: [midfield, defensive_third]
+    key_events: [progressive_pass, carry_progression, recovery_run, defensive_duel]
+    key_traits:
+      pressing_intensity: 0.5
+      transition_speed: 0.6
+      positional_discipline: 0.8
+      creative_output: 0.6
+    movement_signature:
+      preferred_channels: [central, half_space]
+      vertical_tendency: low
+      lateral_frequency: high
+
+  deep_lying_playmaker:
+    name:
+      ar: "صانع لعب عميق"
+      en: "Deep-Lying Playmaker"
+    description:
+      ar: "لاعب وسط يتقدم من خط الدعم لإدارة الإيقاع وتوزيع الكرات"
+      en: "Midfielder who orchestrates tempo and distribution from deep positions"
+    zone_tendency: [midfield, defensive_third]
+    key_events: [progressive_pass, line_breaking_pass, carry_progression, box_entry]
+    key_traits:
+      pressing_intensity: 0.3
+      transition_speed: 0.3
+      positional_discipline: 0.9
+      creative_output: 0.9
+    movement_signature:
+      preferred_channels: [central, half_space]
+      vertical_tendency: low
+      lateral_frequency: low
+
+  box_crasher:
+    name:
+      ar: "مقتحم الجزاء"
+      en: "Box Crasher"
+    description:
+      ar: "لاعب وسط يقتحم منطقة الجزاء في اللحظات الحاسمة"
+      en: "Midfielder who makes late runs into the penalty area"
+    zone_tendency: [attacking_third, penalty_area]
+    key_events: [box_entry, shot_creation_action, carry_progression, sprint_press]
+    key_traits:
+      pressing_intensity: 0.5
+      transition_speed: 0.7
+      positional_discipline: 0.5
+      creative_output: 0.4
+    movement_signature:
+      preferred_channels: [central, half_space]
+      vertical_tendency: very_high
+      lateral_frequency: low
+
+  progressive_centerback:
+    name:
+      ar: "مدافع تقدمي"
+      en: "Progressive Centerback"
+    description:
+      ar: "مدافع يبني الهجوم ويخرج من الخط الخلفي بالكرة أو التمرير"
+      en: "Centerback who builds play and carries/passes out from the back"
+    zone_tendency: [defensive_third, midfield]
+    key_events: [progressive_pass, line_breaking_pass, carry_progression, recovery_run]
+    key_traits:
+      pressing_intensity: 0.3
+      transition_speed: 0.4
+      positional_discipline: 0.9
+      creative_output: 0.7
+    movement_signature:
+      preferred_channels: [central]
+      vertical_tendency: medium
+      lateral_frequency: low
+
+  wide_creator:
+    name:
+      ar: "صانع ألعاب طرفي"
+      en: "Wide Creator"
+    description:
+      ar: "لاعب يخلق من الأطراف بالتمرير والارتداد"
+      en: "Player who creates from wide areas via passing and progression"
+    zone_tendency: [attacking_third, midfield]
+    key_events: [progressive_pass, carry_progression, shot_creation_action, box_entry]
+    key_traits:
+      pressing_intensity: 0.4
+      transition_speed: 0.6
+      positional_discipline: 0.5
+      creative_output: 0.9
+    movement_signature:
+      preferred_channels: [left_channel, right_channel, half_space]
+      vertical_tendency: medium
+      lateral_frequency: medium
+
+  holding_midfielder:
+    name:
+      ar: "محور دفاعي"
+      en: "Holding Midfielder"
+    description:
+      ar: "لاعب وسط يستقر أمام الدفاع ويحمي المساحات"
+      en: "Midfielder who anchors in front of defense and shields spaces"
+    zone_tendency: [midfield, defensive_third]
+    key_events: [recovery_run, defensive_duel, progressive_pass, line_breaking_pass]
+    key_traits:
+      pressing_intensity: 0.5
+      transition_speed: 0.3
+      positional_discipline: 0.9
+      creative_output: 0.4
+    movement_signature:
+      preferred_channels: [central]
+      vertical_tendency: very_low
+      lateral_frequency: low
+
+  transition_winger:
+    name:
+      ar: "جناح تحولات"
+      en: "Transition Winger"
+    description:
+      ar: "جناح متخصص في التحولات السريعة والهجمات المرتدة"
+      en: "Winger specialized in rapid transitions and counter-attacks"
+    zone_tendency: [attacking_third, midfield]
+    key_events: [carry_progression, sprint_press, box_entry, shot_creation_action]
+    key_traits:
+      pressing_intensity: 0.6
+      transition_speed: 0.95
+      positional_discipline: 0.3
+      creative_output: 0.6
+    movement_signature:
+      preferred_channels: [left_channel, right_channel]
+      vertical_tendency: very_high
+      lateral_frequency: medium
+
+
+# ── TACTICAL CONCEPTS ────────────────────────────────────
+# High-level tactical patterns detectable from event data
+
+tactical_concepts:
+  overload:
+    name:
+      ar: "تكدس عددي"
+      en: "Overload"
+    description:
+      ar: "تفوق عددي في منطقة معينة لخلق مساحة أو تقدم"
+      en: "Numerical superiority in an area to create space or progression"
+    detection:
+      min_players_in_zone: 3
+      zone_density_threshold: 0.7
+      event_triggers: [carry_progression, progressive_pass]
+
+  high_press:
+    name:
+      ar: "ضغط عالي"
+      en: "High Press"
+    description:
+      ar: "ضغط جماعي في ملخص الخصم لاستعادة الكرة سريعاً"
+      en: "Collective pressure in opponent's half to regain possession quickly"
+    detection:
+      min_pressers: 3
+      press_zone: [attacking_third, midfield]
+      event_triggers: [sprint_press, recovery_run, defensive_duel]
+
+  low_block:
+    name:
+      ar: "كتلة دفاعية منخفضة"
+      en: "Low Block"
+    description:
+      ar: "تكتل دفاعي منخفض لحماية منطقة الجزاء"
+      en: "Low defensive compactness to protect the penalty area"
+    detection:
+      avg_team_height_norm: 0.35
+      compactness_threshold: 0.8
+      event_triggers: [recovery_run, defensive_duel]
+
+  counter_attack:
+    name:
+      ar: "هجمة مرتدة"
+      en: "Counter Attack"
+    description:
+      ar: "انتقال سريع من الدفاع للهجوم بعد استعادة الكرة"
+      en: "Rapid transition from defense to attack after ball recovery"
+    detection:
+      transition_speed_threshold: 0.7
+      direction_change: true
+      event_triggers: [recovery_run, carry_progression, transition, box_entry]
+
+  transition:
+    name:
+      ar: "تحول"
+      en: "Transition"
+    description:
+      ar: "لحظة التحول بين الاستحواذ والدفاع أو العكس"
+      en: "Moment of shift between possession and defense or vice versa"
+    detection:
+      possession_change: true
+      event_triggers: [transition, recovery_run, sprint_press]
+
+  positional_rotation:
+    name:
+      ar: "تدوير مواقعي"
+      en: "Positional Rotation"
+    description:
+      ar: "تبادل لاعبين لمواقعهم لتضليل الخصم"
+      en: "Players swapping positions to disorient opponents"
+    detection:
+      position_swap_threshold: 0.5
+      min_swaps: 2
+      event_triggers: [carry_progression, progressive_pass]
+
+  compactness:
+    name:
+      ar: "تماسك"
+      en: "Compactness"
+    description:
+      ar: "قرب اللاعبين من بعضهم لتقليل المساحات"
+      en: "Proximity of players to reduce spaces between lines"
+    detection:
+      avg_inter_player_distance_norm: 0.2
+      vertical_spread_norm: 0.3
+      event_triggers: [defensive_duel, recovery_run]
+
+  half_space_occupation:
+    name:
+      ar: "احتلال المساحة النصفية"
+      en: "Half-Space Occupation"
+    description:
+      ar: "استغلال المساحات بين الأطراف والوسط"
+      en: "Exploiting spaces between wide and central channels"
+    detection:
+      preferred_zones: [half_space]
+      min_time_in_half_space: 0.3
+      event_triggers: [progressive_pass, carry_progression, shot_creation_action]
+
+  # ── Advanced Tactical Concepts (v1.1) ──
+  rest_defense:
+    name:
+      ar: "دفاع راحت"
+      en: "Rest Defense"
+    description:
+      ar: "التنظيم الدفاعي أثناء الاستحواذ الهجومي — تغطية في حال فقدان الكرة"
+      en: "Defensive structure during possession — coverage for ball loss"
+    detection:
+      behind_ball_positioning: true
+      min_players_behind_ball: 3
+      event_triggers: [progressive_pass, carry_progression]
+
+  third_man_run:
+    name:
+      ar: "جري الرجل الثالث"
+      en: "Third-Man Run"
+    description:
+      ar: "حركة لاعب ثالث بعد تمريرة مزدوجة — نمط بارزا الشهير"
+      en: "Third player movement after double pass — iconic Barca pattern"
+    detection:
+      sequence_length: 3
+      min_progression_meters: 10
+      event_triggers: [progressive_pass, line_breaking_pass]
+
+  positional_superiority:
+    name:
+      ar: "تفوق مواقعي"
+      en: "Positional Superiority"
+    description:
+      ar: "استغلال التفوق العددي أو المكاني في منطقة معينة"
+      en: "Exploiting numerical or spatial advantage in a specific area"
+    detection:
+      local_overload: true
+      event_triggers: [progressive_pass, carry_progression, box_entry]
+
+  dynamic_overload:
+    name:
+      ar: "تكدس ديناميكي"
+      en: "Dynamic Overload"
+    description:
+      ar: "تكدس متحرك — لاعبون يتجمعون في منطقة ثم ينتشرون"
+      en: "Mobile overload — players converge then spread"
+    detection:
+      concentration_phase: true
+      spread_after: true
+      event_triggers: [progressive_pass, carry_progression]
+
+  pressing_trap:
+    name:
+      ar: "فخ ضغط"
+      en: "Pressing Trap"
+    description:
+      ar: "ضغط مُخطط لاستدراج الخصم ثم استعادة الكرة في منطقة محددة"
+      en: "Planned press to lure opponent then win ball in target area"
+    detection:
+      initial_retreat: true
+      sudden_press_trigger: true
+      event_triggers: [sprint_press, recovery_run, defensive_duel]
+
+  weak_side_exploitation:
+    name:
+      ar: "استغلال الجانب الضعيف"
+      en: "Weak-Side Exploitation"
+    description:
+      ar: "تحويل اللعب عمداً للجانب المعاكس لتركيز دفاع الخصم"
+      en: "Deliberate play to opposite side of defensive concentration"
+    detection:
+      side_switch: true
+      min_switch_distance: 20
+      event_triggers: [progressive_pass]
+
+  compact_block_shift:
+    name:
+      ar: "إزاحة كتلة مكتظة"
+      en: "Compact Block Shifting"
+    description:
+      ar: "تحرك الكتلة الدفاعية كوحدة واحدة أفقياً وعمودياً"
+      en: "Defensive block moving as one unit horizontally and vertically"
+    detection:
+      synchronized_movement: true
+      max_lag_between_players: 5
+      event_triggers: [recovery_run, defensive_duel]
+
+  vertical_compression:
+    name:
+      ar: "ضغط عمودي"
+      en: "Vertical Compression"
+    description:
+      ar: "تقليص المسافة بين الخطوط لتضييق المساحات على الخصم"
+      en: "Reducing distance between lines to squeeze opponent space"
+    detection:
+      line_distance_decrease: true
+      max_line_gap_meters: 15
+      event_triggers: [sprint_press, recovery_run]
+
+
+# ── EVENT CATEGORIES ─────────────────────────────────────
+# Higher-order events beyond raw detection
+
+event_categories:
+  progressive_pass:
+    name:
+      ar: "تمريرة تقدمية"
+      en: "Progressive Pass"
+    description:
+      ar: "تمريرة تقلل المسافة للمرمى بأكثر من 25%"
+      en: "Pass that reduces distance to goal by >25%"
+    derived_from: [pass]
+    conditions:
+      ball_distance_reduction: 0.25
+      direction: forward
+
+  line_breaking_pass:
+    name:
+      ar: "تمريرة كاسرة لل خطوط"
+      en: "Line-Breaking Pass"
+    description:
+      ar: "تمريرة تخترق خط دفاعي للخصم"
+      en: "Pass that breaks through an opposition defensive line"
+    derived_from: [pass]
+    conditions:
+      crosses_defensive_line: true
+      ball_distance_reduction: 0.15
+
+  recovery_run:
+    name:
+      ar: "رجعة دفاعية"
+      en: "Recovery Run"
+    description:
+      ar: "ركض عودة لاستعادة موقع دفاعي بعد فقدان الكرة"
+      en: "Sprint back to recover defensive position after ball loss"
+    derived_from: [sprint, transition]
+    conditions:
+      direction: backward
+      post_possession_loss: true
+
+  sprint_press:
+    name:
+      ar: "ضغط سريع"
+      en: "Sprint Press"
+    description:
+      ar: "ركض سريع نحو حامل الكرة في الخصم"
+      en: "Sprint toward opponent ball carrier"
+    derived_from: [sprint]
+    conditions:
+      target: ball_carrier
+      distance_to_ball_closing: true
+
+  defensive_duel:
+    name:
+      ar: "مبارزة دفاعية"
+      en: "Defensive Duel"
+    description:
+      ar: "تحدي قريب على الكرة مع لاعب خصم"
+      en: "Close challenge for the ball with an opponent"
+    derived_from: [pressure]
+    conditions:
+      distance_to_ball_carrier: 2.0
+      player_density: high
+
+  carry_progression:
+    name:
+      ar: "تقدم بالكرة"
+      en: "Carry Progression"
+    description:
+      ar: "تقدم لاعب بالكرة لمسافة معتبرة نحو المرمى"
+      en: "Player carries ball a significant distance toward goal"
+    derived_from: [possession, sprint]
+    conditions:
+      ball_carrier: true
+      distance_reduction: 0.15
+
+  box_entry:
+    name:
+      ar: "دخول منطقة الجزاء"
+      en: "Box Entry"
+    description:
+      ar: "تمريرة أو تقدم يدخل الكرة لمنطقة الجزاء"
+      en: "Pass or carry that enters the penalty area"
+    derived_from: [pass, carry_progression]
+    conditions:
+      target_zone: penalty_area
+
+  shot_creation_action:
+    name:
+      ar: "فعل صناعة تسديدة"
+      en: "Shot Creation Action"
+    description:
+      ar: "تمريرة أو حركة تؤدي مباشرة لتسديدة خلال إطارين"
+      en: "Pass or action directly leading to a shot within 2 frames"
+    derived_from: [pass, shot]
+    conditions:
+      leads_to_shot: true
+
+  # ── Advanced Event Categories (v1.1) ──
+  third_man_combination:
+    name:
+      ar: "تمريرة الرجل الثالث"
+      en: "Third-Man Combination"
+    description:
+      ar: "تمريرة غير مباشرة عبر لاعب وسيط تخترق خطوط الخصم"
+      en: "Indirect pass through a mediator that breaks opposition lines"
+    derived_from: [pass, line_breaking_pass]
+    conditions:
+      mediation_player: true
+
+  weak_side_exploit:
+    name:
+      ar: "استغلال الجانب الضعيف"
+      en: "Weak-Side Exploitation"
+    description:
+      ar: "تحويل اللعب للجانب الأضعف من دفاع الخصم"
+      en: "Play switched to the weaker side of opposition defense"
+    derived_from: [pass, carry_progression]
+    conditions:
+      side_switch: true
+      shot_within_frames: 2

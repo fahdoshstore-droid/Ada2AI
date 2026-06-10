@@ -22,7 +22,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-// Sample player data
+// ⚠️ DEMO MODE — Sample player data (NOT real intelligence)
+const DEMO_MODE = true;
 const players = [
   {
     id: 1,
@@ -151,6 +152,13 @@ export default function Demo() {
   return (
     <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]" dir="rtl">
       <Ada2aiNavbar />
+
+      {/* ⚠️ DEMO MODE BANNER */}
+      {DEMO_MODE && (
+        <div className="bg-yellow-600/90 text-black text-center py-2 text-sm font-bold" dir="rtl">
+          ⚠️ وضع العرض — البيانات المعروضة توضيحية فقط وليست من تحليل حقيقي
+        </div>
+      )}
 
       {/* Header */}
       <section className="pt-24 pb-10 relative overflow-hidden">

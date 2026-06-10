@@ -5,13 +5,33 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY!
 );
 
+// ── Auth helper (shared) ─────────────────────────────
+function verifyAuth(req: Request): boolean {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) return false;
+  const token = authHeader.replace('Bearer ', '').trim();
+  if (!token) return false;
+
+  const pilotToken = process.env.PILOT_TOKEN || '';
+  if (pilotToken && token === pilotToken) return true;
+
+  const anonKey = process.env.SUPABASE_ANON_KEY || '';
+  if (anonKey && token === anonKey) return true;
+
+  return false;
+}
+
 export async function GET(req: Request) {
+  if (!verifyAuth(req)) {
+    return Response.json({ success: false, data: null, error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const url = new URL(req.url);
     const path = url.pathname;
     const playerId = url.searchParams.get("playerId");
 
-    // /api/sportid/players or /api/sportid/players?page=0
+    // /api/sportid/players
     if (path.endsWith('/players') || path === '/api/sportid') {
       const page = Number(url.searchParams.get("page") || 0);
       const limit = 20;
@@ -28,16 +48,10 @@ export async function GET(req: Request) {
         return Response.json({ success: false, data: null, error: "Internal server error" }, { status: 500 });
       }
 
-      // Return as flat array for backward compat + pagination metadata
       return Response.json({
         success: true,
-        data: data, // flat array for frontend compat
-        pagination: {
-          page,
-          limit,
-          total: count || 0,
-          totalPages: Math.ceil((count || data.length) / limit)
-        },
+        data: data,
+        pagination: { page, limit, total: count || 0, totalPages: Math.ceil((count || data.length) / limit) },
         error: null
       });
     }

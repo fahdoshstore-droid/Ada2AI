@@ -5,7 +5,29 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY!
 );
 
+// ── Auth helper (shared) ─────────────────────────────
+function verifyAuth(req: Request): boolean {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) return false;
+  const token = authHeader.replace('Bearer ', '').trim();
+  if (!token) return false;
+
+  // Accept pilot token
+  const pilotToken = process.env.PILOT_TOKEN || '';
+  if (pilotToken && token === pilotToken) return true;
+
+  // Accept Supabase anon key during transition
+  const anonKey = process.env.SUPABASE_ANON_KEY || '';
+  if (anonKey && token === anonKey) return true;
+
+  return false;
+}
+
 export async function GET(req: Request) {
+  if (!verifyAuth(req)) {
+    return Response.json({ success: false, data: null, error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const page = Number(searchParams.get("page") || 0);
@@ -24,16 +46,10 @@ export async function GET(req: Request) {
       return Response.json({ success: false, data: null, error: "Internal server error" }, { status: 500 });
     }
 
-    // Return as flat array for backward compat + pagination metadata
     return Response.json({
       success: true,
-      data: data, // flat array for frontend compat
-      pagination: {
-        page,
-        limit,
-        total: count || 0,
-        totalPages: Math.ceil((count || data.length) / limit)
-      },
+      data: data,
+      pagination: { page, limit, total: count || 0, totalPages: Math.ceil((count || data.length) / limit) },
       error: null
     });
   } catch (e: any) {
@@ -43,6 +59,10 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  if (!verifyAuth(req)) {
+    return Response.json({ success: false, data: null, error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const { name, age, position, sport, region } = body;

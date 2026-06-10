@@ -10,7 +10,7 @@ import BackButton from '@/components/BackButton'
 import { Video, Upload, Play, BarChart3, CheckCircle, AlertCircle, X, Loader2, TrendingUp, Activity, Zap } from 'lucide-react'
 
 // Backend API URL - change to your deployed backend URL
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001'
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 interface AnalysisResult {
   track_id: number
@@ -64,23 +64,10 @@ export default function VideoUpload() {
     setVideoUrl(url)
     setVideoFile(file)
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(interval)
-          return prev
-        }
-        return prev + 10
-      })
-    }, 300)
-
-    // Simulate upload completion
-    setTimeout(() => {
-      clearInterval(interval)
-      setProgress(100)
-      setUploading(false)
-    }, 3000)
+    // Real upload: file is selected and ready for analysis
+    // No simulated progress — progress bar reflects actual analysis progress
+    setProgress(0)
+    setUploading(false) // File is local, no upload step needed
   }
 
   const handleAnalyze = async () => {
@@ -97,23 +84,27 @@ export default function VideoUpload() {
       formData.append('frame_interval', '5')
       formData.append('pixels_per_meter', '50.0')
 
-      // Progress simulation
-      const progressInterval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 5, 90))
-      }, 500)
-
-      const response = await fetch(`${API_BASE}/analyze/single`, {
-        method: 'POST',
-        body: formData,
+      // Real progress via XMLHttpRequest upload.onprogress
+      const xhr = new XMLHttpRequest()
+      const progressPromise = new Promise<any>((resolve, reject) => {
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setProgress(Math.round((e.loaded / e.total) * 100))
+          }
+        }
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText))
+          } else {
+            reject(new Error(`Analysis failed: ${xhr.statusText}`))
+          }
+        }
+        xhr.onerror = () => reject(new Error('Network error'))
+        xhr.open('POST', `${API_BASE}/analyze/single`)
+        xhr.send(formData)
       })
 
-      clearInterval(progressInterval)
-
-      if (!response.ok) {
-        throw new Error(`Analysis failed: ${response.statusText}`)
-      }
-
-      const result = await response.json()
+      const result = await progressPromise
       setProgress(100)
       setAnalysisResult(result)
 
@@ -123,16 +114,7 @@ export default function VideoUpload() {
     } catch (err: any) {
       console.error('Analysis error:', err)
       setError(err.message || (isRTL ? 'فشل التحليل' : 'Analysis failed'))
-      
-      // Fallback to demo data if API not available
-      setAnalysisResult({
-        track_id: 1,
-        total_distance_meters: 2450 + Math.random() * 500,
-        average_speed_mps: 3.2 + Math.random() * 0.5,
-        max_speed_mps: 8.5 + Math.random() * 1,
-        positions: [],
-        frames_analyzed: 120
-      })
+      // NO fake fallback — show error only. Real data or nothing.
     } finally {
       setAnalyzing(false)
     }

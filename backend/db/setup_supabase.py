@@ -1,11 +1,16 @@
 """
-Supabase SQL setup for Ada2AI - Create missing tables and seed data
+Supabase SQL setup for Ada2AI - Create missing tables and seed data.
+REQUIRES env vars: SUPABASE_URL, SUPABASE_ANON_KEY
 """
 import os
 from supabase import create_client
 
-SUPABASE_URL = "https://ujjmhqpyehymaavkawiv.supabase.co"
-SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY", "sb_publishable_0SW1Q7ENJNjpu-27GJdd5g_-nZRE5nO")
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("[setup_supabase] ERROR: SUPABASE_URL and SUPABASE_ANON_KEY must be set.")
+    exit(1)
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 

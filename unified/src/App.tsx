@@ -7,6 +7,7 @@ import { AdminDashboard } from './pages/app/AdminDashboard'
 import { CoachDashboard } from './pages/app/CoachDashboard'
 import { PlayerDashboard } from './pages/app/PlayerDashboard'
 import { Rankings } from './pages/app/Rankings'
+import { PlayerIntelligence } from './pages/app/PlayerIntelligence'
 
 export default function App() {
   return (
@@ -37,6 +38,11 @@ export default function App() {
         <Route path="/app/rankings" element={
           <ProtectedRoute>
             <Rankings />
+          </ProtectedRoute>
+        } />
+        <Route path="/app/intelligence" element={
+          <ProtectedRoute>
+            <PlayerIntelligence />
           </ProtectedRoute>
         } />
         <Route path="*" element={<Navigate to="/" replace />} />

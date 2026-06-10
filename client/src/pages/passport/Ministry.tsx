@@ -46,10 +46,7 @@ function MinistryDashboardInner() {
   useEffect(() => {
     if (kpi) setLiveCount(kpi.activeThisMonth);
   }, [kpi]);
-  useEffect(() => {
-    const interval = setInterval(() => setLiveCount(c => c + Math.floor(Math.random() * 3)), 2000);
-    return () => clearInterval(interval);
-  }, []);
+  // NO fake live counter — liveCount reflects real data only
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
   if (error) return <div className="text-red-500 text-center p-8">{lang === 'ar' ? 'خطأ في تحميل البيانات' : 'Error loading data'}: {error}</div>;

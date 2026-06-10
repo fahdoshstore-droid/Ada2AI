@@ -48,6 +48,7 @@ import QrCheckinPage    from "./pages/features/QrCheckinPage";
 import SportPointsPage  from "./pages/features/SportPointsPage";
 import MinistryReportPage from "./pages/features/MinistryReportPage";
 import YOLOAnalysis   from "./pages/YOLOAnalysis";
+import ScoutIntelligence from "./pages/ScoutIntelligence";
 import LoginPage     from "./pages/LoginPage";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import PlayerProfile from "./pages/dashboard/PlayerProfile";
@@ -100,6 +101,7 @@ function Router() {
       <Route path="/demo"         component={Demo} />
       <Route path="/demo-video"   component={DemoVideo} />
       <Route path="/yolo"        component={YOLOAnalysis} />
+      <Route path="/scout"        component={ScoutIntelligence} />
 
       {/* ── Platform Tools ── */}
       <Route path="/dashboards"     component={Dashboards} />

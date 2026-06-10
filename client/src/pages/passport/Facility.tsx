@@ -5,12 +5,8 @@ import { t } from '@/lib/passport/i18n';
 import NavBar from '@/components/passport/NavBar';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
-const hourlyData = [
-  { hour: '6AM',  count: 14 }, { hour: '8AM',  count: 48 },
-  { hour: '10AM', count: 76 }, { hour: '12PM', count: 61 },
-  { hour: '2PM',  count: 38 }, { hour: '4PM',  count: 92 },
-  { hour: '6PM',  count: 97 }, { hour: '8PM',  count: 43 },
-];
+// ⚠️ DEMO DATA — hourly activity chart uses placeholder data until real facility data is connected
+const hourlyData: { hour: string; count: number }[] = [];
 
 function FacilityDashboardInner() {
   const { lang } = useLang();

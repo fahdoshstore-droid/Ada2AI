@@ -5,6 +5,8 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 
+// ⚠️ DEMO MODE — Hardcoded mock result (NOT real analysis)
+const DEMO_MODE = true;
 const demoResult = {
   sessionInfo: {
     title: "حصة تدريبية - الفئة U14",
@@ -73,6 +75,12 @@ export default function DemoVideo() {
 
   return (
     <div className="min-h-screen bg-[#000A0F] text-[#EEEFEE]">
+      {/* ⚠️ DEMO MODE BANNER */}
+      {DEMO_MODE && (
+        <div className="bg-yellow-600/90 text-black text-center py-2 text-sm font-bold">
+          ⚠️ وضع العرض — البيانات المعروضة توضيحية فقط وليست من تحليل حقيقي
+        </div>
+      )}
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-[#000A0F]/90 border-b border-[#00DCC8]/10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">

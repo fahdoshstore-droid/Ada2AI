@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { LoadingState } from '../../components/LoadingState'
-import { EmptyState } from '../../components/EmptyState'
 import { ErrorState } from '../../components/ErrorState'
 
 export function AdminDashboard() {
