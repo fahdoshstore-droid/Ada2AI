@@ -221,12 +221,16 @@ export default function CoachWorkspace() {
   const [activeFormId, setActiveFormId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [formation, setFormation] = useState<'4-3-3' | '4-4-2' | '3-5-2'>('4-3-3')
-  const [activeTab, setActiveTab] = useState<'workspace' | 'opponent'>('workspace')
+  const [activeTab, setActiveTab] = useState<'workspace' | 'opponent' | 'player-analysis'>('workspace')
   const [opponentTeam, setOpponentTeam] = useState('')
   const [matchDate, setMatchDate] = useState('')
   const [opponentVideo, setOpponentVideo] = useState<File | null>(null)
+  const [playerName, setPlayerName] = useState('')
+  const [playerVideo, setPlayerVideo] = useState<File | null>(null)
+  const [playerUploadDate, setPlayerUploadDate] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadMsg, setUploadMsg] = useState<string | null>(null)
+  const [playerUploadMsg, setPlayerUploadMsg] = useState<string | null>(null)
   const [tacticalNotes, setTacticalNotes] = useState('')
 
   const handleStartProcessing = (id: string) => {
@@ -283,6 +287,36 @@ export default function CoachWorkspace() {
     }
   }
 
+  const handlePlayerUpload = async () => {
+    if (!playerName.trim() || !playerVideo || !user) return
+    setUploading(true)
+    setPlayerUploadMsg(null)
+    try {
+      const filePath = `player/${Date.now()}_${playerVideo.name}`
+      const { error: uploadError } = await supabase.storage
+        .from('player-media')
+        .upload(filePath, playerVideo, { cacheControl: '3600' })
+      if (uploadError) throw uploadError
+
+      const { data: urlData } = supabase.storage.from('player-media').getPublicUrl(filePath)
+      const publicUrl = urlData.publicUrl
+
+      await createAnalysisRecord(user.id, publicUrl, {
+        title: `تحليل لاعب: ${playerName}`,
+        date: playerUploadDate || undefined,
+      })
+
+      setPlayerUploadMsg('تم الرفع — التحليل سيبدأ قريباً')
+      setPlayerName('')
+      setPlayerUploadDate('')
+      setPlayerVideo(null)
+    } catch (err: any) {
+      setPlayerUploadMsg(`خطأ: ${err.message || 'فشل الرفع'}`)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   return (
     <div dir="rtl" className="min-h-screen bg-navy">
       <div className="absolute inset-0 bg-gradient-radial opacity-30" />
@@ -326,6 +360,17 @@ export default function CoachWorkspace() {
             >
               <Swords className="w-4 h-4" />
               تحليل المنافس
+            </button>
+            <button
+              onClick={() => setActiveTab('player-analysis')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors arabic-text ${
+                activeTab === 'player-analysis'
+                  ? 'bg-teal-prime/20 text-teal-prime border border-teal-prime/30'
+                  : 'glass-card text-ice-muted hover:text-ice-white'
+              }`}
+            >
+              <UploadIcon className="w-4 h-4" />
+              تحليل لاعب
             </button>
           </div>
         </div>
@@ -671,6 +716,89 @@ export default function CoachWorkspace() {
             {uploadMsg && (
               <p className={`text-sm arabic-text text-center ${uploadMsg.startsWith('خطأ') ? 'text-red-400' : 'text-teal-prime'}`}>
                 {uploadMsg}
+              </p>
+            )}
+          </motion.div>
+        )}
+
+        {/* ── Player Analysis Tab ── */}
+        {activeTab === 'player-analysis' && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card rounded-2xl p-5 space-y-5"
+          >
+            <h2 className="font-bold font-display text-ice-white flex items-center gap-2 arabic-text">
+              <UploadIcon className="w-5 h-5 text-teal-prime" />
+              تحليل لاعب
+            </h2>
+            <p className="text-ice-muted text-sm arabic-text">
+              ارفع فيديو للاعب وسيتم إنشاء تحليل تلقائي في قائمة الانتظار
+            </p>
+
+            {/* Player Name */}
+            <div>
+              <label className="text-xs text-ice-muted arabic-text block mb-1">اسم اللاعب</label>
+              <input
+                type="text"
+                value={playerName}
+                onChange={e => setPlayerName(e.target.value)}
+                placeholder="مثال: أحمد العلي"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-ice-white arabic-text focus:border-teal-prime/50 focus:outline-none"
+              />
+            </div>
+
+            {/* Upload Date */}
+            <div>
+              <label className="text-xs text-ice-muted arabic-text block mb-1">تاريخ التسجيل (اختياري)</label>
+              <input
+                type="date"
+                value={playerUploadDate}
+                onChange={e => setPlayerUploadDate(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-ice-white focus:border-teal-prime/50 focus:outline-none"
+              />
+            </div>
+
+            {/* Video Upload */}
+            <div>
+              <label className="text-xs text-ice-muted arabic-text block mb-1">فيديو اللاعب</label>
+              <label className="flex flex-col items-center justify-center gap-2 px-4 py-6 bg-white/5 border border-dashed border-white/20 rounded-xl cursor-pointer hover:border-teal-prime/40 transition-colors">
+                <UploadIcon className="w-8 h-8 text-ice-muted" />
+                <span className="text-sm text-ice-muted arabic-text">
+                  {playerVideo ? playerVideo.name : 'اختر ملف الفيديو'}
+                </span>
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={e => setPlayerVideo(e.target.files?.[0] ?? null)}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Submit */}
+            <button
+              onClick={handlePlayerUpload}
+              disabled={uploading || !playerName.trim() || !playerVideo}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  جارٍ الرفع...
+                </>
+              ) : (
+                <>
+                  <UploadIcon className="w-4 h-4" />
+                  رفع وتحليل
+                </>
+              )}
+            </button>
+
+            {/* Upload message */}
+            {playerUploadMsg && (
+              <p className={`text-sm arabic-text text-center ${playerUploadMsg.startsWith('خطأ') ? 'text-red-400' : 'text-teal-prime'}`}>
+                {playerUploadMsg}
               </p>
             )}
           </motion.div>
