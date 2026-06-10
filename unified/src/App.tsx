@@ -35,11 +35,7 @@ export default function App() {
             <PlayerDashboard />
           </ProtectedRoute>
         } />
-        <Route path="/app/rankings" element={
-          <ProtectedRoute>
-            <Rankings />
-          </ProtectedRoute>
-        } />
+        <Route path="/app/rankings" element={<Rankings />} />
         <Route path="/app/intelligence" element={
           <ProtectedRoute>
             <PlayerIntelligence />
