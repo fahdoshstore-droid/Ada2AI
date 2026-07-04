@@ -1,0 +1,9 @@
+# Ada2Physique backend — Phase 1 (isolated service, reuses Ada2AI infra)
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+supabase>=2.0.0
+httpx>=0.25.0
+PyJWT>=2.8.0
+python-dotenv>=1.0.0
+# Phase 2 will add: ultralytics, mediapipe, opencv-python, numpy (vision_core reuse)

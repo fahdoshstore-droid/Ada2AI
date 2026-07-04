@@ -1,0 +1,3 @@
+{
+  "rewrites": [{ "source": "/((?!physique/).*)", "destination": "/index.html" }]
+}

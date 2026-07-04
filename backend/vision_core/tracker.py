@@ -229,9 +229,21 @@ class SportsTracker:
         for vel in track.velocities:
             speeds.append(vel["speed"])
 
+        # Get class_name from first position if available
+        class_name = None
+        if track.positions:
+            class_id = track.positions[0].get("class_id")
+            if class_id is not None:
+                from .config import COCOClasses
+                class_name = COCOClasses.__dict__.get(
+                    next((k for k, v in COCOClasses.__dict__.items() if v == class_id), ""), str(class_id)
+                )
+
         return {
             "track_id": track_id,
             "team": track.team,
+            "class_id": track.positions[0].get("class_id") if track.positions else None,
+            "class_name": class_name,
             "frames_visible": len(track.positions),
             "total_distance_meters": round(total_distance, 2),
             "average_speed_mps": round(sum(speeds) / len(speeds), 2) if speeds else 0,

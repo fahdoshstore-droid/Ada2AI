@@ -332,7 +332,14 @@ class VisionPipeline:
         """Force cleanup of all models and cached data. Call between long sessions."""
         from .detector import clear_model_cache
         clear_model_cache()
-        self._pipeline = None
+        self._model = None
+        self._pose_model = None
+        self._seg_model = None
+        self._graph_builder = None
+        self._last_analysis = None
+        self._results_cache.clear()
+        self._signature_cache.clear()
+        self._dna_profiles_cache.clear()
         gc.collect()
         logger.info("VisionPipeline cleanup: models unloaded, memory freed")
 

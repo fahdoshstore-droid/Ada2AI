@@ -1,0 +1,135 @@
+/* ════════════════════════════════════════════════════════════════════
+ * Ada2Physique — Brand Design System (Tailwind v4, CSS-first)
+ * Reuses Ada2AI tokens (BRAND.md / DESIGN.md), bodybuilding-tuned accent.
+ * No tailwind.config, no postcss config — uses @tailwindcss/vite.
+ * ════════════════════════════════════════════════════════════════════ */
+@import "tailwindcss";
+
+@theme {
+  /* ── Brand colors (generate bg-/text-/border- utilities) ── */
+  --color-ada-teal: #00DCC8;
+  --color-ada-ocean: #007ABA;
+  --color-ada-navy: #000A0F;
+  --color-ada-surface: #0A1628;
+  --color-ada-card: #0D1E35;
+  --color-ada-card-2: #102743;
+  --color-ada-text: #EEEFEE;
+  --color-ada-muted: #6B8099;
+  --color-ada-amber: #FFA500;
+  --color-ada-red: #FF4444;
+  --color-ada-success: #10B981;
+  --color-ada-warning: #F59E0B;
+
+  /* ── Typography ── */
+  --font-display: "Orbitron", "Inter", sans-serif;
+  --font-body: "Cairo", "Inter", system-ui, sans-serif;
+
+  /* ── Radii ── */
+  --radius-card: 16px;
+
+  /* ── Shadows / glow ── */
+  --shadow-elev-1: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-elev-2: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-elev-3: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--color-ada-navy);
+    color: var(--color-ada-text);
+    font-family: var(--font-body);
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  /* Numbers / KPIs use the display font */
+  .font-mono-num {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: rgba(0, 220, 200, 0.25);
+    color: var(--color-ada-text);
+  }
+
+  /* Scrollbar (dark) */
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: var(--color-ada-navy);
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #1b2f49;
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: #27426b;
+  }
+}
+
+@layer components {
+  /* Primary gradient surface — buttons, CTAs, accents */
+  .ada-gradient {
+    background-image: linear-gradient(135deg, #007ABA 0%, #00DCC8 100%);
+  }
+  .ada-gradient-accent {
+    background-image: linear-gradient(135deg, #00DCC8 0%, #FFA500 100%);
+  }
+  .ada-gradient-dark {
+    background-image: linear-gradient(180deg, #000A0F 0%, #0A0E1A 100%);
+  }
+  .ada-glow-teal {
+    box-shadow: 0 0 24px rgba(0, 220, 200, 0.18);
+  }
+  .ada-glow-ocean {
+    box-shadow: 0 0 24px rgba(0, 122, 186, 0.22);
+  }
+
+  /* Form inputs (dark, teal-edged) */
+  .ada-input {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.5rem;
+    background-color: var(--color-ada-surface);
+    color: var(--color-ada-text);
+    border: 1px solid rgba(0, 220, 200, 0.18);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .ada-input::placeholder {
+    color: #4d6485;
+  }
+  .ada-input:focus {
+    border-color: var(--color-ada-teal);
+    box-shadow: 0 0 0 3px rgba(0, 220, 200, 0.12);
+  }
+
+  .ada-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.8rem;
+    color: var(--color-ada-muted);
+    font-weight: 600;
+  }
+}
