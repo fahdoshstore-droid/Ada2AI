@@ -33,6 +33,3 @@ dist/
 .env*.local
 .aidesigner/*
 !.aidesigner/.gitkeep
-
-# Supabase CLI temp files (تُولّد تلقائيًا وتُغيّر باستمرار)
-supabase/.temp/
