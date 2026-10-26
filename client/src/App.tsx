@@ -48,6 +48,7 @@ import QrCheckinPage    from "./pages/features/QrCheckinPage";
 import SportPointsPage  from "./pages/features/SportPointsPage";
 import MinistryReportPage from "./pages/features/MinistryReportPage";
 import YOLOAnalysis   from "./pages/YOLOAnalysis";
+import MatchIntelligence from "./pages/MatchIntelligence";
 import ScoutIntelligence from "./pages/ScoutIntelligence";
 import LoginPage     from "./pages/LoginPage";
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -64,15 +65,16 @@ import { useProfile, roleDashboardPaths } from "./hooks/useProfile";
 
 /** /dashboard → redirects to the role-appropriate dashboard */
 function DashboardRedirect() {
-  const { role, error, retry } = useProfile();
+  const { role, error, retry, loading } = useProfile();
 
-  // Profile error — fall back to player dashboard immediately
-  if (error && !role) {
-    return <Redirect to="/dashboard/player" />;
+  // Block while the profile is loading; do not redirect automatically.
+  if (loading && !role) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-gray-500">Loading dashboard…</div>
+    );
   }
 
-  // No role yet (still loading) — fall back to player dashboard
-  // This avoids blocking; profile loads in background on the dashboard page
+  // No role yet after loading — fall back to player dashboard.
   if (!role) {
     return <Redirect to="/dashboard/player" />;
   }
@@ -101,6 +103,7 @@ function Router() {
       <Route path="/demo"         component={Demo} />
       <Route path="/demo-video"   component={DemoVideo} />
       <Route path="/yolo"        component={YOLOAnalysis} />
+      <Route path="/match-intelligence" component={MatchIntelligence} />
       <Route path="/scout"        component={ScoutIntelligence} />
 
       {/* ── Platform Tools ── */}

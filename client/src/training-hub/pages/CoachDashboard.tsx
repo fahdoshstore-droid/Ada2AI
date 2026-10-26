@@ -38,6 +38,8 @@ import type { Player as SupabasePlayer } from "@/lib/supabase";
 import { useTacticalAnimation, BUILTIN_SCENARIOS } from "./useTacticalAnimation";
 import { useA2AAgent } from "../hooks/useA2AAgent";
 import AgentTracePanel from "@/components/AgentTracePanel";
+import MatchReplay from "../components/MatchReplay";
+import CalibrationPanel from "../components/CalibrationPanel";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface CoachDashboardProps {
@@ -173,7 +175,7 @@ const roleColors: Record<PlayerRole, { bg: string; border: string; label: string
   FWD: { bg: "#EF4444",   border: "#F87171",   label: "FWD", labelAr: "مهاجم" },
 };
 
-// ─── Performance Data ─────────────────────────────────────────────────────────
+// ─── Performance Data (HARDCODED DEMO — NOT measured by CV) ─────────────────
 const performanceData = [
   { match: "م1", matchEn: "M1", attack: 62, defense: 58, possession: 48 },
   { match: "م2", matchEn: "M2", attack: 68, defense: 64, possession: 52 },
@@ -273,6 +275,7 @@ export default function CoachDashboard(props: any = {}) {
   const draggingRef = useRef<{ id: number } | null>(null);
 
   // ── Tactical Animation ──────────────────────────────────────────────────
+  const [dashboardMode, setDashboardMode] = useState<"formation" | "replay">("formation");
   const [tacticalMode, setTacticalMode] = useState(false);
   const tactical = useTacticalAnimation(players);
   const a2a = useA2AAgent();
@@ -528,8 +531,8 @@ export default function CoachDashboard(props: any = {}) {
       const result: VideoAnalysisResult = {
         team_0_name: teamAName || (isRTL ? "الفريق أ" : "Team A"),
         team_1_name: teamBName || (isRTL ? "الفريق ب" : "Team B"),
-        team_0_possession: report.possession?.team_a || report.overallRating || 50,
-        team_1_possession: report.possession?.team_b || (100 - (report.overallRating || 50)),
+        team_0_possession: report.possession?.team_a ?? 0,
+        team_1_possession: report.possession?.team_b ?? 0,
         team_0_area: report.area_control?.team_a || 50,
         team_1_area: report.area_control?.team_b || 50,
         team_0_goals: report.goals?.team_a || 0,
@@ -637,10 +640,39 @@ export default function CoachDashboard(props: any = {}) {
           </div>
         )}
 
+        {/* ── Dashboard Mode Switch ─────────────────────────────────────────────── */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setDashboardMode("formation")}
+            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+            style={{
+              background: dashboardMode === "formation" ? "rgba(0,220,200,0.15)" : "rgba(255,255,255,0.04)",
+              color: dashboardMode === "formation" ? "#00DCC8" : "rgba(255,255,255,0.5)",
+              border: dashboardMode === "formation" ? "1px solid rgba(0,220,200,0.3)" : "1px solid transparent",
+              fontFamily: font,
+            }}
+          >
+            {isRTL ? "التشكيلة" : "Formation"}
+          </button>
+          <button
+            onClick={() => setDashboardMode("replay")}
+            className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+            style={{
+              background: dashboardMode === "replay" ? "rgba(0,220,200,0.15)" : "rgba(255,255,255,0.04)",
+              color: dashboardMode === "replay" ? "#00DCC8" : "rgba(255,255,255,0.5)",
+              border: dashboardMode === "replay" ? "1px solid rgba(0,220,200,0.3)" : "1px solid transparent",
+              fontFamily: font,
+            }}
+          >
+            {isRTL ? "إعادة المباراة" : "Match Replay"}
+          </button>
+        </div>
+
         {/* ── Main Grid ──────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
           {/* ── Tactical Pitch ─────────────────────────────────────────────── */}
+          {dashboardMode === "formation" && (
           <div className="xl:col-span-2 rounded-2xl p-4" style={{ background: "#0D1220", border: "1px solid rgba(255,255,255,0.06)" }}>
 
             {/* Formation selector + actions */}
@@ -920,6 +952,7 @@ export default function CoachDashboard(props: any = {}) {
                 );
               })}
             </div>
+
             {tacticalMode && tactical.isPlaying && (
               <div className="mt-2 relative h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
                 <div className="absolute inset-y-0 start-0 rounded-full transition-all duration-100"
@@ -928,6 +961,14 @@ export default function CoachDashboard(props: any = {}) {
               </div>
             )}
           </div>
+          )}
+
+          {dashboardMode === "replay" && (
+            <div className="xl:col-span-2 space-y-4">
+              <MatchReplay lang={lang} />
+              <CalibrationPanel lang={lang} />
+            </div>
+          )}
 
           {/* ── Right Panel ────────────────────────────────────────────────── */}
           <div className="space-y-4">
@@ -1118,7 +1159,7 @@ export default function CoachDashboard(props: any = {}) {
           <div className="flex items-center gap-2 mb-5">
             <TrendingUp size={16} style={{ color: "#00DCC8" }} />
             <h2 className="font-bold text-white text-base" style={{ fontFamily: font }}>
-              {isRTL ? "أداء الفريق — آخر 5 مباريات" : "Team Performance — Last 5 Matches"}
+              {isRTL ? "أداء الفريق — آخر 5 مباريات (غير مقاسة بCV)" : "Team Performance — Last 5 Matches (not CV-measured)"}
             </h2>
           </div>
           <div style={{ height: "200px" }}>
@@ -1161,7 +1202,7 @@ export default function CoachDashboard(props: any = {}) {
                   {isRTL ? "تحليل فيديو المباراة" : "Match Video Analysis"}
                 </h2>
                 <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)", fontFamily: font }}>
-                  {isRTL ? "YOLO + Kmeans + Voronoi — استحواذ، مناطق، إحصائيات" : "YOLO + Kmeans + Voronoi — possession, areas, stats"}
+                  {isRTL ? "تحليل LLM (Claude Vision) — ليس رؤية حاسوبية" : "LLM Analysis (Claude Vision) — not computer vision"}
                 </p>
               </div>
             </div>
