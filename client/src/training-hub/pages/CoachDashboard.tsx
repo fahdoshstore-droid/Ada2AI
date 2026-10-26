@@ -275,7 +275,7 @@ export default function CoachDashboard(props: any = {}) {
   const draggingRef = useRef<{ id: number } | null>(null);
 
   // ── Tactical Animation ──────────────────────────────────────────────────
-  const [dashboardMode, setDashboardMode] = useState<"formation" | "replay">("formation");
+  const [dashboardMode, setDashboardMode] = useState<"formation" | "replay">("replay");
   const [tacticalMode, setTacticalMode] = useState(false);
   const tactical = useTacticalAnimation(players);
   const a2a = useA2AAgent();
