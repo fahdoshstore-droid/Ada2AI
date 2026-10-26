@@ -68,7 +68,7 @@ function DashboardRedirect() {
   const { role, error, retry, loading } = useProfile();
 
   // Block while the profile is loading; do not redirect automatically.
-  if (loading && !role) {
+  if ((loading || (!role && !error)) && !role) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-gray-500">Loading dashboard…</div>
     );
