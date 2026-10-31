@@ -3,8 +3,10 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../lib/supabase";
 import { useAthleteProfile } from "../../hooks/useProfile";
-import { Badge, Button, Card, EmptyState, ErrorState, LoadingState, SectionTitle } from "../../components/ui";
+import { Badge, Button, Card, EmptyState, ErrorState, LoadingState, PageHeader, SectionTitle } from "../../components/ui";
 import { ExerciseDetail } from "../../components/ExerciseDetail";
+import { Icon } from "../../components/Icon";
+import { HeroBanner } from "../../components/Media";
 import type { ProgramBlockWithExercise, ProgramDay, ExerciseLibrary } from "../../lib/types";
 
 interface DayWithBlocks {
@@ -90,29 +92,32 @@ export function ProgramDetail() {
 
   if (program.isLoading || days.isLoading) return <LoadingState label="Loading training program · جارٍ التحميل" />;
   if (program.isError) return <ErrorState message="Could not load the training program. Please try again." />;
-  if (!program.data) return <EmptyState title="Training program not found · البرنامج غير موجود" icon="..." />;
+  if (!program.data) return <EmptyState title="Training program not found · البرنامج غير موجود" icon={<Icon name="layers" size={20} />} />;
 
   return (
-    <div className="space-y-6">
+    <div className="ada-stagger space-y-8 sm:space-y-10">
       {/* Back link */}
       <a
         href="/app/athlete"
-        className="inline-flex items-center gap-1 text-sm text-ada-muted hover:text-ada-text"
+        className="inline-flex items-center gap-1.5 text-sm text-ada-muted transition-colors hover:text-ada-text"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
+        <Icon name="chevron" size={16} className="rotate-180" />
         Back to dashboard
       </a>
 
       {/* Program header */}
-      <div>
-        <h1 className="text-2xl font-bold text-ada-text">{program.data.name}</h1>
-        <p className="mt-1 text-sm text-ada-muted">
-          {program.data.goal ?? "-"} · {program.data.duration_weeks ?? "-"} weeks ·{" "}
-          {program.data.days_per_week ?? "-"} days/week
-        </p>
-      </div>
+      <HeroBanner photo="incline-press-tracking" alt="Incline dumbbell press with elbow and shoulder tracking" position="50% 30%">
+        <PageHeader
+          eyebrow="Training program"
+          title={program.data.name}
+          subtitle={
+            <>
+              {program.data.goal ?? "-"} · {program.data.duration_weeks ?? "-"} weeks ·{" "}
+              {program.data.days_per_week ?? "-"} days/week
+            </>
+          }
+        />
+      </HeroBanner>
 
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={program.data.status === "active" ? "success" : program.data.status === "draft" ? "teal" : "neutral"}>
@@ -129,7 +134,7 @@ export function ProgramDetail() {
 
       <Link
         to="/app/workout"
-        className="block rounded-lg border border-ada-teal/20 bg-ada-teal/5 p-4 transition hover:border-ada-teal/40"
+        className="block rounded-[var(--radius-card)] border border-ada-teal/20 bg-ada-teal/[0.06] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-ada-teal/40"
       >
         <div className="font-semibold text-ada-text">Today's workout</div>
         <p className="mt-1 text-sm text-ada-muted">
@@ -153,7 +158,7 @@ export function ProgramDetail() {
               ) : null}
 
               {blocks.length ? (
-                <ul className="divide-y divide-white/5">
+                <ul className="divide-y divide-white/[0.05]">
                   {blocks.map((block) => {
                     const hasDetails = block.exercise !== null;
                     const missingContent =
@@ -171,7 +176,7 @@ export function ProgramDetail() {
                             setSelectedBlock(block);
                             setSelectedExercise(block.exercise);
                           }}
-                          className="flex w-full items-center justify-between gap-3 py-3 text-left hover:bg-white/5 -mx-2 px-2 rounded-lg transition-colors"
+                          className="flex w-full items-center justify-between gap-3 py-3 text-left hover:bg-white/[0.045] -mx-2 px-3 rounded-2xl transition-colors"
                         >
                           <div className="min-w-0 flex-1">
                             <div className="font-semibold text-ada-text">
@@ -220,7 +225,7 @@ export function ProgramDetail() {
         <EmptyState
           title="No training days · لا توجد أيام تدريب"
           description="This training program has no days configured yet."
-          icon="..."
+          icon={<Icon name="layers" size={20} />}
         />
       )}
 

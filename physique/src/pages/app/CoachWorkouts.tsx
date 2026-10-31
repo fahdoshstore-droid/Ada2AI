@@ -1,4 +1,6 @@
 import { PhysiqueWorkoutVideo } from "../../components/PhysiqueWorkoutVideo";
+import { Icon } from "../../components/Icon";
+import { HeroBanner } from "../../components/Media";
 import { useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,6 +14,7 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  PageHeader,
   SectionTitle,
 } from "../../components/ui";
 import {
@@ -307,23 +310,22 @@ export function CoachWorkouts() {
   if (!profile) return <Navigate to="/onboard" replace />;
 
   return (
-    <div className="space-y-6">
+    <div className="ada-stagger space-y-8 sm:space-y-10">
       <Link
         to="/app/coach"
-        className="inline-flex items-center gap-1 text-sm text-ada-muted hover:text-ada-text"
+        className="inline-flex items-center gap-1.5 text-sm text-ada-muted transition-colors hover:text-ada-text"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
+        <Icon name="chevron" size={16} className="rotate-180" />
         Back to dashboard
       </Link>
 
-      <div>
-        <h1 className="text-2xl font-bold">Athlete workouts · تمارين المتدربين</h1>
-        <p className="mt-1 text-sm text-ada-muted">
-          Track completion, actual performance, and execution quality for assigned athletes.
-        </p>
-      </div>
+      <HeroBanner photo="squat-tracking" alt="Athlete squatting with joint-angle tracking overlay" position="60% 10%">
+        <PageHeader
+          eyebrow="Coach · Workouts"
+          title="Athlete workouts · تمارين المتدربين"
+          subtitle="Track completion, actual performance, and execution quality for assigned athletes."
+        />
+      </HeroBanner>
 
       {roster.isLoading || assignments.isLoading || workoutData.isLoading ? (
         <LoadingState label="Loading athlete workouts · جارٍ التحميل" />
@@ -333,13 +335,13 @@ export function CoachWorkouts() {
         <EmptyState
           title="No assigned athletes · لا يوجد متدربون معيّنون"
           description="Assign athletes from the coach dashboard to track their workouts."
-          icon="👥"
+          icon={<Icon name="users" size={20} />}
         />
       ) : (
         <>
           <Card>
             <SectionTitle hint="Assigned athletes only">Workout status · حالة التمارين</SectionTitle>
-            <ul className="divide-y divide-white/5">
+            <ul className="divide-y divide-white/[0.05]">
               {summaries.map((summary) => {
                 const meta = STATUS_META[summary.progress.status] ?? STATUS_META.NOT_STARTED;
                 return (
@@ -350,7 +352,7 @@ export function CoachWorkouts() {
                         setSelectedAthleteId(summary.athleteId);
                         setExpandedExerciseId(null);
                       }}
-                      className="-mx-2 flex w-full items-center justify-between gap-3 rounded-lg px-2 py-3 text-left transition hover:bg-white/5"
+                      className="-mx-2 flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-3.5 text-left transition-all duration-300 hover:bg-white/[0.045]"
                     >
                       <div className="min-w-0">
                         <div className="font-semibold text-ada-text">{summary.athleteName}</div>
@@ -417,7 +419,7 @@ export function CoachWorkouts() {
                 </div>
               </div>
 
-              <div className="mb-5 rounded-lg border border-ada-teal/15 bg-ada-surface p-4">
+              <div className="mb-5 ada-inset rounded-2xl border border-ada-teal/15 p-5">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <div className="text-sm font-semibold text-ada-text">Workout management</div>
                   {selected.programId ? (
@@ -457,7 +459,7 @@ export function CoachWorkouts() {
                 {actionError ? <div className="mt-3"><ErrorState message={actionError} /></div> : null}
               </div>
 
-              <ul className="divide-y divide-white/5">
+              <ul className="divide-y divide-white/[0.05]">
                 {selected.exercises.map((exercise) => {
                   const isOpen = expandedExerciseId === exercise.block.id;
                   const statusMeta =
@@ -469,7 +471,7 @@ export function CoachWorkouts() {
                         onClick={() =>
                           setExpandedExerciseId(isOpen ? null : exercise.block.id)
                         }
-                        className="-mx-2 flex w-full items-center justify-between gap-3 rounded-lg px-2 py-3 text-left transition hover:bg-white/5"
+                        className="-mx-2 flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-3.5 text-left transition-all duration-300 hover:bg-white/[0.045]"
                       >
                         <div className="min-w-0">
                           {(() => {
@@ -478,7 +480,7 @@ export function CoachWorkouts() {
                               <img
                                 src={visual}
                                 alt={`${exercise.exercise?.name ?? exercise.block.exercise_name} illustration`}
-                                className="mb-2 h-20 w-full rounded-lg border border-white/10 object-cover"
+                                className="mb-2 h-20 w-full rounded-2xl object-cover ring-1 ring-white/10"
                                 loading="lazy"
                               />
                             ) : null;
@@ -500,7 +502,7 @@ export function CoachWorkouts() {
                       </button>
 
                       {isOpen ? (
-                        <div className="mt-2 space-y-2 rounded-lg bg-ada-surface p-3">
+                        <div className="mt-2 space-y-2 ada-inset rounded-2xl p-4">
                           <div className="text-sm font-semibold text-ada-text">
                             Actual performance
                           </div>
@@ -510,7 +512,7 @@ export function CoachWorkouts() {
                               .map((log) => (
                                 <div
                                   key={log.id}
-                                  className="rounded-lg border border-white/10 p-3 text-sm text-ada-text"
+                                  className="ada-inset rounded-2xl p-3.5 text-sm text-ada-text"
                                 >
                                   <div className="font-semibold">
                                     Set {log.set_number ?? "—"}

@@ -14,6 +14,7 @@ interface NavItem {
 const NAV: Record<Role, NavItem[]> = {
   athlete: [
     { to: "/app/athlete", label: "Dashboard", icon: "home" },
+    { to: "/app/workout", label: "Workout", icon: "dumbbell" },
     { to: "/app/chat", label: "AI Coach", icon: "sparkle" },
     { to: "/app/progress", label: "Progress", icon: "progress" },
     { to: "/app/checkin", label: "Check-in", icon: "checkin" },
@@ -21,6 +22,8 @@ const NAV: Record<Role, NavItem[]> = {
   coach: [
     { to: "/app/coach", label: "Dashboard", icon: "grid" },
     { to: "/app/programs", label: "Programs", icon: "layers" },
+    { to: "/app/workouts", label: "Workouts", icon: "dumbbell" },
+    { to: "/app/nutrition", label: "Nutrition", icon: "nutrition" },
     { to: "/app/checkins", label: "Check-ins", icon: "checkin" },
   ],
   admin: [{ to: "/app/admin", label: "Dashboard", icon: "shield" }],

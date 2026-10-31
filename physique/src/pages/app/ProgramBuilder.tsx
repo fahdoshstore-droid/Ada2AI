@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../lib/supabase";
 import { useCoachProfile } from "../../hooks/useProfile";
-import { Badge, Button, Card, ErrorState, LoadingState, SectionTitle } from "../../components/ui";
+import { Badge, Button, Card, ErrorState, LoadingState, PageHeader, SectionTitle } from "../../components/ui";
+import { Icon } from "../../components/Icon";
 import { ExercisePicker } from "../../components/ExercisePicker";
 import type { ExerciseLibrary, Program, ProgramBlock, ProgramDay } from "../../lib/types";
 
@@ -14,6 +15,50 @@ interface BuilderDay extends ProgramDay {
 }
 
 const EMPTY_DAY_NAME = "Day";
+
+/** Compact numeric stepper (UI only) — emits the same values the plain inputs did. */
+function Stepper({
+  label,
+  value,
+  step = 1,
+  min = 0,
+  suffix,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  step?: number;
+  min?: number;
+  suffix?: string;
+  onChange: (value: number | null) => void;
+}) {
+  const bump = (dir: 1 | -1) => {
+    const next = Math.max(min, +((value ?? 0) + dir * step).toFixed(1));
+    onChange(next);
+  };
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-ada-faint">{label}</span>
+      <span className="flex items-center rounded-xl bg-black/25 ada-hairline focus-within:shadow-[var(--shadow-teal)]">
+        <button type="button" aria-label={`Decrease ${label}`} onClick={() => bump(-1)} className="grid h-9 w-8 place-items-center text-ada-muted transition-colors hover:text-ada-text">
+          <Icon name="minus" size={12} />
+        </button>
+        <input
+          type="number"
+          inputMode="decimal"
+          step={step}
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
+          className="w-11 bg-transparent text-center font-mono-num text-sm font-semibold text-ada-text outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        />
+        {suffix ? <span className="-ml-1 pr-0.5 text-[10px] text-ada-muted">{suffix}</span> : null}
+        <button type="button" aria-label={`Increase ${label}`} onClick={() => bump(1)} className="grid h-9 w-8 place-items-center text-ada-muted transition-colors hover:text-ada-text">
+          <Icon name="plus" size={12} />
+        </button>
+      </span>
+    </label>
+  );
+}
 
 export function ProgramBuilder() {
   const { programId } = useParams<{ programId: string }>();
@@ -32,6 +77,8 @@ export function ProgramBuilder() {
   const [pickerDayId, setPickerDayId] = useState<string | null>(null);
   const [removedBlockIds, setRemovedBlockIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [activeDayId, setActiveDayId] = useState<string | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(isNew);
 
   const program = useQuery<Program>({
     queryKey: ["program-builder", programId],
@@ -245,112 +292,245 @@ export function ProgramBuilder() {
   if (isLoading) return <LoadingState />;
   if (!isNew && (program.isLoading || loadedDays.isLoading)) return <LoadingState />;
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Program builder · بناء البرنامج</h1>
-        <p className="mt-1 text-sm text-ada-muted">Create or edit a training program independently.</p>
-      </div>
+  const activeDay = days.find((day) => day.id === activeDayId) ?? days[0] ?? null;
+  const totalSets = (day: BuilderDay) => day.blocks.reduce((sum, block) => sum + (block.sets ?? 0), 0);
+  const estMinutes = (day: BuilderDay) =>
+    Math.round(day.blocks.reduce((sum, block) => sum + (block.sets ?? 0) * (45 + (block.rest_seconds ?? 90)), 0) / 60);
+  const addDayAndSelect = () => {
+    addDay();
+    setActiveDayId(`pending-${days.length + 1}`);
+  };
+  // After addDay() the newest day becomes active.
+  const resolvedActive =
+    activeDayId?.startsWith("pending-") ? days[days.length - 1] ?? activeDay : activeDay;
 
-      <Card>
-        <SectionTitle>Program details · تفاصيل البرنامج</SectionTitle>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label>
-            <span className="ada-label">Name</span>
-            <input className="ada-input" value={name} onChange={(e) => setName(e.target.value)} />
-          </label>
-          <label>
-            <span className="ada-label">Goal</span>
-            <input className="ada-input" value={goal} onChange={(e) => setGoal(e.target.value)} />
-          </label>
-          <label>
-            <span className="ada-label">Duration (weeks)</span>
-            <input type="number" className="ada-input" value={duration} onChange={(e) => setDuration(e.target.value)} />
-          </label>
-          <label>
-            <span className="ada-label">Days per week</span>
-            <input type="number" className="ada-input" value={daysPerWeek} onChange={(e) => setDaysPerWeek(e.target.value)} />
-          </label>
-          <label className="sm:col-span-2">
-            <span className="ada-label">Description</span>
-            <textarea className="ada-input" value={description} onChange={(e) => setDescription(e.target.value)} />
-          </label>
-          <label className="sm:col-span-2 flex items-center gap-2">
-            <input type="checkbox" checked={isTemplate} onChange={(e) => setIsTemplate(e.target.checked)} />
-            <span className="text-sm text-ada-text">Save as coach template</span>
-          </label>
+  return (
+    <div className="ada-stagger space-y-8">
+      <PageHeader
+        eyebrow="Program builder · بناء البرنامج"
+        title={name || (isNew ? "New program" : "Untitled program")}
+        subtitle="Create or edit a training program independently."
+        action={
+          <>
+            <Button loading={save.isPending} onClick={() => save.mutate()} className="py-3">
+              <Icon name="check" size={15} /> Save program
+            </Button>
+            <Button variant="ghost" onClick={() => navigate("/app/programs")} className="py-3">
+              Cancel
+            </Button>
+          </>
+        }
+      />
+      {error ? <ErrorState message={error} /> : null}
+
+      {/* ── Program details (progressive disclosure) ── */}
+      <Card className="sm:p-7">
+        <button
+          type="button"
+          onClick={() => setDetailsOpen((open) => !open)}
+          aria-expanded={detailsOpen}
+          className="flex w-full items-center justify-between gap-3 text-left"
+        >
+          <span className="flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-ada-teal/12 text-ada-teal">
+              <Icon name="layers" size={18} />
+            </span>
+            <span>
+              <span className="block text-lg font-semibold tracking-tight">Program details · تفاصيل البرنامج</span>
+              <span className="block font-mono-num text-xs text-ada-muted">
+                {goal || "—"} · {duration || "—"} weeks · {daysPerWeek || "—"} days/wk{isTemplate ? " · template" : ""}
+              </span>
+            </span>
+          </span>
+          <Icon name="chevronDown" size={18} className={`text-ada-muted transition-transform duration-300 ${detailsOpen ? "rotate-180" : ""}`} />
+        </button>
+        <div className={`grid transition-[grid-template-rows] duration-500 ease-[var(--ease-premium)] ${detailsOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+          <div className="overflow-hidden">
+            <div className="grid gap-4 pt-6 sm:grid-cols-2">
+              <label>
+                <span className="ada-label">Name</span>
+                <input className="ada-input" value={name} onChange={(e) => setName(e.target.value)} />
+              </label>
+              <label>
+                <span className="ada-label">Goal</span>
+                <input className="ada-input" value={goal} onChange={(e) => setGoal(e.target.value)} />
+              </label>
+              <label>
+                <span className="ada-label">Duration (weeks)</span>
+                <input type="number" className="ada-input font-mono-num" value={duration} onChange={(e) => setDuration(e.target.value)} />
+              </label>
+              <label>
+                <span className="ada-label">Days per week</span>
+                <input type="number" className="ada-input font-mono-num" value={daysPerWeek} onChange={(e) => setDaysPerWeek(e.target.value)} />
+              </label>
+              <label className="sm:col-span-2">
+                <span className="ada-label">Description</span>
+                <textarea className="ada-input" value={description} onChange={(e) => setDescription(e.target.value)} />
+              </label>
+              <label className="flex cursor-pointer items-center gap-3 sm:col-span-2">
+                <input type="checkbox" className="h-4 w-4 accent-[#00DCC8]" checked={isTemplate} onChange={(e) => setIsTemplate(e.target.checked)} />
+                <span className="text-sm text-ada-text">Save as coach template</span>
+              </label>
+            </div>
+          </div>
         </div>
       </Card>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <SectionTitle>Training days · أيام التدريب</SectionTitle>
-        <Button variant="ghost" onClick={addDay}>Add day</Button>
-      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+        {/* ── Days rail ── */}
+        <div className="min-w-0">
+          <div className="ada-eyebrow mb-3">Training days · أيام التدريب</div>
+          <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0">
+            {days.map((day) => {
+              const active = resolvedActive?.id === day.id;
+              return (
+                <button
+                  key={day.id}
+                  type="button"
+                  onClick={() => setActiveDayId(day.id)}
+                  aria-pressed={active}
+                  className={`relative flex min-w-[11rem] shrink-0 snap-start items-center gap-3 rounded-2xl p-3 text-left transition-all duration-300 lg:min-w-0 ${
+                    active ? "bg-white/[0.07] shadow-[var(--shadow-elev-2)] ada-hairline" : "hover:bg-white/[0.035]"
+                  }`}
+                >
+                  <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl font-mono-num text-xs font-semibold ${active ? "bg-ada-teal text-ada-navy" : "bg-white/[0.05] text-ada-text-2"}`}>
+                    D{day.day_number}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-ada-text">{day.name || `Day ${day.day_number}`}</span>
+                    <span className="block font-mono-num text-xs text-ada-muted">
+                      {day.blocks.length} ex · {totalSets(day)} sets
+                    </span>
+                  </span>
+                  {active ? <span aria-hidden className="absolute inset-y-3 left-0 hidden w-0.5 rounded-full bg-ada-teal lg:block" /> : null}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={addDayAndSelect}
+              className="flex min-w-[8rem] shrink-0 items-center justify-center gap-2 rounded-2xl border border-dashed border-white/10 p-3 text-sm text-ada-muted transition-colors hover:border-ada-teal/40 hover:text-ada-teal lg:mt-2 lg:min-w-0"
+            >
+              <Icon name="plus" size={15} /> Add day
+            </button>
+          </div>
+        </div>
 
-      <div className="space-y-4">
-        {days.map((day) => (
-          <Card key={day.id}>
-            <SectionTitle hint={<Badge tone="teal">Day {day.day_number}</Badge>}>
-              <input className="ada-input" value={day.name ?? ""} onChange={(e) => updateDay(day.id, { name: e.target.value })} />
-            </SectionTitle>
-            <div className="mb-3 flex flex-wrap gap-2">
-              <Button variant="ghost" onClick={() => setPickerDayId(day.id)}>Add exercise</Button>
+        {/* ── Day editor ── */}
+        {resolvedActive ? (
+          <Card className="min-w-0 sm:p-7">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 flex items-center gap-2">
+                  <Badge tone="teal">Day {resolvedActive.day_number}</Badge>
+                </div>
+                <input
+                  aria-label="Day name"
+                  className="w-full bg-transparent text-[1.5rem] font-semibold tracking-tight text-ada-text outline-none placeholder:text-ada-faint"
+                  value={resolvedActive.name ?? ""}
+                  placeholder={`Day ${resolvedActive.day_number}`}
+                  onChange={(e) => updateDay(resolvedActive.id, { name: e.target.value })}
+                />
+              </div>
+              <div className="flex shrink-0 gap-5 font-mono-num text-xs text-ada-muted">
+                <span><b className="block text-xl font-medium text-ada-text">{resolvedActive.blocks.length}</b>exercises</span>
+                <span><b className="block text-xl font-medium text-ada-text">{totalSets(resolvedActive)}</b>sets</span>
+                <span><b className="block text-xl font-medium text-ada-text">~{estMinutes(resolvedActive)}</b>min</span>
+              </div>
             </div>
-            <div className="space-y-3">
-              {day.blocks.map((block) => (
-                <div key={block.id} className="rounded-lg border border-white/10 bg-ada-surface p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="font-semibold text-ada-text">{block.exercise_name}</div>
-                    <div className="flex shrink-0 gap-1">
-                      <Button variant="ghost" onClick={() => moveBlock(day.id, block.id, -1)} aria-label="Move exercise up">↑</Button>
-                      <Button variant="ghost" onClick={() => moveBlock(day.id, block.id, 1)} aria-label="Move exercise down">↓</Button>
-                      <Button variant="ghost" onClick={() => removeBlock(day.id, block.id)}>Remove</Button>
+
+            <div className="space-y-2.5">
+              {resolvedActive.blocks.map((block, index) => (
+                <div key={block.id} className="group ada-inset animate-rise rounded-2xl p-3.5 transition-colors hover:bg-white/[0.04] sm:p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col text-ada-faint">
+                      <button type="button" disabled={index === 0} onClick={() => moveBlock(resolvedActive.id, block.id, -1)} aria-label="Move exercise up" className="rounded p-0.5 hover:text-ada-text disabled:opacity-20">
+                        <Icon name="chevronDown" size={14} className="rotate-180" />
+                      </button>
+                      <button type="button" disabled={index === resolvedActive.blocks.length - 1} onClick={() => moveBlock(resolvedActive.id, block.id, 1)} aria-label="Move exercise down" className="rounded p-0.5 hover:text-ada-text disabled:opacity-20">
+                        <Icon name="chevronDown" size={14} />
+                      </button>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                      <label className="block">
-                        <span className="ada-label">Sets</span>
-                        <input className="ada-input" type="number" value={block.sets ?? ""} onChange={(e) => updateBlock(block.id, { sets: e.target.value ? Number(e.target.value) : null })} />
-                      </label>
-                      <label className="block">
-                        <span className="ada-label">Reps</span>
-                        <input className="ada-input" value={block.reps ?? ""} onChange={(e) => updateBlock(block.id, { reps: e.target.value })} />
-                      </label>
-                      <label className="block">
-                        <span className="ada-label">RPE</span>
-                        <input className="ada-input" type="number" step="0.5" value={block.rpe ?? ""} onChange={(e) => updateBlock(block.id, { rpe: e.target.value ? Number(e.target.value) : null })} />
-                      </label>
-                      <label className="block">
-                        <span className="ada-label">Rest</span>
-                        <input className="ada-input" type="number" value={block.rest_seconds ?? ""} onChange={(e) => updateBlock(block.id, { rest_seconds: e.target.value ? Number(e.target.value) : null })} />
-                      </label>
-                      <label className="block">
-                        <span className="ada-label">Tempo</span>
-                        <input className="ada-input" value={block.tempo ?? ""} onChange={(e) => updateBlock(block.id, { tempo: e.target.value })} />
-                      </label>
-                    </div>
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[0.05] font-mono-num text-xs font-semibold text-ada-text-2">{index + 1}</span>
+                    <div className="min-w-0 flex-1 truncate text-sm font-semibold text-ada-text">{block.exercise_name}</div>
+                    <button
+                      type="button"
+                      onClick={() => removeBlock(resolvedActive.id, block.id)}
+                      aria-label="Remove exercise"
+                      className="rounded-lg p-2 text-ada-muted transition-colors hover:bg-ada-red/10 hover:text-ada-red"
+                    >
+                      <Icon name="trash" size={15} />
+                    </button>
                   </div>
-                  <label className="mt-3 block">
-                    <span className="ada-label">Technique notes</span>
-                    <textarea className="ada-input" value={block.technique_notes ?? ""} onChange={(e) => updateBlock(block.id, { technique_notes: e.target.value })} />
+                  <div className="mt-3 flex flex-wrap items-end gap-2.5 pl-1 sm:pl-[4.25rem]">
+                    <Stepper label="Sets" value={block.sets} min={0} onChange={(v) => updateBlock(block.id, { sets: v })} />
+                    <label className="flex flex-col gap-1">
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-ada-faint">Reps</span>
+                      <input className="h-9 w-[4.75rem] rounded-xl bg-black/25 text-center font-mono-num text-sm font-semibold text-ada-text outline-none ada-hairline focus:shadow-[var(--shadow-teal)]" value={block.reps ?? ""} onChange={(e) => updateBlock(block.id, { reps: e.target.value })} />
+                    </label>
+                    <Stepper label="RPE" value={block.rpe} step={0.5} onChange={(v) => updateBlock(block.id, { rpe: v })} />
+                    <Stepper label="Rest" value={block.rest_seconds} step={15} suffix="s" onChange={(v) => updateBlock(block.id, { rest_seconds: v })} />
+                    <label className="flex flex-col gap-1">
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-ada-faint">Tempo</span>
+                      <input className="h-9 w-[5.25rem] rounded-xl bg-black/25 text-center font-mono-num text-sm font-semibold text-ada-text outline-none ada-hairline focus:shadow-[var(--shadow-teal)]" value={block.tempo ?? ""} placeholder="3-1-1-0" onChange={(e) => updateBlock(block.id, { tempo: e.target.value })} />
+                    </label>
+                  </div>
+                  <label className="mt-3 block sm:pl-[4.25rem]">
+                    <span className="sr-only">Technique notes</span>
+                    <textarea
+                      rows={1}
+                      className="ada-input min-h-[2.5rem] resize-y py-2 text-sm"
+                      placeholder="Technique notes"
+                      value={block.technique_notes ?? ""}
+                      onChange={(e) => updateBlock(block.id, { technique_notes: e.target.value })}
+                    />
                   </label>
                 </div>
               ))}
+              {resolvedActive.blocks.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-ada-muted">
+                  No exercises yet — add the first one.
+                </div>
+              ) : null}
             </div>
+
+            <button
+              type="button"
+              onClick={() => setPickerDayId(resolvedActive.id)}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-white/10 py-4 text-sm text-ada-muted transition-colors hover:border-ada-teal/40 hover:text-ada-teal"
+            >
+              <Icon name="plus" size={15} /> Add exercise
+            </button>
           </Card>
-        ))}
+        ) : (
+          <Card className="sm:p-7">
+            <SectionTitle>Training days · أيام التدريب</SectionTitle>
+            <p className="mb-4 text-sm text-ada-muted">Add the first training day to start building.</p>
+            <Button variant="ghost" onClick={addDayAndSelect}>
+              <Icon name="plus" size={15} /> Add day
+            </Button>
+          </Card>
+        )}
       </div>
 
+      {/* ── Exercise picker: bottom sheet on mobile, centered panel on desktop ── */}
       {pickerDayId ? (
-        <ExercisePicker onPick={(exercise) => addExercise(pickerDayId, exercise)} />
+        <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center" role="dialog" aria-modal="true" aria-label="Exercise library">
+          <button type="button" aria-label="Close exercise library" onClick={() => setPickerDayId(null)} className="absolute inset-0 animate-fade bg-black/60 backdrop-blur-sm" />
+          <div className="ada-glass relative flex max-h-[82vh] w-full animate-rise flex-col rounded-t-[2rem] p-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] md:max-w-2xl md:rounded-[var(--radius-panel)] md:p-7" style={{ background: "rgba(15,21,25,0.94)" }}>
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20 md:hidden" />
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold tracking-tight">Exercise library</h2>
+              <button type="button" onClick={() => setPickerDayId(null)} aria-label="Close" className="grid h-9 w-9 place-items-center rounded-full bg-white/[0.06] text-ada-text-2 hover:text-ada-text">
+                <Icon name="close" size={16} />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <ExercisePicker onPick={(exercise: ExerciseLibrary) => addExercise(pickerDayId, exercise)} />
+            </div>
+          </div>
+        </div>
       ) : null}
-
-      <div className="flex flex-wrap gap-2">
-        <Button loading={save.isPending} onClick={() => save.mutate()}>
-          Save program
-        </Button>
-        <Button variant="ghost" onClick={() => navigate("/app/programs")}>Cancel</Button>
-      </div>
-      {error ? <ErrorState message={error} /> : null}
     </div>
   );
 }

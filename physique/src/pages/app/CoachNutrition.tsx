@@ -4,9 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useCoachProfile } from "../../hooks/useProfile";
-import { Button, Card, EmptyState, ErrorState, LoadingState, SectionTitle } from "../../components/ui";
+import { Button, Card, EmptyState, ErrorState, LoadingState, PageHeader, SectionTitle } from "../../components/ui";
 import { NUTRITION_FOODS, type Meal, type MealItem } from "../../lib/nutrition";
 import { localDateKey } from "../../lib/workout";
+import { Icon } from "../../components/Icon";
+import { HeroBanner } from "../../components/Media";
 
 interface RosterItem { athlete_id: string; athlete: { display_name: string | null } | null }
 
@@ -129,13 +131,14 @@ export function CoachNutrition() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Nutrition plans · الخطط الغذائية</h1>
-        <p className="mt-1 text-sm text-ada-muted">
-          Create and assign a coach-defined daily meal structure to a rostered athlete.
-        </p>
-      </div>
+    <div className="ada-stagger space-y-8 sm:space-y-10">
+      <HeroBanner photo="nutrition-prep" alt="Meal prep with grilled chicken, rice, vegetables and the Ada2Physique app" position="55% 55%">
+        <PageHeader
+          eyebrow="Coach · Nutrition"
+          title="Nutrition plans · الخطط الغذائية"
+          subtitle="Create and assign a coach-defined daily meal structure to a rostered athlete."
+        />
+      </HeroBanner>
 
       <Card>
         <SectionTitle>New nutrition plan · خطة غذائية جديدة</SectionTitle>
@@ -193,7 +196,7 @@ export function CoachNutrition() {
           </div>
 
           {meals.map((meal, mealIndex) => (
-            <div key={meal.name} className="rounded-lg border border-white/10 bg-ada-surface p-3 sm:col-span-2">
+            <div key={meal.name} className="ada-inset rounded-2xl p-4 sm:col-span-2">
               <div className="text-sm font-semibold text-ada-text">{meal.name}</div>
               <ul className="mt-2 space-y-2">
                 {meal.items.map((item, itemIndex) => {
@@ -217,7 +220,7 @@ export function CoachNutrition() {
                   <button
                     key={food.id}
                     type="button"
-                    className="rounded-lg border border-white/10 px-2 py-1 text-xs text-ada-teal"
+                    className="rounded-full bg-ada-teal/10 px-3 py-1 text-xs font-medium text-ada-teal transition-colors hover:bg-ada-teal/20"
                     onClick={() => addItem(mealIndex, { foodId: food.id, quantity: 200, unit: food.defaultUnit })}
                   >
                     + {food.name}
@@ -239,15 +242,20 @@ export function CoachNutrition() {
       <Card>
         <SectionTitle>Saved nutrition plans · الخطط الغذائية المحفوظة</SectionTitle>
         {plans.isLoading ? <LoadingState label="Loading plans…" /> : plans.data?.length ? (
-          <ul className="divide-y divide-white/5">
+          <ul className="space-y-2">
             {plans.data.map((plan) => (
-              <li key={plan.id} className="py-2 text-sm">
-                <span className="font-semibold text-ada-text">{plan.name}</span>
-                <span className="ml-2 text-ada-muted">{plan.goal} · {plan.status}</span>
+              <li key={plan.id} className="ada-inset flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-sm">
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-ada-amber/10 text-ada-amber">
+                    <Icon name="nutrition" size={15} />
+                  </span>
+                  <span className="truncate font-medium text-ada-text">{plan.name}</span>
+                </span>
+                <span className="shrink-0 capitalize text-ada-muted">{plan.goal} · {plan.status}</span>
               </li>
             ))}
           </ul>
-        ) : <EmptyState title="No nutrition plans yet · لا توجد خطط غذائية بعد" icon="🍽️" />}
+        ) : <EmptyState title="No nutrition plans yet · لا توجد خطط غذائية بعد" icon={<Icon name="nutrition" size={20} />} />}
       </Card>
     </div>
   );

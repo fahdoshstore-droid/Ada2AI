@@ -1,11 +1,12 @@
 import { ownedPhysiqueMediaPath } from "../../lib/physiqueMedia";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useAthleteProfile } from "../../hooks/useProfile";
-import { Badge, Card, EmptyState, ErrorState, LoadingState, SectionTitle } from "../../components/ui";
+import { Badge, Card, EmptyState, ErrorState, LoadingState, PageHeader, ProgressRing, SectionTitle } from "../../components/ui";
+import { Icon } from "../../components/Icon";
 import { ExerciseDetail } from "../../components/ExerciseDetail";
 import { SetLogForm, type SetLogValues } from "../../components/SetLogForm";
 import {
@@ -44,12 +45,40 @@ interface TodayWorkoutData {
   logs: WorkoutLog[];
 }
 
-const STATUS_META: Record<string, { icon: string; className: string }> = {
-  NOT_STARTED: { icon: "☐", className: "text-ada-muted" },
-  IN_PROGRESS: { icon: "◐", className: "text-ada-amber" },
-  COMPLETED: { icon: "✅", className: "text-ada-success" },
-  MISSED: { icon: "🔴", className: "text-ada-red" },
+const STATUS_META: Record<string, { label: string; pill: string; dot: string }> = {
+  NOT_STARTED: { label: "Not started", pill: "bg-white/[0.05] text-ada-text-2", dot: "bg-white/30" },
+  IN_PROGRESS: { label: "In progress", pill: "bg-ada-teal/12 text-ada-teal", dot: "bg-ada-teal" },
+  COMPLETED: { label: "Completed", pill: "bg-ada-success/12 text-ada-success", dot: "bg-ada-success" },
+  MISSED: { label: "Missed", pill: "bg-ada-red/12 text-ada-red", dot: "bg-ada-red" },
 };
+const statusMeta = (status: string) => STATUS_META[status] ?? STATUS_META.NOT_STARTED;
+
+const fmtClock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
+/** Client-only rest countdown shown after a set is saved (UI state, not persisted). */
+function useRestTimer() {
+  const [rest, setRest] = useState<{ total: number; endsAt: number; label: string } | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!rest) return;
+    const id = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [rest]);
+  const left = rest ? Math.max(0, Math.ceil((rest.endsAt - now) / 1000)) : 0;
+  useEffect(() => {
+    if (rest && left === 0) setRest(null);
+  }, [rest, left]);
+  return {
+    rest,
+    left,
+    start: (seconds: number | null | undefined, label: string) => {
+      if (!seconds || seconds <= 0) return;
+      setNow(Date.now());
+      setRest({ total: seconds, endsAt: Date.now() + seconds * 1000, label });
+    },
+    skip: () => setRest(null),
+  };
+}
 
 export function TodayWorkout() {
   const { userId } = useAuth();
@@ -57,6 +86,7 @@ export function TodayWorkout() {
   const { data: profile, isLoading: profileLoading } = useAthleteProfile();
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const restTimer = useRestTimer();
 
   const assignments = useQuery<AssignmentWithProgram[]>({
     queryKey: ["athlete-assignments", userId],
@@ -199,25 +229,27 @@ export function TodayWorkout() {
   if (profileLoading) return <LoadingState />;
   if (!profile) return <Navigate to="/onboard" replace />;
 
+  const exerciseList: WorkoutExerciseView[] = workout.data?.exercises ?? [];
+  const nextExercise = exerciseList.find((exercise: WorkoutExerciseView) => exercise.status !== "COMPLETED") ?? null;
+  const dayLabel = workout.data?.day
+    ? workout.data.day.name ?? `Day ${workout.data.day.day_number}`
+    : null;
+
   return (
-    <div className="space-y-6">
+    <div className="ada-stagger space-y-8 sm:space-y-10">
       <Link
         to="/app/athlete"
-        className="inline-flex items-center gap-1 text-sm text-ada-muted hover:text-ada-text"
+        className="inline-flex items-center gap-1.5 text-sm text-ada-muted transition-colors hover:text-ada-text"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
+        <Icon name="chevron" size={16} className="rotate-180" />
         Back to dashboard
       </Link>
 
-      <div>
-        <h1 className="text-2xl font-bold">Today's workout · تمرين اليوم</h1>
-        <p className="mt-1 text-sm text-ada-muted">
-          {activeAssignment?.program?.name ?? "No active training program"}
-          {workout.data?.day ? ` · ${workout.data.day.name ?? `Day ${workout.data.day.day_number}`}` : ""}
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Today's workout · تمرين اليوم"
+        title={dayLabel ?? activeAssignment?.program?.name ?? "Today's workout"}
+        subtitle={activeAssignment?.program?.name ?? "No active training program"}
+      />
 
       {assignments.isLoading || workout.isLoading ? (
         <LoadingState label="Loading today's workout · جارٍ التحميل" />
@@ -227,86 +259,101 @@ export function TodayWorkout() {
         <EmptyState
           title="No training program assigned · لا يوجد برنامج تدريبي معيّن"
           description="Your coach will assign your training program."
-          icon="🏋️"
+          icon={<Icon name="dumbbell" size={20} />}
         />
       ) : workout.data?.restDay ? (
-        <Card>
+        <Card glow className="sm:p-8">
           <SectionTitle hint={<Badge tone="success">Rest</Badge>}>Rest day · يوم راحة</SectionTitle>
-          <p className="text-sm text-ada-muted">
+          <p className="text-sm text-ada-text-2">
             Today is scheduled as a rest or cardio day. No lifting checklist is required.
           </p>
         </Card>
       ) : (
-        <>
-          <Card>
-            <SectionTitle
-              hint={
-                <Badge tone={progress.status === "COMPLETED" ? "success" : "teal"}>
-                  {progress.status.replace(/_/g, " ")}
-                </Badge>
-              }
-            >
-              Workout progress · تقدم التمرين
-            </SectionTitle>
-            <div className="flex items-end justify-between gap-3">
-              <div className="font-mono-num text-3xl font-bold text-ada-text">
-                {progress.completed} / {progress.total}
-              </div>
-              <div className="text-sm text-ada-muted">{progress.percent}%</div>
-            </div>
-            <div className="mt-3 h-3 overflow-hidden rounded-full bg-ada-surface">
-              <div
-                className="h-full rounded-full bg-ada-teal transition-all"
-                style={{ width: `${progress.percent}%` }}
-              />
-            </div>
-            {progress.status === "COMPLETED" ? (
-              <p className="mt-3 text-sm font-semibold text-ada-success">
-                Workout complete · اكتمل التمرين
-              </p>
-            ) : null}
-          </Card>
-
-          <Card>
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px] lg:gap-8">
+          {/* ── Exercise checklist ── */}
+          <div className="min-w-0">
             <SectionTitle hint="Tap an exercise to log sets">Exercise checklist · قائمة التمارين</SectionTitle>
-            {workout.data?.exercises.length ? (
-              <ul className="divide-y divide-white/5">
-                {workout.data.exercises.map((exercise) => {
-                  const status = STATUS_META[exercise.status];
+            {exerciseList.length ? (
+              <ul className="space-y-3">
+                {exerciseList.map((exercise: WorkoutExerciseView, index: number) => {
+                  const meta = statusMeta(exercise.status);
                   const last = lastPerformedSummary(exercise.logs);
+                  const complete = exercise.status === "COMPLETED";
+                  const selected = selectedExerciseId === exercise.block.id;
+                  const segments = Math.max(1, Number(exercise.prescribedSets) || 0);
                   return (
                     <li key={exercise.block.id}>
                       <button
                         type="button"
                         onClick={() => setSelectedExerciseId(exercise.block.id)}
-                        className="-mx-2 flex w-full items-start justify-between gap-3 rounded-lg px-2 py-3 text-left transition hover:bg-white/5"
+                        aria-pressed={selected}
+                        className={[
+                          "group relative w-full overflow-hidden rounded-[var(--radius-card)] p-4 text-left transition-all duration-300 ease-[var(--ease-premium)] sm:p-5",
+                          selected
+                            ? "ada-glass shadow-[var(--shadow-teal)]"
+                            : "ada-inset hover:-translate-y-0.5 hover:bg-white/[0.045]",
+                        ].join(" ")}
                       >
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xl ${status.className}`}>{status.icon}</span>
-                            <div className="min-w-0">
-                              <div className="truncate font-semibold text-ada-text">
-                                {exercise.exercise?.name ?? exercise.block.exercise_name}
+                        {selected ? (
+                          <span aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_0%_0%,rgba(0,220,200,0.10),transparent)]" />
+                        ) : null}
+                        <div className="relative flex items-center gap-4">
+                          <span
+                            className={[
+                              "grid h-11 w-11 shrink-0 place-items-center rounded-2xl font-mono-num text-sm font-semibold transition-colors",
+                              complete
+                                ? "bg-ada-success/15 text-ada-success"
+                                : selected
+                                  ? "bg-ada-teal text-ada-navy"
+                                  : "bg-white/[0.05] text-ada-text-2",
+                            ].join(" ")}
+                          >
+                            {complete ? <Icon name="check" size={18} /> : String(index + 1).padStart(2, "0")}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className={`truncate font-semibold ${complete ? "text-ada-text-2" : "text-ada-text"}`}>
+                              {exercise.exercise?.name ?? exercise.block.exercise_name}
+                            </div>
+                            {exercise.exercise?.name_ar ? (
+                              <div className="truncate text-sm text-ada-teal" dir="rtl">
+                                {exercise.exercise.name_ar}
                               </div>
-                              {exercise.exercise?.name_ar ? (
-                                <div className="truncate text-sm text-ada-teal" dir="rtl">
-                                  {exercise.exercise.name_ar}
-                                </div>
-                              ) : null}
+                            ) : null}
+                            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 font-mono-num text-xs text-ada-muted">
+                              <span className="text-ada-text-2">
+                                {exercise.prescribedSets} × {exercise.block.reps ?? "—"}
+                              </span>
+                              {exercise.block.rpe != null ? <span>RPE {exercise.block.rpe}</span> : null}
+                              {exercise.block.rest_seconds != null ? <span>Rest {exercise.block.rest_seconds}s</span> : null}
+                              {last ? <span className="font-sans">Last: {last}</span> : null}
                             </div>
                           </div>
-                          <div className="mt-1 text-xs text-ada-muted">
-                            {exercise.prescribedSets} sets · {exercise.block.reps ?? "—"}
-                            {last ? ` · Last: ${last}` : ""}
+                          <div className="hidden shrink-0 flex-col items-end gap-2 sm:flex">
+                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${meta.pill}`}>
+                              <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
+                              {meta.label}
+                            </span>
+                            <span className="font-mono-num text-sm text-ada-text">
+                              {exercise.completedSets}/{exercise.prescribedSets}
+                            </span>
                           </div>
+                          <Icon name="chevron" size={18} className="shrink-0 text-ada-muted transition-transform group-hover:translate-x-0.5" />
                         </div>
-                        <div className="shrink-0 text-right">
-                          <div className="font-mono-num text-sm text-ada-text">
-                            {exercise.completedSets}/{exercise.prescribedSets}
-                          </div>
-                          <div className="text-xs text-ada-muted">
-                            {exercise.status.replace(/_/g, " ")}
-                          </div>
+                        {/* set progress segments */}
+                        <div className="relative mt-4 flex gap-1.5">
+                          {Array.from({ length: segments }).map((_, i) => (
+                            <span
+                              key={i}
+                              className={[
+                                "h-1.5 flex-1 rounded-full transition-colors duration-500",
+                                i < Number(exercise.completedSets)
+                                  ? complete
+                                    ? "bg-ada-success"
+                                    : "bg-ada-teal shadow-[0_0_10px_rgba(0,220,200,0.45)]"
+                                  : "bg-white/10",
+                              ].join(" ")}
+                            />
+                          ))}
                         </div>
                       </button>
                     </li>
@@ -314,29 +361,125 @@ export function TodayWorkout() {
                 })}
               </ul>
             ) : (
-              <EmptyState title="No exercises today · لا توجد تمارين اليوم" icon="📋" />
+              <EmptyState title="No exercises today · لا توجد تمارين اليوم" icon={<Icon name="layers" size={20} />} />
             )}
-          </Card>
 
-          {saveError ? <ErrorState message={saveError} /> : null}
+            {saveError ? <div className="mt-4"><ErrorState message={saveError} /></div> : null}
 
-          {selectedExercise ? (
-            <ExerciseDetail
-              block={selectedExercise.block}
-              exercise={selectedExercise.exercise}
-              onClose={() => setSelectedExerciseId(null)}
-            >
-              <SetLogForm
-                block={selectedExercise.block}
-                logs={selectedExercise.logs}
-                saving={saveSet.isPending}
-                onSave={(values) =>
-                  saveSet.mutateAsync({ exercise: selectedExercise, values })
-                }
-              />
-            </ExerciseDetail>
+            {selectedExercise ? (
+              <div className="mt-6 animate-rise">
+                <ExerciseDetail
+                  block={selectedExercise.block}
+                  exercise={selectedExercise.exercise}
+                  onClose={() => setSelectedExerciseId(null)}
+                >
+                  <SetLogForm
+                    block={selectedExercise.block}
+                    logs={selectedExercise.logs}
+                    saving={saveSet.isPending}
+                    onSave={(values: SetLogValues) =>
+                      saveSet.mutateAsync({ exercise: selectedExercise, values }).then((result) => {
+                        restTimer.start(
+                          selectedExercise.block.rest_seconds,
+                          selectedExercise.exercise?.name ?? selectedExercise.block.exercise_name,
+                        );
+                        return result;
+                      })
+                    }
+                  />
+                </ExerciseDetail>
+              </div>
+            ) : null}
+          </div>
+
+          {/* ── Session rail ── */}
+          <aside className="order-first lg:order-none">
+            <div className="space-y-4 lg:sticky lg:top-10">
+              <Card glow className="flex items-center gap-5 lg:flex-col lg:items-stretch lg:gap-6 lg:p-7">
+                <ProgressRing value={Number(progress.percent) || 0} size={104} stroke={8}>
+                  <span className="font-mono-num text-xl font-semibold text-ada-text">{progress.percent}%</span>
+                </ProgressRing>
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="ada-eyebrow">Workout progress · تقدم التمرين</span>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-xs text-ada-muted">Exercises</span>
+                    <span className="font-mono-num text-sm font-semibold text-ada-text">
+                      {progress.completed} / {progress.total}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-xs text-ada-muted">Status</span>
+                    <Badge tone={progress.status === "COMPLETED" ? "success" : "teal"}>
+                      {String(progress.status).replace(/_/g, " ")}
+                    </Badge>
+                  </div>
+                  {progress.status === "COMPLETED" ? (
+                    <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-ada-success">
+                      <Icon name="check" size={15} /> Workout complete · اكتمل التمرين
+                    </p>
+                  ) : null}
+                </div>
+              </Card>
+
+              {restTimer.rest ? (
+                <div className="ada-glass flex animate-rise items-center gap-4 rounded-[var(--radius-card)] p-4">
+                  <ProgressRing value={(restTimer.left / restTimer.rest.total) * 100} size={56} stroke={4} color="#5CC8FF">
+                    <Icon name="timer" size={17} className="text-ada-info" />
+                  </ProgressRing>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-xs text-ada-muted">Rest · {restTimer.rest.label}</div>
+                    <div className="font-mono-num text-2xl text-ada-text">{fmtClock(restTimer.left)}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={restTimer.skip}
+                    className="ada-hairline rounded-full bg-white/[0.04] px-4 py-2 text-xs font-medium text-ada-text transition-colors hover:bg-white/[0.08]"
+                  >
+                    Skip
+                  </button>
+                </div>
+              ) : null}
+
+              {exerciseList.length ? (
+                <div className="hidden space-y-1 lg:block">
+                  {exerciseList.map((exercise: WorkoutExerciseView) => {
+                    const meta = statusMeta(exercise.status);
+                    return (
+                      <button
+                        key={exercise.block.id}
+                        type="button"
+                        onClick={() => setSelectedExerciseId(exercise.block.id)}
+                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs transition-colors ${
+                          selectedExerciseId === exercise.block.id ? "bg-white/[0.06] text-ada-text" : "text-ada-muted hover:text-ada-text"
+                        }`}
+                      >
+                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${meta.dot}`} />
+                        <span className="flex-1 truncate">{exercise.exercise?.name ?? exercise.block.exercise_name}</span>
+                        <span className="font-mono-num">{exercise.completedSets}/{exercise.prescribedSets}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          </aside>
+
+          {/* ── Mobile: one obvious next step ── */}
+          {nextExercise && selectedExerciseId !== nextExercise.block.id ? (
+            <div className="fixed inset-x-4 bottom-[calc(max(env(safe-area-inset-bottom),0.75rem)+5.5rem)] z-30 animate-rise md:hidden">
+              <button
+                type="button"
+                onClick={() => setSelectedExerciseId(nextExercise.block.id)}
+                className="ada-gradient flex w-full items-center justify-center gap-2 rounded-full px-5 py-4 text-sm font-semibold text-ada-navy shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_10px_30px_-10px_rgba(0,220,200,0.6)]"
+              >
+                <Icon name="play" size={14} />
+                <span className="truncate">Continue · {nextExercise.exercise?.name ?? nextExercise.block.exercise_name}</span>
+              </button>
+            </div>
           ) : null}
-        </>
+        </div>
       )}
     </div>
   );
