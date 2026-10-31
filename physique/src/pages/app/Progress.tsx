@@ -16,6 +16,7 @@ import {
   StatNumber,
 } from "../../components/ui";
 import { Icon } from "../../components/Icon";
+import { HeroBanner } from "../../components/Media";
 import type { Bodyweight, Measurement, SleepLog, WorkoutLog } from "../../lib/types";
 
 const fmtDay = (iso: string): string => {
@@ -111,11 +112,13 @@ export function Progress() {
 
   return (
     <div className="ada-stagger space-y-8 sm:space-y-10">
-      <PageHeader
-        eyebrow="Progress"
-        title="Progress intelligence"
-        subtitle="Real trends from your logs — no estimates, no mock data."
-      />
+      <HeroBanner photo="squat-tracking" alt="Athlete squatting with joint-angle tracking overlay" position="60% 10%">
+        <PageHeader
+          eyebrow="Progress"
+          title="Progress intelligence"
+          subtitle="Real trends from your logs — no estimates, no mock data."
+        />
+      </HeroBanner>
 
       {/* ── Bodyweight hero ── */}
       <Card className="sm:p-8">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Photo } from "../components/Media";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { Button, ErrorState, LoadingState } from "../components/ui";
@@ -80,8 +81,38 @@ export function Auth() {
   if (loading && !error && !info) return <LoadingState label="Authenticating…" />;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-ada-navy px-4">
-      <div className="w-full max-w-md rounded-[var(--radius-card)] border border-ada-teal/15 bg-ada-card p-7 ada-glow-ocean">
+    <div className="grid min-h-screen bg-ada-navy lg:grid-cols-[1.05fr_1fr]">
+      {/* ── Brand photography (desktop) ── */}
+      <aside className="relative hidden overflow-hidden lg:block">
+        <Photo
+          name="incline-press-tracking"
+          alt="Athlete on the incline dumbbell press with AI form-tracking overlay"
+          position="50% 30%"
+          priority
+          sizes="55vw"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ada-navy via-ada-navy/20 to-ada-navy/40" />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-ada-navy" />
+        <div className="absolute inset-x-10 bottom-12 max-w-md">
+          <span className="ada-eyebrow !text-ada-teal">AI-assisted · Coach-led</span>
+          <p className="mt-3 text-[2rem] font-semibold leading-tight tracking-[-0.03em] text-ada-text">
+            Every rep measured. Every decision yours.
+          </p>
+        </div>
+      </aside>
+
+      <div className="relative isolate flex items-center justify-center overflow-hidden px-4 py-10">
+        <Photo
+          name="incline-press-tracking"
+          alt=""
+          position="50% 25%"
+          sizes="100vw"
+          className="absolute inset-0 -z-20 h-full w-full object-cover opacity-30 lg:hidden"
+        />
+        <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-ada-navy/70 via-ada-navy/90 to-ada-navy lg:hidden" />
+        <div aria-hidden className="absolute -right-24 top-10 -z-10 h-80 w-80 rounded-full bg-ada-teal/10 blur-3xl" />
+      <div className="ada-glass w-full max-w-md rounded-[var(--radius-panel)] p-7 sm:p-9">
         <Link to="/" className="font-display text-xl font-black tracking-tight text-ada-teal">
           Ada2<span className="text-ada-text">Physique</span>
         </Link>
@@ -169,6 +200,7 @@ export function Auth() {
             {mode === "login" ? "No account? Sign up" : "Already have an account? Sign in"}
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

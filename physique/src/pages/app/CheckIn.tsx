@@ -17,6 +17,7 @@ import {
   SectionTitle,
 } from "../../components/ui";
 import { Icon } from "../../components/Icon";
+import { HeroBanner } from "../../components/Media";
 import type {
   CheckIn,
   CheckInStatus,
@@ -158,11 +159,13 @@ export function CheckIn() {
 
   return (
     <div className="ada-stagger space-y-8 sm:space-y-10">
-      <PageHeader
-        eyebrow="Weekly"
-        title="Check-in"
-        subtitle="Weight, photos and how the week went — your coach reviews every submission."
-      />
+      <HeroBanner photo="nutrition-prep" alt="Meal prep, water and the Ada2Physique app on a kitchen counter" position="60% 50%">
+        <PageHeader
+          eyebrow="Weekly"
+          title="Check-in"
+          subtitle="Weight, photos and how the week went — your coach reviews every submission."
+        />
+      </HeroBanner>
 
       <Card className="sm:p-8">
         <div className="mb-6 flex items-center gap-3">

@@ -17,6 +17,7 @@ import {
   SectionTitle,
 } from "../../components/ui";
 import { Icon } from "../../components/Icon";
+import { HeroBanner } from "../../components/Media";
 import type {
   ExperienceLevel,
   GeneratedDay,
@@ -174,11 +175,13 @@ export function Programs() {
 
   return (
     <div className="ada-stagger space-y-8 sm:space-y-10">
-      <PageHeader
-        eyebrow="Programs"
-        title="Program studio"
-        subtitle="Generate a personalized program with the AI Program Generator, then save it to a rostered athlete."
-      />
+      <HeroBanner photo="incline-press-tracking" alt="Incline dumbbell press with elbow and shoulder tracking" position="50% 30%">
+        <PageHeader
+          eyebrow="Programs"
+          title="Program studio"
+          subtitle="Generate a personalized program with the AI Program Generator, then save it to a rostered athlete."
+        />
+      </HeroBanner>
 
       <Card className="sm:p-8">
         <div className="mb-6 flex items-center gap-3">

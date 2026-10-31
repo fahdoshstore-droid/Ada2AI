@@ -15,6 +15,7 @@ import {
   StatNumber,
 } from "../../components/ui";
 import { Icon } from "../../components/Icon";
+import { HeroBanner } from "../../components/Media";
 import type { CheckInStatus, CoachAthlete } from "../../lib/types";
 
 interface RosterRow extends CoachAthlete {
@@ -257,33 +258,35 @@ export function CoachDashboard() {
 
   return (
     <div className="ada-stagger space-y-8 sm:space-y-10">
-      <PageHeader
-        eyebrow="Command center"
-        title={profile.display_name ? `Coach ${profile.display_name}` : "Coach dashboard"}
-        subtitle={
-          <>
-            {profile.specialties.length ? profile.specialties.join(" · ") : "Set your specialties"} ·{" "}
-            {profile.years_experience ?? "—"} yrs experience
-          </>
-        }
-        action={
-          <>
-            <Link to="/app/checkins">
-              <Button className="py-3">
-                <Icon name="checkin" size={16} /> Review check-ins
-                {pendingCount ? (
-                  <span className="rounded-full bg-ada-navy/15 px-2 py-0.5 font-mono-num text-xs">{pendingCount}</span>
-                ) : null}
-              </Button>
-            </Link>
-            <Link to="/app/programs">
-              <Button variant="ghost" className="py-3">
-                <Icon name="plus" size={15} /> Generate program
-              </Button>
-            </Link>
-          </>
-        }
-      />
+      <HeroBanner photo="coach-portrait" alt="Ada2Physique coach portrait in the gym" position="50% 8%">
+        <PageHeader
+          eyebrow="Command center"
+          title={profile.display_name ? `Coach ${profile.display_name}` : "Coach dashboard"}
+          subtitle={
+            <>
+              {profile.specialties.length ? profile.specialties.join(" · ") : "Set your specialties"} ·{" "}
+              {profile.years_experience ?? "—"} yrs experience
+            </>
+          }
+          action={
+            <>
+              <Link to="/app/checkins">
+                <Button className="py-3">
+                  <Icon name="checkin" size={16} /> Review check-ins
+                  {pendingCount ? (
+                    <span className="rounded-full bg-ada-navy/15 px-2 py-0.5 font-mono-num text-xs">{pendingCount}</span>
+                  ) : null}
+                </Button>
+              </Link>
+              <Link to="/app/programs">
+                <Button variant="ghost" className="py-3">
+                  <Icon name="plus" size={15} /> Generate program
+                </Button>
+              </Link>
+            </>
+          }
+        />
+      </HeroBanner>
 
       {/* ── KPI strip: one surface, not many cards ── */}
       <section className="ada-glass overflow-hidden rounded-[var(--radius-panel)]">

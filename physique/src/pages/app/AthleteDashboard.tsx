@@ -19,6 +19,7 @@ import {
   StatNumber,
 } from "../../components/ui";
 import { Icon } from "../../components/Icon";
+import { HeroBanner, Photo } from "../../components/Media";
 import type { Assignment, Bodyweight, WorkoutLog } from "../../lib/types";
 
 interface AssignmentWithPlan extends Assignment {
@@ -122,30 +123,32 @@ export function AthleteDashboard() {
 
   return (
     <div className="ada-stagger space-y-8 sm:space-y-10">
-      <PageHeader
-        eyebrow={`Athlete · ${GOAL_LABEL[profile.goal ?? ""] ?? "No goal set"}`}
-        title={profile.display_name ? `Welcome, ${profile.display_name}` : "Athlete dashboard"}
-        subtitle={
-          <>
-            {(profile.competition_category ?? "none").replace(/_/g, " ")} · {profile.experience_level ?? "—"} ·{" "}
-            {profile.training_frequency ?? "—"} days/wk
-          </>
-        }
-        action={
-          <>
-            <Link to="/app/checkin">
-              <Button className="py-3">
-                <Icon name="checkin" size={16} /> Weekly check-in
-              </Button>
-            </Link>
-            <Link to="/app/chat">
-              <Button variant="ghost" className="py-3">
-                <Icon name="sparkle" size={16} className="text-ada-teal" /> Ask AI Coach
-              </Button>
-            </Link>
-          </>
-        }
-      />
+      <HeroBanner photo="coach-spot-incline" alt="Coach spotting an athlete on the incline dumbbell press with motion-tracking overlay" position="72% 18%">
+        <PageHeader
+          eyebrow={`Athlete · ${GOAL_LABEL[profile.goal ?? ""] ?? "No goal set"}`}
+          title={profile.display_name ? `Welcome, ${profile.display_name}` : "Athlete dashboard"}
+          subtitle={
+            <>
+              {(profile.competition_category ?? "none").replace(/_/g, " ")} · {profile.experience_level ?? "—"} ·{" "}
+              {profile.training_frequency ?? "—"} days/wk
+            </>
+          }
+          action={
+            <>
+              <Link to="/app/checkin">
+                <Button className="py-3">
+                  <Icon name="checkin" size={16} /> Weekly check-in
+                </Button>
+              </Link>
+              <Link to="/app/chat">
+                <Button variant="ghost" className="py-3">
+                  <Icon name="sparkle" size={16} className="text-ada-teal" /> Ask AI Coach
+                </Button>
+              </Link>
+            </>
+          }
+        />
+      </HeroBanner>
 
       {/* ── Hero: bodyweight + quick log ── */}
       <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr] lg:gap-6">
@@ -248,6 +251,16 @@ export function AthleteDashboard() {
       {/* ── Nutrition & recent lifts ── */}
       <div className="grid items-start gap-4 lg:grid-cols-[1fr_1.4fr] lg:gap-6">
         <Card>
+          <div className="relative -mx-5 -mt-5 mb-6 h-36 overflow-hidden sm:-mx-6 sm:-mt-6 sm:h-40">
+            <Photo
+              name="nutrition-prep"
+              alt="Meal prep with grilled chicken, rice, vegetables and the Ada2Physique app"
+              position="50% 60%"
+              sizes="(min-width: 1024px) 480px, 100vw"
+              className="h-full w-full object-cover"
+            />
+            <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0d1317] via-[#0d1317]/30 to-transparent" />
+          </div>
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <IconBadge name="nutrition" tone="amber" />
