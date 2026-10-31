@@ -300,6 +300,47 @@ export interface AiReport {
   updated_at: string;
 }
 
+export interface CheckInImageQuality {
+  status: "PASS" | "WARNING" | "FAIL";
+  confidence: number;
+  reason: string;
+}
+
+export interface CheckInAnalysisBaseline {
+  available: boolean;
+  previous_check_in_id: string | null;
+  comparison_scope: string | null;
+}
+
+export interface CheckInAnalysisObservation {
+  angle: "front" | "side" | "back";
+  area: string;
+  trend: "IMPROVING" | "STABLE" | "DECREASING" | "UNCERTAIN";
+  confidence: number;
+  observation: string;
+  evidence: string;
+}
+
+export interface CheckInImageAnalysis {
+  id: string;
+  check_in_id: string;
+  athlete_id: string;
+  analysis_version: string;
+  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+  quality: Record<"front" | "side" | "back", CheckInImageQuality>;
+  baseline: CheckInAnalysisBaseline;
+  observations: CheckInAnalysisObservation[];
+  summary: {
+    overall: string;
+    positive_changes: string[];
+    stable_areas: string[];
+    uncertain_areas: string[];
+  };
+  model: string | null;
+  error_message: string | null;
+  created_at: string | null;
+}
+
 // ── Backend API contracts (mirror backend/physique/schemas.py) ────────
 export interface MeResponse {
   uid: string;
@@ -398,4 +439,28 @@ export function photoLabelFromPath(path: string): string {
   const base = path.split("/").pop() ?? path;
   const prefix = base.split("-")[0] ?? "";
   return prefix || "photo";
+}
+
+// ── Exercise Library ────────────────────────────────────────────────
+export interface ExerciseLibrary {
+  id: string;
+  name: string;
+  name_ar: string | null;
+  category: "compound" | "isolation" | "accessory" | "mobility" | "cardio" | null;
+  muscle_groups: string[];
+  movement_rule_key: string | null;
+  equipment: string | null;
+  video_demo_url: string | null;
+  image_url: string | null;
+  instructions: string | null;
+  common_mistakes: string | null;
+  coach_note: string | null;
+  is_cv_supported: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Program block joined with exercise library details
+export interface ProgramBlockWithExercise extends ProgramBlock {
+  exercise: ExerciseLibrary | null;
 }
