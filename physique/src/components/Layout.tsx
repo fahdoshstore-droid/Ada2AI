@@ -9,19 +9,21 @@ interface NavItem {
   to: string;
   label: string;
   icon: IconName;
+  /** Extra path prefixes that should highlight this item (nested screens). */
+  match?: string[];
 }
 
 const NAV: Record<Role, NavItem[]> = {
   athlete: [
     { to: "/app/athlete", label: "Dashboard", icon: "home" },
-    { to: "/app/workout", label: "Workout", icon: "dumbbell" },
+    { to: "/app/workout", label: "Workout", icon: "dumbbell", match: ["/app/program/"] },
     { to: "/app/chat", label: "AI Coach", icon: "sparkle" },
     { to: "/app/progress", label: "Progress", icon: "progress" },
     { to: "/app/checkin", label: "Check-in", icon: "checkin" },
   ],
   coach: [
     { to: "/app/coach", label: "Dashboard", icon: "grid" },
-    { to: "/app/programs", label: "Programs", icon: "layers" },
+    { to: "/app/programs", label: "Programs", icon: "layers", match: ["/app/program-builder", "/app/program/"] },
     { to: "/app/workouts", label: "Workouts", icon: "dumbbell" },
     { to: "/app/nutrition", label: "Nutrition", icon: "nutrition" },
     { to: "/app/checkins", label: "Check-ins", icon: "checkin" },
@@ -69,7 +71,9 @@ export function Layout() {
   const [signingOut, setSigningOut] = useState(false);
 
   const items = role ? NAV[role] : [];
-  const activeIndex = Math.max(0, items.findIndex((it) => pathname.startsWith(it.to)));
+  const isActivePath = (it: NavItem) =>
+    pathname === it.to || pathname.startsWith(`${it.to}/`) || (it.match ?? []).some((m) => pathname.startsWith(m));
+  const activeIndex = Math.max(0, items.findIndex(isActivePath));
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -95,11 +99,13 @@ export function Layout() {
               className={({ isActive }) =>
                 [
                   "group relative flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium transition-all duration-300",
-                  isActive ? "bg-white/[0.07] text-ada-text" : "text-ada-muted hover:bg-white/[0.035] hover:text-ada-text",
+                  isActive || isActivePath(item) ? "bg-white/[0.07] text-ada-text" : "text-ada-muted hover:bg-white/[0.035] hover:text-ada-text",
                 ].join(" ")
               }
             >
-              {({ isActive }) => (
+              {({ isActive: linkActive }) => {
+                const isActive = linkActive || isActivePath(item);
+                return (
                 <>
                   <Icon name={item.icon} size={20} className={isActive ? "text-ada-teal" : ""} />
                   {item.label}
@@ -107,7 +113,8 @@ export function Layout() {
                     <span className="absolute inset-y-2.5 -left-4 w-[3px] rounded-r-full bg-ada-teal shadow-[0_0_12px_#00DCC8]" />
                   ) : null}
                 </>
-              )}
+                );
+              }}
             </NavLink>
           ))}
         </nav>

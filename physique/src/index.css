@@ -49,8 +49,10 @@
   --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  --animate-rise: rise 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-fade: fade 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* fill-mode "backwards": no transform/filter remains after the entrance, so
+     position:fixed descendants (modals, sticky CTAs) stay viewport-relative */
+  --animate-rise: rise 560ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-fade: fade 320ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   --animate-breathe: breathe 4s ease-in-out infinite;
 
   @keyframes rise {

@@ -472,7 +472,7 @@ export function ProgramBuilder() {
                     <Stepper label="Rest" value={block.rest_seconds} step={15} suffix="s" onChange={(v) => updateBlock(block.id, { rest_seconds: v })} />
                     <label className="flex flex-col gap-1">
                       <span className="text-[10px] font-medium uppercase tracking-wider text-ada-faint">Tempo</span>
-                      <input className="h-9 w-[5.25rem] rounded-xl bg-black/25 text-center font-mono-num text-sm font-semibold text-ada-text outline-none ada-hairline focus:shadow-[var(--shadow-teal)]" value={block.tempo ?? ""} placeholder="3-1-1-0" onChange={(e) => updateBlock(block.id, { tempo: e.target.value })} />
+                      <input className="h-9 w-[5.25rem] rounded-xl bg-black/25 text-center font-mono-num text-sm font-semibold text-ada-text outline-none ada-hairline focus:shadow-[var(--shadow-teal)]" value={block.tempo ?? ""} placeholder="—" onChange={(e) => updateBlock(block.id, { tempo: e.target.value })} />
                     </label>
                   </div>
                   <label className="mt-3 block sm:pl-[4.25rem]">
