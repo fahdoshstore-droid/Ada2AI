@@ -7,11 +7,15 @@ import { LineChart } from "../../components/LineChart";
 import {
   Badge,
   Card,
+  Delta,
   EmptyState,
   LoadingState,
+  PageHeader,
   SectionTitle,
   Stat,
+  StatNumber,
 } from "../../components/ui";
+import { Icon } from "../../components/Icon";
 import type { Bodyweight, Measurement, SleepLog, WorkoutLog } from "../../lib/types";
 
 const fmtDay = (iso: string): string => {
@@ -98,73 +102,86 @@ export function Progress() {
   const prCount = (workouts.data ?? []).filter((w) => w.is_pr).length;
   const m = measurements.data;
 
+  const bwList = bodyweight.data ?? [];
+  const bwLatest = bwList.length ? Number(bwList.at(-1)!.weight_kg) : null;
+  const bwChange = bwList.length > 1 ? Number(bwList.at(-1)!.weight_kg) - Number(bwList[0].weight_kg) : null;
+  const avgSleep = sleep.data?.length
+    ? sleep.data.reduce((acc, s) => acc + Number(s.duration_hours ?? 0), 0) / sleep.data.length
+    : null;
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Progress intelligence</h1>
-        <p className="mt-1 text-sm text-ada-muted">
-          Real trends from your logs — no estimates, no mock data.
-        </p>
-      </div>
+    <div className="ada-stagger space-y-8 sm:space-y-10">
+      <PageHeader
+        eyebrow="Progress"
+        title="Progress intelligence"
+        subtitle="Real trends from your logs — no estimates, no mock data."
+      />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat
-          label="Bodyweight"
-          value={bodyweight.data?.length ? Number(bodyweight.data.at(-1)!.weight_kg).toFixed(1) : "—"}
-          unit="kg"
-          accent
-        />
-        <Stat label="Weigh-ins" value={bodyweight.data?.length ?? 0} />
+      {/* ── Bodyweight hero ── */}
+      <Card className="sm:p-8">
+        <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="ada-eyebrow mb-3">Bodyweight trend</div>
+            <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+              {bwLatest != null ? (
+                <StatNumber value={bwLatest} decimals={1} unit="kg" size="lg" />
+              ) : (
+                <span className="font-mono-num text-[3rem] leading-none text-ada-faint">—</span>
+              )}
+              {bwChange != null ? (
+                <span className="pb-1.5">
+                  <Delta value={bwChange} unit=" kg" goodWhen="neutral" />
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <span className="text-sm text-ada-muted">last 14 entries</span>
+        </div>
+        <LineChart data={bwPoints} unit="kg" height={220} />
+      </Card>
+
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <Stat label="Bodyweight" value={bwLatest != null ? bwLatest.toFixed(1) : "—"} unit="kg" />
+        <Stat label="Weigh-ins" value={bwList.length} />
         <Stat label="PRs (recent)" value={prCount} accent />
-        <Stat
-          label="Avg sleep"
-          value={
-            sleep.data?.length
-              ? (
-                  sleep.data.reduce((acc, s) => acc + Number(s.duration_hours ?? 0), 0) /
-                  sleep.data.length
-                ).toFixed(1)
-              : "—"
-          }
-          unit="h"
-        />
+        <Stat label="Avg sleep" value={avgSleep != null ? avgSleep.toFixed(1) : "—"} unit="h" />
       </div>
 
-      <Card>
-        <SectionTitle hint="last 14 entries">Bodyweight trend</SectionTitle>
-        <LineChart data={bwPoints} unit="kg" />
-      </Card>
-
-      <Card>
+      <Card className="sm:p-8">
         <SectionTitle hint="last 14 nights">Sleep duration</SectionTitle>
-        <LineChart data={sleepPoints} unit="h" />
+        <LineChart data={sleepPoints} unit="h" color="#5CC8FF" />
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
         <Card>
           <SectionTitle>Recent lifts</SectionTitle>
           {workouts.data?.length ? (
-            <ul className="divide-y divide-white/5">
+            <ul className="space-y-2">
               {workouts.data.map((w) => (
-                <li key={w.id} className="flex items-center justify-between py-2.5 text-sm">
-                  <span className="font-semibold text-ada-text">{w.exercise_name}</span>
-                  <span className="font-mono-num text-ada-muted">
-                    {w.weight_kg != null ? `${w.weight_kg}kg × ` : ""}
+                <li key={w.id} className="ada-inset flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-sm">
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/[0.04] text-ada-muted">
+                      <Icon name="dumbbell" size={15} />
+                    </span>
+                    <span className="truncate font-medium text-ada-text">{w.exercise_name}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2 font-mono-num text-ada-text-2">
+                    {w.weight_kg != null ? `${w.weight_kg} kg × ` : ""}
                     {w.reps ?? "—"}
-                    {w.is_pr ? <span className="ml-2"><Badge tone="amber">PR</Badge></span> : null}
+                    {w.is_pr ? <Badge tone="amber">PR</Badge> : null}
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
-            <EmptyState title="No lifts logged" icon="🏋️" />
+            <EmptyState title="No lifts logged" icon={<Icon name="dumbbell" size={20} />} />
           )}
         </Card>
 
         <Card>
           <SectionTitle hint={m ? fmtDay(m.measured_on) : undefined}>Latest measurements</SectionTitle>
           {m ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
               {([
                 ["Chest", m.chest_cm],
                 ["Waist", m.waist_cm],
@@ -178,11 +195,17 @@ export function Progress() {
               ] as [string, number | null][])
                 .filter(([, v]) => v != null)
                 .map(([label, v]) => (
-                  <Stat key={label} label={label} value={Number(v!).toFixed(1)} unit="cm" />
+                  <div key={label} className="ada-inset rounded-2xl px-4 py-3">
+                    <div className="text-xs text-ada-muted">{label}</div>
+                    <div className="mt-1 font-mono-num text-xl text-ada-text">
+                      {Number(v!).toFixed(1)}
+                      <span className="ml-1 text-xs text-ada-muted">cm</span>
+                    </div>
+                  </div>
                 ))}
             </div>
           ) : (
-            <EmptyState title="No measurements logged" icon="📏" />
+            <EmptyState title="No measurements logged" icon={<Icon name="target" size={20} />} />
           )}
         </Card>
       </div>

@@ -8,10 +8,13 @@ import {
   Button,
   Card,
   EmptyState,
+  IconBadge,
   LoadingState,
+  PageHeader,
   SectionTitle,
-  Stat,
+  StatNumber,
 } from "../../components/ui";
+import { Icon } from "../../components/Icon";
 import type { CheckInStatus, CoachAthlete } from "../../lib/types";
 
 interface RosterRow extends CoachAthlete {
@@ -39,9 +42,9 @@ const STATUS_META: Record<
   AthleteCheckInStatus,
   { label: string; dot: string; text: string }
 > = {
-  reviewed: { label: "Reviewed", dot: "bg-ada-success", text: "text-ada-success" },
-  submitted: { label: "Submitted", dot: "bg-ada-amber", text: "text-ada-amber" },
-  overdue: { label: "Overdue", dot: "bg-ada-red", text: "text-ada-red" },
+  reviewed: { label: "Reviewed", dot: "bg-ada-success", text: "text-ada-success bg-ada-success/10" },
+  submitted: { label: "Submitted", dot: "bg-ada-amber", text: "text-ada-amber bg-ada-amber/10" },
+  overdue: { label: "Overdue", dot: "bg-ada-red", text: "text-ada-red bg-ada-red/10" },
 };
 
 /** Sort rank: pending (submitted) first → overdue → reviewed last. */
@@ -74,9 +77,9 @@ function athleteStatus(latest: CheckInLite | undefined): AthleteCheckInStatus {
 function StatusPill({ status }: { status: AthleteCheckInStatus }) {
   const meta = STATUS_META[status];
   return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-      <span className={`h-2 w-2 rounded-full ${meta.dot}`} />
-      <span className={`text-xs font-semibold ${meta.text}`}>{meta.label}</span>
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${meta.text}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
+      {meta.label}
     </span>
   );
 }
@@ -241,198 +244,207 @@ export function CoachDashboard() {
       STATUS_RANK[athleteStatus(latestByAthlete.get(b.athlete_id))],
   );
 
+  const kpis: { label: string; value: number | null; sub: string; tone?: "alert" | "teal" }[] = [
+    { label: "Athletes", value: roster.data?.length ?? null, sub: "on your roster", tone: "teal" },
+    { label: "Programs", value: typeof programs.data === "number" ? programs.data : null, sub: "created" },
+    {
+      label: "Pending check-ins",
+      value: pendingCount,
+      sub: pendingCount ? "awaiting review" : "all caught up",
+      tone: pendingCount ? "alert" : undefined,
+    },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">
-            {profile.display_name ? `Coach ${profile.display_name}` : "Coach dashboard"}
-          </h1>
-          <p className="mt-1 text-sm text-ada-muted">
+    <div className="ada-stagger space-y-8 sm:space-y-10">
+      <PageHeader
+        eyebrow="Command center"
+        title={profile.display_name ? `Coach ${profile.display_name}` : "Coach dashboard"}
+        subtitle={
+          <>
             {profile.specialties.length ? profile.specialties.join(" · ") : "Set your specialties"} ·{" "}
             {profile.years_experience ?? "—"} yrs experience
-          </p>
-        </div>
-        <Link to="/app/programs">
-          <Button className="ada-glow-teal">+ Generate program</Button>
-        </Link>
-      </div>
+          </>
+        }
+        action={
+          <>
+            <Link to="/app/checkins">
+              <Button className="py-3">
+                <Icon name="checkin" size={16} /> Review check-ins
+                {pendingCount ? (
+                  <span className="rounded-full bg-ada-navy/15 px-2 py-0.5 font-mono-num text-xs">{pendingCount}</span>
+                ) : null}
+              </Button>
+            </Link>
+            <Link to="/app/programs">
+              <Button variant="ghost" className="py-3">
+                <Icon name="plus" size={15} /> Generate program
+              </Button>
+            </Link>
+          </>
+        }
+      />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Athletes" value={roster.data?.length ?? "—"} accent />
-        <Stat label="Programs" value={programs.data ?? "—"} />
-        <Stat label="Verified" value={profile.is_verified ? "Yes" : "No"} />
-        <Stat label="Accepting" value={profile.is_accepting_athletes ? "Yes" : "No"} />
-      </div>
-
-      {/* ── Pending check-ins counter + latest check-in widget ── */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Link to="/app/checkins" className="block">
-          <Card
-            className={
-              pendingCount && pendingCount > 0
-                ? "border-ada-red/30 transition hover:border-ada-red/50"
-                : "transition hover:border-ada-teal/25"
-            }
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-wide text-ada-muted">
-                  Pending check-ins
-                </div>
-                <div
-                  className={`mt-1 font-mono-num text-3xl ${
-                    pendingCount === null
-                      ? "text-ada-muted"
-                      : pendingCount > 0
-                        ? "text-ada-red"
-                        : "text-ada-success"
-                  }`}
-                >
-                  {pendingCount === null ? "—" : pendingCount}
-                </div>
+      {/* ── KPI strip: one surface, not many cards ── */}
+      <section className="ada-glass overflow-hidden rounded-[var(--radius-panel)]">
+        <div className="grid grid-cols-2 divide-white/[0.06] sm:grid-cols-4 sm:divide-x">
+          {kpis.map((k) => (
+            <div key={k.label} className="relative px-5 py-6 sm:px-7 sm:py-8">
+              {k.tone === "alert" ? (
+                <span aria-hidden className="absolute right-5 top-6 h-2 w-2 rounded-full bg-ada-red shadow-[0_0_12px_#FF5A52]" />
+              ) : null}
+              <div className="text-[0.8125rem] text-ada-text-2">{k.label}</div>
+              <div className="mt-4">
+                {k.value == null ? (
+                  <span className="font-mono-num text-[2.75rem] leading-none text-ada-faint">—</span>
+                ) : (
+                  <StatNumber value={k.value} size="lg" />
+                )}
               </div>
-              <span className="text-2xl">
-                {pendingCount && pendingCount > 0 ? "▮" : "✓"}
+              <div className={`mt-2 text-xs ${k.tone === "alert" ? "text-ada-red" : "text-ada-muted"}`}>{k.sub}</div>
+            </div>
+          ))}
+          <div className="relative px-5 py-6 sm:px-7 sm:py-8">
+            <div className="text-[0.8125rem] text-ada-text-2">Status</div>
+            <div className="mt-4 flex flex-col gap-2 text-sm">
+              <span className={`inline-flex items-center gap-2 ${profile.is_verified ? "text-ada-success" : "text-ada-muted"}`}>
+                <Icon name={profile.is_verified ? "check" : "minus"} size={15} /> {profile.is_verified ? "Verified" : "Not verified"}
+              </span>
+              <span className={`inline-flex items-center gap-2 ${profile.is_accepting_athletes ? "text-ada-teal" : "text-ada-muted"}`}>
+                <Icon name={profile.is_accepting_athletes ? "users" : "minus"} size={15} />
+                {profile.is_accepting_athletes ? "Accepting athletes" : "Roster closed"}
               </span>
             </div>
-            <div
-              className={`mt-2 text-xs ${
-                pendingCount && pendingCount > 0 ? "text-ada-red" : "text-ada-muted"
-              }`}
-            >
-              {pendingCount === null
-                ? "Loading…"
-                : pendingCount > 0
-                  ? "Awaiting your review →"
-                  : "All caught up"}
-            </div>
-          </Card>
-        </Link>
+          </div>
+        </div>
+      </section>
 
-        <Card>
-          <SectionTitle hint="Latest">Latest check-in</SectionTitle>
-          {checkinsLoading ? (
-            <LoadingState label="Loading latest check-in…" />
-          ) : latestOverall ? (
-            <Link
-              to={`/app/checkins?athlete=${latestOverall.athlete_id}`}
-              className="-mx-1 block rounded-lg px-1 py-1 transition hover:bg-white/5"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="truncate font-semibold text-ada-text">
-                    {latestOverall.athlete?.display_name ?? "Athlete"}
-                  </div>
-                  <div className="text-xs text-ada-muted">
-                    {latestOverall.check_in_date}
-                    {latestOverall.bodyweight_kg != null
-                      ? ` · ${latestOverall.bodyweight_kg} kg`
-                      : ""}
-                  </div>
-                </div>
-                <StatusPill status={athleteStatus(latestOverall)} />
-              </div>
-              <div className="mt-2 text-xs text-ada-teal">Open →</div>
-            </Link>
+      <div className="grid gap-6 xl:grid-cols-[1fr_360px] xl:gap-8">
+        {/* ── Roster with check-in status ── */}
+        <Card className="sm:p-7">
+          <SectionTitle hint="Pending first">Your athletes</SectionTitle>
+          {roster.isLoading ? (
+            <LoadingState label="Loading roster…" />
+          ) : sortedRoster.length ? (
+            <ul className="space-y-2">
+              {sortedRoster.map((row) => {
+                const status = athleteStatus(latestByAthlete.get(row.athlete_id));
+                const name = row.athlete?.display_name ?? "Unnamed athlete";
+                return (
+                  <li key={row.id}>
+                    <Link
+                      to={`/app/checkins?athlete=${row.athlete_id}`}
+                      className="ada-inset group flex items-center justify-between gap-3 rounded-2xl px-4 py-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.05]"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-ada-teal-soft to-ada-ocean font-mono-num text-xs font-semibold text-ada-navy">
+                          {name.slice(0, 2).toUpperCase()}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold text-ada-text">{name}</div>
+                          <div className="truncate text-xs capitalize text-ada-muted">
+                            {(row.athlete?.competition_category ?? "none").replace(/_/g, " ")} ·{" "}
+                            {row.athlete?.experience_level ?? "—"} · {row.athlete?.goal ?? "—"}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-3">
+                        {checkinsLoading ? <span className="text-xs text-ada-muted">…</span> : <StatusPill status={status} />}
+                        <Icon name="chevron" size={16} className="text-ada-muted transition-transform group-hover:translate-x-0.5" />
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           ) : (
             <EmptyState
-              title="No check-ins yet"
-              description="Athletes will appear here once they submit a weekly check-in."
-              icon="◴"
+              title="No athletes assigned yet"
+              description="Assign athletes from the roster or invite them to sign up with the athlete role."
+              icon={<Icon name="users" size={20} />}
+              action={
+                <Link to="/app/programs">
+                  <Button variant="ghost">Build a program</Button>
+                </Link>
+              }
             />
           )}
         </Card>
-      </div>
 
-      {/* ── Add athlete to roster ── */}
-      <Card>
-        <SectionTitle hint="By email">Add athlete</SectionTitle>
-        <form
-          onSubmit={assignAthlete}
-          className="flex flex-col gap-3 sm:flex-row sm:items-end"
-        >
-          <label className="block flex-1">
-            <span className="ada-label">Athlete email</span>
-            <input
-              type="email"
-              className="ada-input"
-              value={assignEmail}
-              onChange={(e) => setAssignEmail(e.target.value)}
-              placeholder="athlete@example.com"
-              autoComplete="off"
-            />
-          </label>
-          <Button type="submit" loading={assigning} className="sm:whitespace-nowrap">
-            Assign athlete
-          </Button>
-        </form>
-        {assignMsg ? (
-          <div
-            className={`mt-3 rounded-lg border px-3 py-2 text-sm ${
-              assignMsg.tone === "ok"
-                ? "border-ada-success/25 bg-ada-success/10 text-ada-success"
-                : assignMsg.tone === "info"
-                  ? "border-ada-amber/25 bg-ada-amber/10 text-ada-amber"
-                  : "border-ada-red/25 bg-ada-red/10 text-ada-red"
-            }`}
-          >
-            {assignMsg.text}
-          </div>
-        ) : null}
-      </Card>
-
-      {/* ── Roster with check-in status ── */}
-      <Card>
-        <SectionTitle hint="Pending first">Your athletes</SectionTitle>
-        {roster.isLoading ? (
-          <LoadingState label="Loading roster…" />
-        ) : sortedRoster.length ? (
-          <ul className="divide-y divide-white/5">
-            {sortedRoster.map((row) => {
-              const status = athleteStatus(latestByAthlete.get(row.athlete_id));
-              return (
-                <li key={row.id}>
-                  <Link
-                    to={`/app/checkins?athlete=${row.athlete_id}`}
-                    className="-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-3 transition hover:bg-white/5"
-                  >
+        <div className="space-y-6">
+          {/* ── Latest check-in ── */}
+          <Card>
+            <SectionTitle hint="Latest">Latest check-in</SectionTitle>
+            {checkinsLoading ? (
+              <LoadingState label="Loading latest check-in…" />
+            ) : latestOverall ? (
+              <Link
+                to={`/app/checkins?athlete=${latestOverall.athlete_id}`}
+                className="ada-inset group block rounded-2xl p-4 transition hover:bg-white/[0.05]"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <IconBadge name="checkin" />
                     <div className="min-w-0">
-                      <div className="font-semibold text-ada-text">
-                        {row.athlete?.display_name ?? "Unnamed athlete"}
+                      <div className="truncate font-semibold text-ada-text">
+                        {latestOverall.athlete?.display_name ?? "Athlete"}
                       </div>
-                      <div className="truncate text-xs text-ada-muted">
-                        {(row.athlete?.competition_category ?? "none").replace(/_/g, " ")} ·{" "}
-                        {row.athlete?.experience_level ?? "—"} ·{" "}
-                        {row.athlete?.goal ?? "—"}
+                      <div className="font-mono-num text-xs text-ada-muted">
+                        {latestOverall.check_in_date}
+                        {latestOverall.bodyweight_kg != null ? ` · ${latestOverall.bodyweight_kg} kg` : ""}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {checkinsLoading ? (
-                        <span className="text-xs text-ada-muted">…</span>
-                      ) : (
-                        <StatusPill status={status} />
-                      )}
-                      <span className="whitespace-nowrap text-xs text-ada-teal">Open →</span>
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <EmptyState
-            title="No athletes assigned yet"
-            description="Assign athletes from the roster or invite them to sign up with the athlete role."
-            icon="👥"
-            action={
-              <Link to="/app/programs">
-                <Button variant="ghost">Build a program</Button>
+                  </div>
+                  <StatusPill status={athleteStatus(latestOverall)} />
+                </div>
+                <div className="mt-3 inline-flex items-center gap-1 text-xs text-ada-teal">
+                  Open <Icon name="arrow" size={13} />
+                </div>
               </Link>
-            }
-          />
-        )}
-      </Card>
+            ) : (
+              <EmptyState
+                title="No check-ins yet"
+                description="Athletes will appear here once they submit a weekly check-in."
+                icon={<Icon name="checkin" size={20} />}
+              />
+            )}
+          </Card>
+
+          {/* ── Add athlete to roster ── */}
+          <Card>
+            <SectionTitle hint="By email">Add athlete</SectionTitle>
+            <form onSubmit={assignAthlete} className="flex flex-col gap-3">
+              <label className="block">
+                <span className="ada-label">Athlete email</span>
+                <input
+                  type="email"
+                  className="ada-input"
+                  value={assignEmail}
+                  onChange={(e) => setAssignEmail(e.target.value)}
+                  placeholder="athlete@example.com"
+                  autoComplete="off"
+                />
+              </label>
+              <Button type="submit" loading={assigning}>
+                <Icon name="plus" size={15} /> Assign athlete
+              </Button>
+            </form>
+            {assignMsg ? (
+              <div
+                className={`mt-3 rounded-[var(--radius-control)] border px-3 py-2 text-sm ${
+                  assignMsg.tone === "ok"
+                    ? "border-ada-success/25 bg-ada-success/10 text-ada-success"
+                    : assignMsg.tone === "info"
+                      ? "border-ada-amber/25 bg-ada-amber/10 text-ada-amber"
+                      : "border-ada-red/25 bg-ada-red/10 text-ada-red"
+                }`}
+              >
+                {assignMsg.text}
+              </div>
+            ) : null}
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

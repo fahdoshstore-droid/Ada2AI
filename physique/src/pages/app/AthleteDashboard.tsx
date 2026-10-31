@@ -8,12 +8,17 @@ import {
   Badge,
   Button,
   Card,
+  Delta,
   EmptyState,
   ErrorState,
+  IconBadge,
   LoadingState,
+  PageHeader,
   SectionTitle,
   Stat,
+  StatNumber,
 } from "../../components/ui";
+import { Icon } from "../../components/Icon";
 import type { Assignment, Bodyweight, WorkoutLog } from "../../lib/types";
 
 interface AssignmentWithPlan extends Assignment {
@@ -112,82 +117,112 @@ export function AthleteDashboard() {
       ? Number(latestBw.weight_kg) - Number(firstBw.weight_kg)
       : null;
 
+  const trendGood: "up" | "down" | "neutral" =
+    profile.goal === "cut" || profile.goal === "prep" ? "down" : profile.goal === "bulk" || profile.goal === "offseason" ? "up" : "neutral";
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">
-          {profile.display_name ? `Welcome, ${profile.display_name}` : "Athlete dashboard"}
-        </h1>
-        <p className="mt-1 text-sm text-ada-muted">
-          {GOAL_LABEL[profile.goal ?? ""] ?? "No goal set"} ·{" "}
-          {(profile.competition_category ?? "none").replace(/_/g, " ")} ·{" "}
-          {profile.experience_level ?? "—"} · {profile.training_frequency ?? "—"} days/wk
-        </p>
-      </div>
+    <div className="ada-stagger space-y-8 sm:space-y-10">
+      <PageHeader
+        eyebrow={`Athlete · ${GOAL_LABEL[profile.goal ?? ""] ?? "No goal set"}`}
+        title={profile.display_name ? `Welcome, ${profile.display_name}` : "Athlete dashboard"}
+        subtitle={
+          <>
+            {(profile.competition_category ?? "none").replace(/_/g, " ")} · {profile.experience_level ?? "—"} ·{" "}
+            {profile.training_frequency ?? "—"} days/wk
+          </>
+        }
+        action={
+          <>
+            <Link to="/app/checkin">
+              <Button className="py-3">
+                <Icon name="checkin" size={16} /> Weekly check-in
+              </Button>
+            </Link>
+            <Link to="/app/chat">
+              <Button variant="ghost" className="py-3">
+                <Icon name="sparkle" size={16} className="text-ada-teal" /> Ask AI Coach
+              </Button>
+            </Link>
+          </>
+        }
+      />
 
-      {/* ── Stats row ── */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Bodyweight" value={latestBw ? Number(latestBw.weight_kg).toFixed(1) : "—"} unit="kg" accent />
-        <Stat
-          label="Trend"
-          value={
-            bwTrend == null
-              ? "—"
-              : `${bwTrend >= 0 ? "+" : ""}${bwTrend.toFixed(1)}`
-          }
-          unit="kg"
-        />
-        <Stat label="Height" value={profile.height_cm ? Number(profile.height_cm).toFixed(0) : "—"} unit="cm" />
-        <Stat label="Goal" value={GOAL_LABEL[profile.goal ?? ""] ?? "—"} />
-      </div>
-
-      {/* ── Quick log bodyweight ── */}
-      <Card>
-        <SectionTitle hint="Daily weigh-in">Log bodyweight</SectionTitle>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const kg = Number(bwValue);
-            if (bwValue && !Number.isNaN(kg)) logBw.mutate(kg);
-          }}
-          className="flex flex-wrap items-center gap-3"
-        >
-          <input
-            type="number"
-            step="0.1"
-            inputMode="decimal"
-            className="ada-input max-w-40"
-            value={bwValue}
-            onChange={(e) => setBwValue(e.target.value)}
-            placeholder="kg"
-          />
-          <Button type="submit" loading={logBw.isPending}>
-            Save
-          </Button>
-          {bwError ? <ErrorState message={bwError} /> : null}
-        </form>
-      </Card>
-
-      {/* ── Active program & nutrition ── */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <SectionTitle hint={activeProgram ? <Badge tone="success">Active</Badge> : undefined}>
-            Training program
-          </SectionTitle>
-          {activeProgram?.program ? (
+      {/* ── Hero: bodyweight + quick log ── */}
+      <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr] lg:gap-6">
+        <Card glow className="sm:p-8">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-lg font-bold">{activeProgram.program.name}</div>
-              <p className="mt-1 text-sm text-ada-muted">
-                {activeProgram.program.goal ?? "—"} ·{" "}
-                {activeProgram.program.duration_weeks ?? "—"} weeks ·{" "}
-                {activeProgram.program.days_per_week ?? "—"} days/wk
-              </p>
+              <div className="ada-eyebrow mb-4">Bodyweight</div>
+              {latestBw ? (
+                <StatNumber value={Number(latestBw.weight_kg)} decimals={1} unit="kg" size="xl" />
+              ) : (
+                <span className="font-mono-num text-[3.75rem] leading-none text-ada-faint">—</span>
+              )}
+            </div>
+            {bwTrend != null ? (
+              <div className="text-right">
+                <div className="mb-1.5 text-xs text-ada-muted">Last {bodyweight.data?.length ?? 0} weigh-ins</div>
+                <Delta value={bwTrend} unit=" kg" goodWhen={trendGood} />
+              </div>
+            ) : null}
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const kg = Number(bwValue);
+              if (bwValue && !Number.isNaN(kg)) logBw.mutate(kg);
+            }}
+            className="mt-8 flex flex-wrap items-center gap-3"
+          >
+            <div className="relative">
+              <input
+                type="number"
+                step="0.1"
+                inputMode="decimal"
+                className="ada-input max-w-44 pr-10 font-mono-num"
+                value={bwValue}
+                onChange={(e) => setBwValue(e.target.value)}
+                placeholder="Today's weight"
+                aria-label="Log bodyweight in kg"
+              />
+              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-ada-muted">kg</span>
+            </div>
+            <Button type="submit" loading={logBw.isPending} className="py-3">
+              <Icon name="plus" size={15} /> Log weigh-in
+            </Button>
+            {bwError ? <ErrorState message={bwError} /> : null}
+          </form>
+        </Card>
+
+        <Card className="flex flex-col sm:p-8">
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <IconBadge name="dumbbell" />
+              <span className="ada-eyebrow">Training program</span>
+            </div>
+            {activeProgram ? <Badge tone="success">Active</Badge> : null}
+          </div>
+          {activeProgram?.program ? (
+            <div className="flex flex-1 flex-col">
+              <div className="text-[1.6rem] font-semibold leading-tight tracking-tight">{activeProgram.program.name}</div>
+              <p className="mt-2 text-sm capitalize text-ada-text-2">{activeProgram.program.goal ?? "—"}</p>
+              <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
+                <div className="ada-inset rounded-2xl px-4 py-3">
+                  <div className="font-mono-num text-2xl text-ada-text">{activeProgram.program.duration_weeks ?? "—"}</div>
+                  <div className="text-xs text-ada-muted">weeks</div>
+                </div>
+                <div className="ada-inset rounded-2xl px-4 py-3">
+                  <div className="font-mono-num text-2xl text-ada-text">{activeProgram.program.days_per_week ?? "—"}</div>
+                  <div className="text-xs text-ada-muted">days / week</div>
+                </div>
+              </div>
             </div>
           ) : (
             <EmptyState
               title="No active program"
               description="Your coach will assign a program. Ask the AI Coach for guidance in the meantime."
-              icon="▤"
+              icon={<Icon name="layers" size={20} />}
               action={
                 <Link to="/app/chat">
                   <Button variant="ghost">Ask AI Coach</Button>
@@ -196,15 +231,34 @@ export function AthleteDashboard() {
             />
           )}
         </Card>
+      </div>
 
+      {/* ── Profile stats ── */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <Stat
+          label="Trend"
+          value={bwTrend == null ? "—" : `${bwTrend >= 0 ? "+" : ""}${bwTrend.toFixed(1)}`}
+          unit="kg"
+        />
+        <Stat label="Height" value={profile.height_cm ? Number(profile.height_cm).toFixed(0) : "—"} unit="cm" />
+        <Stat label="Goal" value={GOAL_LABEL[profile.goal ?? ""] ?? "—"} accent />
+        <Stat label="Frequency" value={profile.training_frequency ?? "—"} unit="days/wk" />
+      </div>
+
+      {/* ── Nutrition & recent lifts ── */}
+      <div className="grid items-start gap-4 lg:grid-cols-[1fr_1.4fr] lg:gap-6">
         <Card>
-          <SectionTitle hint={activeNutrition ? <Badge tone="success">Active</Badge> : undefined}>
-            Nutrition plan
-          </SectionTitle>
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <IconBadge name="nutrition" tone="amber" />
+              <span className="ada-eyebrow">Nutrition plan</span>
+            </div>
+            {activeNutrition ? <Badge tone="success">Active</Badge> : null}
+          </div>
           {activeNutrition?.nutrition_plan ? (
             <div>
-              <div className="text-lg font-bold">{activeNutrition.nutrition_plan.name}</div>
-              <p className="mt-1 text-sm text-ada-muted">
+              <div className="text-[1.4rem] font-semibold leading-tight tracking-tight">{activeNutrition.nutrition_plan.name}</div>
+              <p className="mt-2 text-sm text-ada-text-2">
                 {GOAL_LABEL[activeNutrition.nutrition_plan.goal ?? ""] ?? "—"}
               </p>
             </div>
@@ -212,36 +266,46 @@ export function AthleteDashboard() {
             <EmptyState
               title="No active nutrition plan"
               description="Track your progress and check in weekly so your coach can dial in macros."
-              icon="🥩"
+              icon={<Icon name="nutrition" size={20} />}
             />
           )}
         </Card>
-      </div>
 
-      {/* ── Recent workouts ── */}
-      <Card>
-        <SectionTitle hint={<Link to="/app/progress" className="text-ada-teal hover:underline">View progress →</Link>}>
-          Recent lifts
-        </SectionTitle>
-        {workouts.isLoading ? (
-          <LoadingState label="Loading lifts…" />
-        ) : workouts.data?.length ? (
-          <ul className="divide-y divide-white/5">
-            {workouts.data.map((w) => (
-              <li key={w.id} className="flex items-center justify-between py-2.5 text-sm">
-                <span className="font-semibold text-ada-text">{w.exercise_name}</span>
-                <span className="font-mono-num text-ada-muted">
-                  {w.weight_kg != null ? `${w.weight_kg}kg × ` : ""}
-                  {w.reps ?? "—"} reps
-                  {w.is_pr ? <span className="ml-2 text-ada-amber">PR</span> : null}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <EmptyState title="No lifts logged yet" icon="🏋️" />
-        )}
-      </Card>
+        <Card>
+          <SectionTitle
+            hint={
+              <Link to="/app/progress" className="inline-flex items-center gap-1 text-ada-teal transition-opacity hover:opacity-80">
+                View progress <Icon name="arrow" size={14} />
+              </Link>
+            }
+          >
+            Recent lifts
+          </SectionTitle>
+          {workouts.isLoading ? (
+            <LoadingState label="Loading lifts…" />
+          ) : workouts.data?.length ? (
+            <ul className="space-y-2">
+              {workouts.data.map((w) => (
+                <li key={w.id} className="ada-inset flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-sm">
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/[0.04] text-ada-muted">
+                      <Icon name="dumbbell" size={15} />
+                    </span>
+                    <span className="truncate font-medium text-ada-text">{w.exercise_name}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2 font-mono-num text-ada-text-2">
+                    {w.weight_kg != null ? `${w.weight_kg} kg × ` : ""}
+                    {w.reps ?? "—"} reps
+                    {w.is_pr ? <Badge tone="amber">PR</Badge> : null}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState title="No lifts logged yet" icon={<Icon name="dumbbell" size={20} />} />
+          )}
+        </Card>
+      </div>
 
       {assignments.error ? <ErrorState message="Could not load assignments." /> : null}
     </div>

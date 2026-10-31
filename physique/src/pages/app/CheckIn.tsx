@@ -11,9 +11,12 @@ import {
   Card,
   EmptyState,
   ErrorState,
+  IconBadge,
   LoadingState,
+  PageHeader,
   SectionTitle,
 } from "../../components/ui";
+import { Icon } from "../../components/Icon";
 import type {
   CheckIn,
   CheckInStatus,
@@ -51,11 +54,11 @@ function CheckInPhoto({ path }: { path: string }) {
     staleTime: 5 * 60 * 1000,
   });
   if (isLoading) {
-    return <div className="h-28 w-24 animate-pulse rounded-lg bg-ada-surface" />;
+    return <div className="ada-inset h-28 w-24 animate-pulse rounded-2xl" />;
   }
   if (error || !data) {
     return (
-      <div className="flex h-28 w-24 items-center justify-center rounded-lg bg-ada-surface text-xs text-ada-muted">
+      <div className="ada-inset flex h-28 w-24 items-center justify-center rounded-2xl text-xs text-ada-muted">
         —
       </div>
     );
@@ -65,7 +68,7 @@ function CheckInPhoto({ path }: { path: string }) {
       <img
         src={data}
         alt={photoLabelFromPath(path)}
-        className="h-28 w-24 rounded-lg border border-white/10 object-cover"
+        className="h-28 w-24 rounded-2xl object-cover ring-1 ring-white/10"
       />
       <figcaption className="text-xs text-ada-muted">
         {photoLabelFromPath(path)}
@@ -154,12 +157,20 @@ export function CheckIn() {
   const canSubmit = !!userId && !!weight;
 
   return (
-    <div className="space-y-6">
-      <SectionTitle hint="Weekly">Check-in</SectionTitle>
+    <div className="ada-stagger space-y-8 sm:space-y-10">
+      <PageHeader
+        eyebrow="Weekly"
+        title="Check-in"
+        subtitle="Weight, photos and how the week went — your coach reviews every submission."
+      />
 
-      <Card>
+      <Card className="sm:p-8">
+        <div className="mb-6 flex items-center gap-3">
+          <IconBadge name="checkin" size={40} />
+          <h2 className="text-lg font-semibold tracking-tight">This week</h2>
+        </div>
         <form
-          className="space-y-4"
+          className="space-y-6"
           onSubmit={(e) => {
             e.preventDefault();
             if (canSubmit) submit.mutate();
@@ -172,7 +183,7 @@ export function CheckIn() {
               step="0.1"
               min="0"
               inputMode="decimal"
-              className="ada-input"
+              className="ada-input max-w-56 font-mono-num"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
               placeholder="88.5"
@@ -186,14 +197,17 @@ export function CheckIn() {
               {PHOTOS.map(({ key, label }) => (
                 <label
                   key={key}
-                  className="flex cursor-pointer flex-col gap-2 rounded-lg border border-white/10 bg-ada-surface p-3 text-sm"
+                  className="group flex cursor-pointer flex-col gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-4 text-sm transition-colors duration-300 hover:border-ada-teal/40 hover:bg-ada-teal/[0.03]"
                 >
-                  <span className="font-semibold text-ada-text">{label}</span>
+                  <span className="flex items-center gap-2 font-medium text-ada-text">
+                    <Icon name="camera" size={16} className="text-ada-muted transition-colors group-hover:text-ada-teal" />
+                    {label}
+                  </span>
                   <input
                     type="file"
                     accept="image/*"
                     capture="environment"
-                    className="text-xs text-ada-muted file:mr-2 file:rounded file:border-0 file:bg-ada-teal/15 file:px-2 file:py-1 file:text-ada-teal"
+                    className="text-xs text-ada-muted file:mr-2 file:rounded-full file:border-0 file:bg-ada-teal/15 file:px-3 file:py-1 file:text-ada-teal"
                     onChange={(e) => {
                       const f = e.target.files?.[0] ?? null;
                       filesRef.current[key] = f;
@@ -222,11 +236,13 @@ export function CheckIn() {
           </label>
 
           <div className="flex items-center gap-3">
-            <Button type="submit" loading={submit.isPending} disabled={!canSubmit}>
-              Submit check-in
+            <Button type="submit" loading={submit.isPending} disabled={!canSubmit} className="py-3">
+              <Icon name="send" size={15} /> Submit check-in
             </Button>
             {submit.isSuccess ? (
-              <span className="text-sm text-ada-success">Submitted ✓</span>
+              <span className="inline-flex items-center gap-1.5 text-sm text-ada-success">
+                <Icon name="check" size={15} /> Submitted
+              </span>
             ) : null}
           </div>
           {submit.error ? <ErrorState message={submit.error.message} /> : null}
@@ -244,10 +260,10 @@ export function CheckIn() {
             {checkins.data.map((ci) => (
               <li
                 key={ci.id}
-                className="rounded-lg border border-white/5 bg-ada-surface p-4"
+                className="ada-inset rounded-2xl p-4 sm:p-5"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-semibold text-ada-text">
+                  <span className="font-mono-num font-medium text-ada-text">
                     {ci.check_in_date}
                   </span>
                   <Badge tone={STATUS_TONE[ci.status]}>{ci.status}</Badge>
@@ -271,8 +287,8 @@ export function CheckIn() {
                   </div>
                 ) : null}
                 {ci.coach_notes ? (
-                  <div className="mt-3 rounded-lg border border-ada-teal/15 bg-ada-teal/5 p-3">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-ada-teal">
+                  <div className="mt-4 rounded-2xl border border-ada-teal/20 bg-ada-teal/[0.06] p-4">
+                    <span className="ada-eyebrow !text-ada-teal">
                       Coach feedback
                     </span>
                     <p className="mt-1 text-sm text-ada-text/90">{ci.coach_notes}</p>
@@ -285,7 +301,7 @@ export function CheckIn() {
           <EmptyState
             title="No check-ins yet"
             description="Submit your first weekly check-in above."
-            icon="◴"
+            icon={<Icon name="checkin" size={20} />}
           />
         )}
       </Card>

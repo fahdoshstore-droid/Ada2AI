@@ -12,8 +12,9 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
-  SectionTitle,
+  PageHeader,
 } from "../../components/ui";
+import { Icon } from "../../components/Icon";
 import type { CheckIn, CheckInStatus, SignedUrlResponse } from "../../lib/types";
 import { photoLabelFromPath } from "../../lib/types";
 
@@ -42,11 +43,11 @@ function CheckInPhoto({ path }: { path: string }) {
     staleTime: 5 * 60 * 1000,
   });
   if (isLoading) {
-    return <div className="h-28 w-24 animate-pulse rounded-lg bg-ada-surface" />;
+    return <div className="ada-inset h-28 w-24 animate-pulse rounded-2xl" />;
   }
   if (!data) {
     return (
-      <div className="flex h-28 w-24 items-center justify-center rounded-lg bg-ada-surface text-xs text-ada-muted">
+      <div className="ada-inset flex h-28 w-24 items-center justify-center rounded-2xl text-xs text-ada-muted">
         —
       </div>
     );
@@ -56,7 +57,7 @@ function CheckInPhoto({ path }: { path: string }) {
       <img
         src={data}
         alt={photoLabelFromPath(path)}
-        className="h-28 w-24 rounded-lg border border-white/10 object-cover"
+        className="h-28 w-24 rounded-2xl object-cover ring-1 ring-white/10"
       />
       <figcaption className="text-xs text-ada-muted">
         {photoLabelFromPath(path)}
@@ -121,8 +122,12 @@ export function CoachCheckIns() {
   }, [deepAthlete, checkins.data, selectedId, setSearchParams]);
 
   return (
-    <div className="space-y-6">
-      <SectionTitle hint="Weekly">Athlete check-ins</SectionTitle>
+    <div className="ada-stagger space-y-8 sm:space-y-10">
+      <PageHeader
+        eyebrow="Weekly review"
+        title="Athlete check-ins"
+        subtitle="Review weight, photos and notes, then send feedback to close the loop."
+      />
 
       {checkins.isLoading ? (
         <LoadingState label="Loading check-ins…" />
@@ -133,23 +138,23 @@ export function CoachCheckIns() {
           <EmptyState
             title="No check-ins"
             description="Athletes you coach will appear here once they submit a weekly check-in."
-            icon="🗹"
+            icon={<Icon name="checkin" size={20} />}
           />
         </Card>
       ) : selected ? (
-        <Card>
-          <div className="mb-4 flex items-center justify-between gap-3">
+        <Card className="sm:p-8">
+          <div className="mb-6 flex items-center justify-between gap-3">
             <div>
               <button
-                className="text-xs text-ada-teal hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-medium text-ada-teal transition-opacity hover:opacity-80"
                 onClick={() => {
                   setSelectedId(null);
                   setFeedback("");
                 }}
               >
-                ← Back to list
+                <Icon name="chevron" size={14} className="rotate-180" /> Back to list
               </button>
-              <h3 className="mt-1 text-lg font-bold text-ada-text">
+              <h3 className="mt-2 text-[1.5rem] font-semibold tracking-tight text-ada-text">
                 {selected.athlete?.display_name ?? "Athlete"} ·{" "}
                 {selected.check_in_date}
               </h3>
@@ -158,15 +163,14 @@ export function CoachCheckIns() {
           </div>
 
           {selected.bodyweight_kg != null ? (
-            <p className="text-sm text-ada-muted">
-              Bodyweight:{" "}
-              <span className="font-mono-num text-ada-text">
-                {selected.bodyweight_kg} kg
-              </span>
-            </p>
+            <div className="ada-inset inline-flex items-baseline gap-2 rounded-2xl px-4 py-3">
+              <span className="text-xs text-ada-muted">Bodyweight</span>
+              <span className="font-mono-num text-2xl text-ada-text">{selected.bodyweight_kg}</span>
+              <span className="text-xs text-ada-muted">kg</span>
+            </div>
           ) : null}
           {selected.athlete_notes ? (
-            <p className="mt-2 text-sm text-ada-text/80">
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ada-text-2">
               {selected.athlete_notes}
             </p>
           ) : null}
@@ -180,8 +184,8 @@ export function CoachCheckIns() {
           ) : null}
 
           {selected.coach_notes ? (
-            <div className="mt-4 rounded-lg border border-ada-teal/15 bg-ada-teal/5 p-3">
-              <span className="text-xs font-semibold uppercase tracking-wide text-ada-teal">
+            <div className="mt-5 rounded-2xl border border-ada-teal/20 bg-ada-teal/[0.06] p-4">
+              <span className="ada-eyebrow !text-ada-teal">
                 Your previous feedback
               </span>
               <p className="mt-1 text-sm text-ada-text/90">{selected.coach_notes}</p>
@@ -189,7 +193,7 @@ export function CoachCheckIns() {
           ) : null}
 
           <form
-            className="mt-4 space-y-3"
+            className="mt-6 space-y-3"
             onSubmit={(e) => {
               e.preventDefault();
               if (selectedId) review.mutate(selectedId);
@@ -206,11 +210,13 @@ export function CoachCheckIns() {
               />
             </label>
             <div className="flex items-center gap-3">
-              <Button type="submit" loading={review.isPending}>
-                Mark reviewed
+              <Button type="submit" loading={review.isPending} className="py-3">
+                <Icon name="check" size={15} /> Mark reviewed
               </Button>
               {review.isSuccess ? (
-                <span className="text-sm text-ada-success">Reviewed ✓</span>
+                <span className="inline-flex items-center gap-1.5 text-sm text-ada-success">
+                  <Icon name="check" size={15} /> Reviewed
+                </span>
               ) : null}
             </div>
             {review.error ? <ErrorState message={review.error.message} /> : null}
@@ -218,30 +224,38 @@ export function CoachCheckIns() {
         </Card>
       ) : (
         <Card>
-          <ul className="divide-y divide-white/5">
+          <ul className="space-y-2">
             {checkins.data.map((ci) => (
               <li key={ci.id}>
                 <button
-                  className="flex w-full items-center justify-between gap-3 py-3 text-left"
+                  className="ada-inset group flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3.5 text-left transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.05]"
                   onClick={() => {
                     setSelectedId(ci.id);
                     setFeedback(ci.coach_notes ?? "");
                   }}
                 >
-                  <span className="min-w-0">
-                    <span className="font-semibold text-ada-text">
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-ada-teal-soft to-ada-ocean font-mono-num text-xs font-semibold text-ada-navy">
+                      {(ci.athlete?.display_name ?? "A").slice(0, 2).toUpperCase()}
+                    </span>
+                    <span className="min-w-0">
+                    <span className="block truncate font-semibold text-ada-text">
                       {ci.athlete?.display_name ?? "Athlete"}
                     </span>
-                    <span className="ml-2 text-sm text-ada-muted">
+                    <span className="font-mono-num text-xs text-ada-muted">
                       {ci.check_in_date}
                     </span>
                     {ci.bodyweight_kg != null ? (
-                      <span className="ml-2 text-sm text-ada-muted">
+                      <span className="ml-2 font-mono-num text-xs text-ada-muted">
                         · {ci.bodyweight_kg} kg
                       </span>
                     ) : null}
+                    </span>
                   </span>
-                  <Badge tone={STATUS_TONE[ci.status]}>{ci.status}</Badge>
+                  <span className="flex shrink-0 items-center gap-3">
+                    <Badge tone={STATUS_TONE[ci.status]}>{ci.status}</Badge>
+                    <Icon name="chevron" size={16} className="text-ada-muted transition-transform group-hover:translate-x-0.5" />
+                  </span>
                 </button>
               </li>
             ))}

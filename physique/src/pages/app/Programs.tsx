@@ -11,9 +11,12 @@ import {
   Card,
   EmptyState,
   ErrorState,
+  IconBadge,
   LoadingState,
+  PageHeader,
   SectionTitle,
 } from "../../components/ui";
+import { Icon } from "../../components/Icon";
 import type {
   ExperienceLevel,
   GeneratedDay,
@@ -170,17 +173,21 @@ export function Programs() {
   const canGenerate = athleteId && !generate.isPending;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Programs</h1>
-        <p className="mt-1 text-sm text-ada-muted">
-          Generate a personalized program with the AI Program Generator, then save it to a
-          rostered athlete.
-        </p>
-      </div>
+    <div className="ada-stagger space-y-8 sm:space-y-10">
+      <PageHeader
+        eyebrow="Programs"
+        title="Program studio"
+        subtitle="Generate a personalized program with the AI Program Generator, then save it to a rostered athlete."
+      />
 
-      <Card>
-        <SectionTitle>AI Program Generator</SectionTitle>
+      <Card className="sm:p-8">
+        <div className="mb-6 flex items-center gap-3">
+          <IconBadge name="sparkle" tone="ai" size={40} />
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">AI Program Generator</h2>
+            <p className="text-sm text-ada-muted">Tuned to goal, experience, equipment and weak points.</p>
+          </div>
+        </div>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -242,8 +249,8 @@ export function Programs() {
           </label>
 
           <div className="sm:col-span-2">
-            <Button type="submit" loading={generate.isPending} disabled={!canGenerate}>
-              Generate program
+            <Button type="submit" loading={generate.isPending} disabled={!canGenerate} className="py-3">
+              <Icon name="sparkle" size={16} /> Generate program
             </Button>
             {!roster.data?.length ? (
               <p className="mt-2 text-xs text-ada-muted">
@@ -268,17 +275,18 @@ export function Programs() {
 
       {/* ── Generated result ── */}
       {res ? (
-        <Card glow>
+        <Card glow className="sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h3 className="text-xl font-bold text-ada-teal">{res.name}</h3>
-              <p className="mt-1 text-sm text-ada-muted">
+              <div className="ada-eyebrow mb-2">Generated program</div>
+              <h3 className="text-[1.6rem] font-semibold leading-tight tracking-tight text-ada-text">{res.name}</h3>
+              <p className="mt-2 text-sm capitalize text-ada-text-2">
                 {res.goal} · {res.duration_weeks} weeks · {res.days.length} training days ·{" "}
                 <span className="text-ada-muted/70">{res.model}</span>
               </p>
             </div>
             <Button
-              variant="subtle"
+              variant={saveProgram.isSuccess ? "ghost" : "primary"}
               loading={saveProgram.isPending}
               onClick={() => saveProgram.mutate(res)}
             >
@@ -288,21 +296,25 @@ export function Programs() {
 
           {saveProgram.error ? <div className="mt-3"><ErrorState message={saveProgram.error.message} /></div> : null}
 
-          <p className="mt-3 text-sm text-ada-text/80">{res.rationale}</p>
+          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-ada-text-2">{res.rationale}</p>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-6 grid gap-3 lg:grid-cols-2">
             {res.days.map((day) => (
-              <div key={day.day_number} className="rounded-lg border border-white/5 bg-ada-surface p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <Badge tone="teal">Day {day.day_number}</Badge>
-                  <span className="font-semibold">{day.name}</span>
-                  <span className="text-xs text-ada-muted">· {day.focus}</span>
+              <div key={day.day_number} className="ada-inset rounded-2xl p-4">
+                <div className="mb-3 flex items-center gap-3">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-ada-teal font-mono-num text-xs font-semibold text-ada-navy">
+                    D{day.day_number}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold">{day.name}</div>
+                    <div className="truncate text-xs text-ada-muted">{day.focus}</div>
+                  </div>
                 </div>
-                <ul className="divide-y divide-white/5 text-sm">
+                <ul className="divide-y divide-white/[0.05] text-sm">
                   {day.blocks.map((b, i) => (
-                    <li key={i} className="flex flex-wrap items-center justify-between gap-2 py-1.5">
-                      <span className="font-semibold text-ada-text">{b.exercise_name}</span>
-                      <span className="font-mono-num text-ada-muted">
+                    <li key={i} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                      <span className="font-medium text-ada-text">{b.exercise_name}</span>
+                      <span className="font-mono-num text-xs text-ada-text-2">
                         {b.sets} × {b.reps}
                         {b.rpe ? ` @ RPE ${b.rpe}` : ""}
                         {b.rest_seconds ? ` · ${b.rest_seconds}s rest` : ""}
@@ -322,12 +334,19 @@ export function Programs() {
         {programs.isLoading ? (
           <LoadingState label="Loading programs…" />
         ) : programs.data?.length ? (
-          <ul className="divide-y divide-white/5">
+          <ul className="space-y-2">
             {programs.data.map((p) => (
-              <li key={p.id} className="flex items-center justify-between py-2.5 text-sm">
-                <span className="font-semibold text-ada-text">{p.name}</span>
-                <span className="text-ada-muted">
-                  {p.goal ?? "—"} · {p.duration_weeks ?? "—"}w · <Badge>{p.status}</Badge>
+              <li key={p.id} className="ada-inset flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-sm">
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/[0.04] text-ada-muted">
+                    <Icon name="layers" size={15} />
+                  </span>
+                  <span className="truncate font-medium text-ada-text">{p.name}</span>
+                </span>
+                <span className="flex shrink-0 items-center gap-2 text-ada-muted">
+                  <span className="capitalize">{p.goal ?? "—"}</span>
+                  <span className="font-mono-num">· {p.duration_weeks ?? "—"}w</span>
+                  <Badge tone={p.status === "active" ? "success" : "neutral"}>{p.status}</Badge>
                 </span>
               </li>
             ))}
@@ -336,7 +355,7 @@ export function Programs() {
           <EmptyState
             title="No saved programs yet"
             description="Generate a program above and save it to build your library."
-            icon="▤"
+            icon={<Icon name="layers" size={20} />}
           />
         )}
       </Card>
