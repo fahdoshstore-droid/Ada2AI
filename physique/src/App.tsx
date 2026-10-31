@@ -11,8 +11,14 @@ import { AdminDashboard } from "./pages/app/AdminDashboard";
 import { CoachChat } from "./pages/app/CoachChat";
 import { Progress } from "./pages/app/Progress";
 import { Programs } from "./pages/app/Programs";
+import { ProgramDetail } from "./pages/app/ProgramDetail";
+import { TodayWorkout } from "./pages/app/TodayWorkout";
+import { CoachWorkouts } from "./pages/app/CoachWorkouts";
+import { CoachNutrition } from "./pages/app/CoachNutrition";
+import { ProgramBuilder } from "./pages/app/ProgramBuilder";
 import { CheckIn } from "./pages/app/CheckIn";
 import { CoachCheckIns } from "./pages/app/CoachCheckIns";
+import { InjuryPrevention } from "./pages/InjuryPrevention";
 
 /** `/app` index — redirects to the role's dashboard (or /auth if none). */
 function AppIndex() {
@@ -26,6 +32,7 @@ export default function App() {
     <>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/injury-prevention" element={<InjuryPrevention />} />
         <Route path="/auth" element={<Auth />} />
         <Route
           path="/onboard"
@@ -90,6 +97,54 @@ export default function App() {
             element={
               <ProtectedRoute allowedRoles={["coach"]}>
                 <Programs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="program/:programId"
+            element={
+              <ProtectedRoute allowedRoles={["athlete", "coach"]}>
+                <ProgramDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="workout"
+            element={
+              <ProtectedRoute allowedRoles={["athlete"]}>
+                <TodayWorkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="workouts"
+            element={
+              <ProtectedRoute allowedRoles={["coach"]}>
+                <CoachWorkouts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="nutrition"
+            element={
+              <ProtectedRoute allowedRoles={["coach"]}>
+                <CoachNutrition />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="program-builder/:programId"
+            element={
+              <ProtectedRoute allowedRoles={["coach"]}>
+                <ProgramBuilder />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="program-builder/:programId"
+            element={
+              <ProtectedRoute allowedRoles={["coach"]}>
+                <ProgramBuilder />
               </ProtectedRoute>
             }
           />
