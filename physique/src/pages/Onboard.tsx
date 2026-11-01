@@ -77,6 +77,12 @@ export function Onboard() {
   const [cYears, setCYears] = useState("");
   const [cBackground, setCBackground] = useState("");
 
+  // ── Coach offer (first package) state ──
+  const [oName, setOName] = useState("");
+  const [oDescription, setODescription] = useState("");
+  const [oPrice, setOPrice] = useState("");
+  const [oInterval, setOInterval] = useState<"month" | "quarter" | "year">("month");
+
   // ── Onboarded check ──
   const profileCheck = useQuery({
     queryKey: ["onboard-check", userId, role],
@@ -153,6 +159,20 @@ export function Onboard() {
       // Duplicate key = already onboarded, treat as success
       const code = (insertError as { code?: string }).code;
       if (code !== "23505") throw insertError;
+    }
+    // Create the coach's first package (if provided).
+    if (oName.trim()) {
+      const price = Number(oPrice);
+      const { error: offerError } = await supabase.from("physique_coach_offers").insert({
+        coach_id: userId,
+        name: oName.trim(),
+        description: oDescription.trim() || null,
+        price_amount: Number.isFinite(price) && price > 0 ? price : 0,
+        currency: "SAR",
+        billing_interval: oInterval,
+        is_active: true,
+      });
+      if (offerError) throw offerError;
     }
     // Invalidate so profileCheck picks up the new row
     queryClient.invalidateQueries({ queryKey: ["onboard-check", userId, "coach"] });
@@ -259,6 +279,31 @@ export function Onboard() {
               <Field label="Competition background">
                 <textarea className="ada-input min-h-20" value={cBackground} onChange={(e) => setCBackground(e.target.value)} placeholder="Your competitive history" />
               </Field>
+
+              {/* ── First package (optional, can be added later) ── */}
+              <div className="my-2 rounded-[var(--radius-control)] border border-white/[0.06] bg-white/[0.02] p-4">
+                <div className="mb-3 text-sm font-semibold text-ada-text">Your first package</div>
+                <div className="flex flex-col gap-4">
+                  <Field label="Package name">
+                    <input className="ada-input" value={oName} onChange={(e) => setOName(e.target.value)} placeholder="e.g. 12-week transformation" />
+                  </Field>
+                  <Field label="Description">
+                    <textarea className="ada-input min-h-20" value={oDescription} onChange={(e) => setODescription(e.target.value)} placeholder="What's included — training, nutrition, check-ins" />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="Price (SAR)">
+                      <input type="number" min={0} className="ada-input" value={oPrice} onChange={(e) => setOPrice(e.target.value)} placeholder="e.g. 1200" />
+                    </Field>
+                    <Field label="Billing interval">
+                      <select className="ada-input" value={oInterval} onChange={(e) => setOInterval(e.target.value as "month" | "quarter" | "year")}>
+                        <option value="month">Monthly</option>
+                        <option value="quarter">Quarterly</option>
+                        <option value="year">Yearly</option>
+                      </select>
+                    </Field>
+                  </div>
+                </div>
+              </div>
             </>
           )}
 

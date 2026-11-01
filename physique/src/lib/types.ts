@@ -95,6 +95,97 @@ export interface CoachAthlete {
   updated_at: string;
 }
 
+export type BillingInterval = "month" | "quarter" | "year";
+
+export interface CoachOffer {
+  id: string;
+  coach_id: string;
+  name: string;
+  description: string | null;
+  price_amount: number;
+  currency: string;
+  billing_interval: BillingInterval;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type SubscriptionStatus =
+  | "pending"
+  | "active"
+  | "paused"
+  | "cancelled"
+  | "expired";
+
+export interface Subscription {
+  id: string;
+  athlete_id: string;
+  coach_id: string;
+  offer_id: string | null;
+  status: SubscriptionStatus;
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type CoachRequestStatus = "pending" | "accepted" | "rejected" | "cancelled";
+
+/** A coaching request an athlete sends to a coach. RLS: athlete inserts own,
+ *  coach/athlete read own, athlete cancels own, coach decides. */
+export interface CoachRequest {
+  id: string;
+  athlete_id: string;
+  coach_id: string;
+  offer_id: string | null;
+  message: string | null;
+  status: CoachRequestStatus;
+  rejection_reason: string | null;
+  responded_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A request joined with its athlete's public profile (for the coach UI). */
+export interface CoachRequestWithAthlete extends CoachRequest {
+  athlete: { name: string | null; avatar_url: string | null; sport_id: string | null } | null;
+}
+
+export interface AppNotification {
+  id: string;
+  recipient_id: string;
+  actor_id: string | null;
+  type: string;
+  title: string;
+  body: string | null;
+  entity_type: string | null;
+  entity_id: string | null;
+  read_at: string | null;
+  created_at: string;
+}
+
+/** Athlete dashboard coaching state machine (spec §22). */
+export type CoachingState =
+  | "NO_COACH"
+  | "PENDING_REQUEST"
+  | "ACCEPTED"
+  | "REJECTED";
+
+/** Public coach card data for the marketplace (RLS-safe, no emails/uuids). */
+export interface CoachCard {
+  coach_id: string;
+  display_name: string | null;
+  bio: string | null;
+  specialties: string[];
+  years_experience: number | null;
+  competition_background: string | null;
+  avatar_url: string | null;
+  is_verified: boolean;
+  is_accepting_athletes: boolean;
+  offers: CoachOffer[];
+}
+
 export interface Exercise {
   id: string;
   name: string;

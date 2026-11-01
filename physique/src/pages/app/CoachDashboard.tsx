@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useCoachProfile } from "../../hooks/useProfile";
+import {
+  useCoachPendingRequests,
+  useAcceptRequest,
+  useRejectRequest,
+} from "../../hooks/useRequests";
 import {
   Button,
   Card,
@@ -89,6 +94,12 @@ export function CoachDashboard() {
   const { userId } = useAuth();
   const { data: profile, isLoading } = useCoachProfile();
 
+  const pendingRequests = useCoachPendingRequests();
+  const acceptRequest = useAcceptRequest();
+  const rejectRequest = useRejectRequest();
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+
   const roster = useQuery<RosterRow[]>({
     queryKey: ["coach-roster", userId],
     enabled: !!userId,
@@ -148,94 +159,6 @@ export function CoachDashboard() {
     : [...latestByAthlete.values()].filter((c) => c.status === "submitted")
         .length;
 
-  // ── Add athlete to roster (Freeze Exception 001) ──
-  const queryClient = useQueryClient();
-  const [assignEmail, setAssignEmail] = useState("");
-  const [assigning, setAssigning] = useState(false);
-  const [assignMsg, setAssignMsg] = useState<
-    { tone: "ok" | "err" | "info"; text: string } | null
-  >(null);
-
-  async function assignAthlete(e: React.FormEvent) {
-    e.preventDefault();
-    const email = assignEmail.trim().toLowerCase();
-    setAssignMsg(null);
-    if (!email) {
-      setAssignMsg({ tone: "err", text: "Enter an athlete email." });
-      return;
-    }
-    if (!userId) {
-      setAssignMsg({ tone: "err", text: "Not signed in." });
-      return;
-    }
-    setAssigning(true);
-    try {
-      // 1. Query profiles by email.
-      const { data: prof, error: profErr } = await supabase
-        .from("profiles")
-        .select("id, user_type")
-        .eq("email", email)
-        .maybeSingle();
-      if (profErr) throw profErr;
-      // 2. Verify the profile exists.
-      if (!prof) {
-        setAssignMsg({ tone: "err", text: "Athlete not found for that email." });
-        return;
-      }
-      // 3. Verify the role is athlete.
-      if (prof.user_type !== "athlete") {
-        setAssignMsg({
-          tone: "err",
-          text: `That user is not an athlete (role: ${prof.user_type ?? "none"}).`,
-        });
-        return;
-      }
-      // 4. Check already assigned (RLS: coach can read own roster rows).
-      const { data: existing, error: existErr } = await supabase
-        .from("physique_coach_athletes")
-        .select("id")
-        .eq("coach_id", userId)
-        .eq("athlete_id", prof.id)
-        .maybeSingle();
-      if (existErr) throw existErr;
-      if (existing) {
-        setAssignMsg({ tone: "info", text: "That athlete is already on your roster." });
-        return;
-      }
-      // 5. Insert the assignment (RLS: physique_coach_athletes_insert_coach).
-      const { error: insErr } = await supabase
-        .from("physique_coach_athletes")
-        .insert({ coach_id: userId, athlete_id: prof.id, status: "active" });
-      if (insErr) {
-        // 23505 unique_violation → already assigned (race).
-        if (insErr.code === "23505") {
-          setAssignMsg({ tone: "info", text: "That athlete is already on your roster." });
-          return;
-        }
-        // 23503 foreign_key_violation → athlete has no physique_athletes row yet.
-        if (insErr.code === "23503") {
-          setAssignMsg({
-            tone: "err",
-            text: "That athlete hasn't completed their profile yet.",
-          });
-          return;
-        }
-        throw insErr;
-      }
-      setAssignMsg({ tone: "ok", text: "Athlete added to your roster." });
-      setAssignEmail("");
-      queryClient.invalidateQueries({ queryKey: ["coach-roster", userId] });
-      queryClient.invalidateQueries({ queryKey: ["coach-dashboard-checkins", userId] });
-    } catch (err: unknown) {
-      setAssignMsg({
-        tone: "err",
-        text: err instanceof Error ? err.message : "Could not assign athlete.",
-      });
-    } finally {
-      setAssigning(false);
-    }
-  }
-
   if (isLoading) return <LoadingState />;
   if (!profile) return <Navigate to="/onboard" replace />;
 
@@ -287,6 +210,116 @@ export function CoachDashboard() {
           }
         />
       </HeroBanner>
+
+      {/* ── Coaching requests ── */}
+      <section className="ada-glass rounded-[var(--radius-panel)] p-6 sm:p-7">
+        <SectionTitle
+          hint={
+            pendingRequests.data?.length
+              ? String(pendingRequests.data.length)
+              : undefined
+          }
+        >
+          طلبات التدريب
+        </SectionTitle>
+        {pendingRequests.isLoading ? (
+          <LoadingState label="جارٍ تحميل الطلبات…" />
+        ) : pendingRequests.data?.length ? (
+          <ul className="mt-4 space-y-3">
+            {pendingRequests.data.map((req) => (
+              <li key={req.id} className="ada-inset rounded-2xl p-4 sm:p-5">
+                <div className="flex items-start gap-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-ada-teal-soft to-ada-ocean font-mono-num text-xs font-semibold text-ada-navy">
+                    {(req.athleteName ?? "م").slice(0, 2)}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-ada-text">
+                      {req.athleteName ?? "متدرب جديد"}
+                    </div>
+                    <div className="text-xs text-ada-muted">طلب تدريب جديد</div>
+                    {req.message ? (
+                      <p className="mt-2 rounded-xl bg-white/[0.03] px-3 py-2 text-sm text-ada-text-2">
+                        {req.message}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+
+                {rejectingId === req.id ? (
+                  <div className="mt-4 rounded-xl bg-ada-navy/40 p-3">
+                    <div className="text-sm font-medium text-ada-text">
+                      رفض طلب التدريب؟
+                    </div>
+                    <input
+                      className="ada-input mt-2"
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      placeholder="سبب الرفض (اختياري)"
+                    />
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button
+                        variant="danger"
+                        className="py-2"
+                        loading={rejectRequest.isPending}
+                        onClick={async () => {
+                          try {
+                            await rejectRequest.mutateAsync({
+                              requestId: req.id,
+                              reason: rejectReason,
+                            });
+                          } catch {
+                            /* spec §27 — no raw errors surfaced */
+                          }
+                          setRejectingId(null);
+                          setRejectReason("");
+                        }}
+                      >
+                        رفض الطلب
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="py-2"
+                        onClick={() => {
+                          setRejectingId(null);
+                          setRejectReason("");
+                        }}
+                      >
+                        إلغاء
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Button
+                      className="py-2"
+                      loading={acceptRequest.isPending}
+                      onClick={() => acceptRequest.mutate(req.id)}
+                    >
+                      قبول الطلب
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="py-2"
+                      onClick={() => {
+                        setRejectingId(req.id);
+                        setRejectReason("");
+                      }}
+                    >
+                      رفض
+                    </Button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState
+            title="لا توجد طلبات جديدة"
+            description="ستظهر هنا طلبات التدريب التي يرسلها المتدربون."
+            icon={<Icon name="users" size={20} />}
+          />
+        )}
+      </section>
 
       {/* ── KPI strip: one surface, not many cards ── */}
       <section className="ada-glass overflow-hidden rounded-[var(--radius-panel)]">
@@ -362,12 +395,12 @@ export function CoachDashboard() {
             </ul>
           ) : (
             <EmptyState
-              title="No athletes assigned yet"
-              description="Assign athletes from the roster or invite them to sign up with the athlete role."
+              title="لا يوجد متدربون حالياً"
+              description="سيظهر المتدربون هنا فور قبول طلبات التدريب الخاصة بهم."
               icon={<Icon name="users" size={20} />}
               action={
-                <Link to="/app/programs">
-                  <Button variant="ghost">Build a program</Button>
+                <Link to="/coaches">
+                  <Button variant="ghost">عرض ملفك العام</Button>
                 </Link>
               }
             />
@@ -411,40 +444,6 @@ export function CoachDashboard() {
                 icon={<Icon name="checkin" size={20} />}
               />
             )}
-          </Card>
-
-          {/* ── Add athlete to roster ── */}
-          <Card>
-            <SectionTitle hint="By email">Add athlete</SectionTitle>
-            <form onSubmit={assignAthlete} className="flex flex-col gap-3">
-              <label className="block">
-                <span className="ada-label">Athlete email</span>
-                <input
-                  type="email"
-                  className="ada-input"
-                  value={assignEmail}
-                  onChange={(e) => setAssignEmail(e.target.value)}
-                  placeholder="athlete@example.com"
-                  autoComplete="off"
-                />
-              </label>
-              <Button type="submit" loading={assigning}>
-                <Icon name="plus" size={15} /> Assign athlete
-              </Button>
-            </form>
-            {assignMsg ? (
-              <div
-                className={`mt-3 rounded-[var(--radius-control)] border px-3 py-2 text-sm ${
-                  assignMsg.tone === "ok"
-                    ? "border-ada-success/25 bg-ada-success/10 text-ada-success"
-                    : assignMsg.tone === "info"
-                      ? "border-ada-amber/25 bg-ada-amber/10 text-ada-amber"
-                      : "border-ada-red/25 bg-ada-red/10 text-ada-red"
-                }`}
-              >
-                {assignMsg.text}
-              </div>
-            ) : null}
           </Card>
         </div>
       </div>

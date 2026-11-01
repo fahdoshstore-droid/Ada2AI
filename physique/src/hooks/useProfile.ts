@@ -38,3 +38,21 @@ export function useCoachProfile() {
     },
   });
 }
+
+/** The current user's unified Sport ID (read-only; created server-side). */
+export function useMySportIdentity() {
+  const { userId } = useAuth();
+  return useQuery<{ id: string; profile_id: string; sport_id: string } | null>({
+    queryKey: ["my-sport-identity", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sport_identities")
+        .select("id, profile_id, sport_id")
+        .eq("profile_id", userId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { id: string; profile_id: string; sport_id: string } | null;
+    },
+  });
+}

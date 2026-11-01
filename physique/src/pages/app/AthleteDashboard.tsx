@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { useAthleteProfile } from "../../hooks/useProfile";
+import { useMyCoachingState, useCancelRequest } from "../../hooks/useRequests";
 import {
   Badge,
   Button,
@@ -40,6 +41,8 @@ export function AthleteDashboard() {
   const { userId } = useAuth();
   const qc = useQueryClient();
   const { data: profile, isLoading: profileLoading } = useAthleteProfile();
+  const { data: coaching } = useMyCoachingState();
+  const cancelRequest = useCancelRequest();
   const [bwValue, setBwValue] = useState("");
   const [bwError, setBwError] = useState<string | null>(null);
 
@@ -149,6 +152,105 @@ export function AthleteDashboard() {
           }
         />
       </HeroBanner>
+
+      {/* ── Coaching state machine (spec §22): NO_COACH / PENDING / ACCEPTED / REJECTED ── */}
+      {coaching?.state === "ACCEPTED" ? (
+        <section className="ada-glass relative overflow-hidden rounded-[var(--radius-panel)] p-6 sm:p-8">
+          <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-ada-teal/15 blur-3xl" />
+          <div className="relative flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="ada-eyebrow mb-2">تم قبول طلبك 🎉</div>
+              <h2 className="text-xl font-semibold text-ada-text sm:text-2xl">
+                مدربك: {coaching.coachName ?? "مدربك"}
+              </h2>
+              <p className="mt-1.5 max-w-xl text-sm text-ada-muted">
+                مدربك جاهز للبدء. استعرض خطتك التدريبية وتواصل معه مباشرة.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/coaches">
+                <Button variant="ghost" className="py-3">
+                  عرض ملف المدرب
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      ) : coaching?.state === "PENDING_REQUEST" ? (
+        <section className="ada-glass relative overflow-hidden rounded-[var(--radius-panel)] p-6 sm:p-8">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="ada-eyebrow mb-2">طلبك قيد المراجعة</div>
+              <h2 className="text-xl font-semibold text-ada-text sm:text-2xl">
+                أرسلت طلب التدريب إلى{" "}
+                {coaching.request?.coach_name ?? "المدرب"}
+              </h2>
+              <p className="mt-1.5 max-w-xl text-sm text-ada-muted">
+                بانتظار موافقة المدرب.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {coaching.request?.coach_id ? (
+                <Link to={`/coaches/${coaching.request.coach_id}`}>
+                  <Button variant="ghost" className="py-3">
+                    عرض المدرب
+                  </Button>
+                </Link>
+              ) : null}
+              <Button
+                variant="ghost"
+                className="py-3"
+                loading={cancelRequest.isPending}
+                onClick={() => {
+                  if (coaching.request?.id) cancelRequest.mutate(coaching.request.id);
+                }}
+              >
+                إلغاء الطلب
+              </Button>
+            </div>
+          </div>
+        </section>
+      ) : coaching?.state === "REJECTED" ? (
+        <section className="ada-glass relative overflow-hidden rounded-[var(--radius-panel)] p-6 sm:p-8">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="ada-eyebrow mb-2">لم تتم الموافقة</div>
+              <h2 className="text-xl font-semibold text-ada-text sm:text-2xl">
+                لم تتم الموافقة على طلب التدريب مع{" "}
+                {coaching.request?.coach_name ?? "المدرب"}
+              </h2>
+              {coaching.request?.rejection_reason ? (
+                <p className="mt-1.5 max-w-xl text-sm text-ada-muted">
+                  {coaching.request.rejection_reason}
+                </p>
+              ) : null}
+            </div>
+            <Link to="/coaches">
+              <Button className="shrink-0 py-3">اختيار مدرب آخر</Button>
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <section className="ada-glass relative overflow-hidden rounded-[var(--radius-panel)] p-6 sm:p-8">
+          <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-ada-teal/15 blur-3xl" />
+          <div className="relative flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="ada-eyebrow mb-2">ابدأ رحلتك</div>
+              <h2 className="text-xl font-semibold text-ada-text sm:text-2xl">
+                اختر مدربك
+              </h2>
+              <p className="mt-1.5 max-w-xl text-sm text-ada-muted">
+                اعثر على المدرب المناسب لأهدافك وأرسل له طلب تدريب للبدء.
+              </p>
+            </div>
+            <Link to="/coaches">
+              <Button className="shrink-0 py-3">
+                استعرض المدربين <Icon name="arrow" size={15} />
+              </Button>
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* ── Hero: bodyweight + quick log ── */}
       <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr] lg:gap-6">

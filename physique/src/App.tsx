@@ -5,6 +5,8 @@ import { useAuth } from "./hooks/useAuth";
 import { Landing } from "./pages/Landing";
 import { Auth } from "./pages/Auth";
 import { Onboard } from "./pages/Onboard";
+import { Coaches } from "./pages/Coaches";
+import { CoachProfile } from "./pages/CoachProfile";
 import { AthleteDashboard } from "./pages/app/AthleteDashboard";
 import { CoachDashboard } from "./pages/app/CoachDashboard";
 import { AdminDashboard } from "./pages/app/AdminDashboard";
@@ -34,6 +36,8 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/injury-prevention" element={<InjuryPrevention />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/coaches" element={<Coaches />} />
+        <Route path="/coaches/:coachId" element={<CoachProfile />} />
         <Route
           path="/onboard"
           element={

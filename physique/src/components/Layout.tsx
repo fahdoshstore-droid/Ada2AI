@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { useMySportIdentity } from "../hooks/useProfile";
+import { NotificationBell } from "./NotificationBell";
 import type { Role } from "../lib/types";
 import { AnimatedBackground, type BackgroundVariant } from "./AnimatedBackground";
 import { Icon, type IconName } from "./Icon";
@@ -66,9 +68,19 @@ function initialsOf(email: string | null | undefined) {
 
 export function Layout() {
   const { role, email, signOut } = useAuth();
+  const { data: sportIdentity } = useMySportIdentity();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [signingOut, setSigningOut] = useState(false);
+
+  const copySportId = async () => {
+    if (!sportIdentity?.sport_id) return;
+    try {
+      await navigator.clipboard.writeText(sportIdentity.sport_id);
+    } catch {
+      /* clipboard unavailable — ignore */
+    }
+  };
 
   const items = role ? NAV[role] : [];
   const isActivePath = (it: NavItem) =>
@@ -120,6 +132,9 @@ export function Layout() {
         </nav>
 
         <div className="ada-inset rounded-2xl p-3">
+          <div className="mb-3 flex items-center justify-center">
+            <NotificationBell />
+          </div>
           <div className="flex items-center gap-3">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-ada-teal-soft to-ada-ocean font-mono-num text-xs font-semibold text-ada-navy">
               {initialsOf(email)}
@@ -129,6 +144,17 @@ export function Layout() {
               {role ? <div className="text-[11px] text-ada-muted">{ROLE_LABEL[role]}</div> : null}
             </div>
           </div>
+          {sportIdentity?.sport_id ? (
+            <button
+              type="button"
+              onClick={copySportId}
+              title="Copy Sport ID"
+              className="mt-2.5 flex w-full items-center justify-between gap-2 rounded-lg bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-ada-muted transition hover:bg-white/[0.06]"
+            >
+              <span className="truncate font-mono-num">Sport ID · {sportIdentity.sport_id}</span>
+              <Icon name="copy" size={13} className="shrink-0" />
+            </button>
+          ) : null}
           <button
             onClick={handleSignOut}
             disabled={signingOut}
@@ -146,14 +172,17 @@ export function Layout() {
         style={{ background: "linear-gradient(180deg, rgba(5,8,10,0.9) 0%, rgba(5,8,10,0.6) 70%, rgba(5,8,10,0) 100%)" }}
       >
         <BrandMark />
-        <button
-          onClick={handleSignOut}
-          disabled={signingOut}
-          aria-label="Sign out"
-          className="ada-hairline grid h-10 w-10 place-items-center rounded-full bg-white/[0.04] text-ada-muted disabled:opacity-50"
-        >
-          <Icon name="logout" size={17} />
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <button
+            onClick={handleSignOut}
+            disabled={signingOut}
+            aria-label="Sign out"
+            className="ada-hairline grid h-10 w-10 place-items-center rounded-full bg-white/[0.04] text-ada-muted disabled:opacity-50"
+          >
+            <Icon name="logout" size={17} />
+          </button>
+        </div>
       </header>
 
       {/* ── Main content ── */}
