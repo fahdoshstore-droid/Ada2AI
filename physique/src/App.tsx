@@ -19,6 +19,8 @@ import { ProgramBuilder } from "./pages/app/ProgramBuilder";
 import { CheckIn } from "./pages/app/CheckIn";
 import { CoachCheckIns } from "./pages/app/CoachCheckIns";
 import { InjuryPrevention } from "./pages/InjuryPrevention";
+import { SupplementsGuide } from "./pages/SupplementsGuide";
+import { CoachMarketplace } from "./pages/app/CoachMarketplace";
 
 /** `/app` index — redirects to the role's dashboard (or /auth if none). */
 function AppIndex() {
@@ -33,6 +35,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/injury-prevention" element={<InjuryPrevention />} />
+        <Route path="/supplements" element={<SupplementsGuide />} />
         <Route path="/auth" element={<Auth />} />
         <Route
           path="/onboard"
@@ -84,6 +87,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="coaches" element={<ProtectedRoute allowedRoles={["athlete"]}><CoachMarketplace /></ProtectedRoute>} />
           <Route
             path="progress"
             element={
@@ -129,14 +133,6 @@ export default function App() {
             element={
               <ProtectedRoute allowedRoles={["coach"]}>
                 <CoachNutrition />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="program-builder/:programId"
-            element={
-              <ProtectedRoute allowedRoles={["coach"]}>
-                <ProgramBuilder />
               </ProtectedRoute>
             }
           />
