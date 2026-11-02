@@ -12,8 +12,10 @@ import type { AppNotification } from "../lib/types";
 function navigateFor(n: AppNotification): string {
   // Both coach (coach_request) and athlete (accepted/rejected) land on their
   // dashboard; the coach dashboard surfaces the requests section, the athlete
-  // dashboard surfaces the coaching state.
+  // dashboard surfaces the coaching state. The athlete's own coach-selection
+  // reminder goes straight to the marketplace.
   if (n.type === "coach_request_rejected") return "/coaches";
+  if (n.type === "coach_selection_reminder") return "/coaches";
   return "/app";
 }
 

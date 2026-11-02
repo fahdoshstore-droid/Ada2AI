@@ -290,6 +290,9 @@ export function notificationLabel(n: AppNotification): {
         title: "تم رفض طلب التدريب",
         body: n.body && n.body.trim() ? n.body : "لم تتم الموافقة على طلبك.",
       };
+    case "coach_selection_reminder":
+      // DB copy is already Arabic; pass through as-is.
+      return { title: n.title, body: n.body ?? "" };
     default:
       return { title: n.title, body: n.body ?? "" };
   }

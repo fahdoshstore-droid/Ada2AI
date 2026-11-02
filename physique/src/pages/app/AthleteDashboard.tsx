@@ -40,7 +40,7 @@ const GOAL_LABEL: Record<string, string> = {
 export function AthleteDashboard() {
   const { userId } = useAuth();
   const qc = useQueryClient();
-  const { data: profile, isLoading: profileLoading } = useAthleteProfile();
+  const { data: profile, isLoading: profileLoading, error: profileError } = useAthleteProfile();
   const { data: coaching } = useMyCoachingState();
   const cancelRequest = useCancelRequest();
   const [bwValue, setBwValue] = useState("");
@@ -110,7 +110,45 @@ export function AthleteDashboard() {
   });
 
   if (profileLoading) return <LoadingState />;
+  if (profileError) {
+    return <ErrorState message="Could not load your athlete profile. Please try again." />;
+  }
   if (!profile) return <Navigate to="/onboard" replace />;
+
+  // NO_COACH conversion flow (7a65e5c intent): an athlete with no active coach
+  // and no pending request lands on a single focused CTA — pick a coach from
+  // the marketplace, or go back and complete their profile first. No training
+  // content is rendered until they choose.
+  if (coaching && coaching.state === "NO_COACH") {
+    return (
+      <div className="ada-stagger space-y-8">
+        <section className="ada-glass relative overflow-hidden rounded-[var(--radius-panel)] p-6 sm:p-10">
+          <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-ada-teal/15 blur-3xl" />
+          <div className="relative">
+            <div className="ada-eyebrow mb-2">الخطوة الأخيرة</div>
+            <h1 className="text-2xl font-bold text-ada-text sm:text-3xl">
+              {profile.display_name ? `أهلاً، ${profile.display_name}` : "ابدأ رحلتك التدريبية"}
+            </h1>
+            <p className="mt-3 max-w-xl text-sm text-ada-muted sm:text-base">
+              ملفك جاهز. اختر مدربك الآن وابدأ برنامجك التدريبي في Ada2Physique.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link to="/coaches">
+                <Button className="py-3">
+                  <Icon name="arrow" size={16} /> اختيار المدرب
+                </Button>
+              </Link>
+              <Link to="/onboard">
+                <Button variant="ghost" className="py-3">
+                  استكمال الملف
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   const activeProgram = assignments.data?.find((a) => a.assignment_type === "program");
   const activeNutrition = assignments.data?.find((a) => a.assignment_type === "nutrition");
