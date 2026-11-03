@@ -35,10 +35,6 @@ module.exports = {
           white: "#EEEFEE",
           muted: "#6B7280",
         },
-        gold: {
-          DEFAULT: "#D4AF37",
-          light: "#E5C84B",
-        },
         status: {
           queued: '#F59E0B',
           processing: '#3B82F6',
@@ -47,7 +43,7 @@ module.exports = {
         },
         role: {
           player: "#00DCC8",
-          coach: "#D4AF37",
+          coach: "#007ABA",
           scout: "#007ABA",
           admin: "#9B59B6",
         },

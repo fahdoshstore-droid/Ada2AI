@@ -245,7 +245,7 @@ export default function AdminDashboard() {
                           <td className="px-4 py-3 text-ice-muted arabic-text">{player.sport || '-'}</td>
                           <td className="px-4 py-3 text-ice-white">{player.age ?? '-'}</td>
                           <td className="px-4 py-3">
-                            <span className={`text-xs px-2 py-1 rounded-lg arabic-text ${player.is_verified ? 'bg-teal-400/10 text-teal-400' : 'bg-amber-400/10 text-amber-400'}`}>
+                            <span className={`text-xs px-2 py-1 rounded-lg arabic-text ${player.is_verified ? 'bg-teal-400/10 text-teal-400' : 'bg-scout-blue/10 text-scout-blue'}`}>
                               {player.is_verified ? 'مؤكد' : 'معلّق'}
                             </span>
                           </td>
@@ -301,7 +301,7 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => retryAnalysis.mutate(analysis.id)}
                               disabled={retryAnalysis.isPending}
-                              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-400/10 text-amber-400 text-xs arabic-text hover:bg-amber-400/20 transition-colors disabled:opacity-50"
+                              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-scout-blue/10 text-scout-blue text-xs arabic-text hover:bg-scout-blue/20 transition-colors disabled:opacity-50"
                             >
                               <RefreshCw className="w-3 h-3" />
                               إعادة المحاولة
@@ -473,7 +473,7 @@ export default function AdminDashboard() {
               { label: 'فيديوهات مرفوعة', value: stats.videosCount, icon: <Video className="w-5 h-5" />, color: 'text-blue-400' },
               { label: 'تحليلات مكتملة', value: stats.completedCount, icon: <CheckCircle2 className="w-5 h-5" />, color: 'text-green-400' },
               { label: 'تحليلات فاشلة', value: stats.failedCount, icon: <AlertCircle className="w-5 h-5" />, color: 'text-red-400' },
-              { label: 'التقييمات', value: stats.ratingsCount, icon: <BarChart3 className="w-5 h-5" />, color: 'text-gold' },
+              { label: 'التقييمات', value: stats.ratingsCount, icon: <BarChart3 className="w-5 h-5" />, color: 'text-teal-prime' },
             ].map(stat => (
               <div key={stat.label} className="glass-card rounded-2xl p-5">
                 <div className="flex items-center gap-3 mb-3">
