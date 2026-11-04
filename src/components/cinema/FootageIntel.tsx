@@ -1,14 +1,16 @@
 /**
  * FootageIntel — "Footage to Intelligence" section
  *
- * Hosts the telestrator-style sequence (TelestratorSequence): match scene → freeze
- * → tracking IDs → tactical drawing → observations → tactical board.
+ * Primary: RealMatchAnalysis — a real YOLO11n + ByteTrack run over real match
+ * footage, with playback, synced detection overlays and evidence timestamps.
  *
- * HONESTY: the sequence is an ILLUSTRATION over an AI-generated still. It is not
- * output of an automatic tracker and carries no real data (see TelestratorSequence).
+ * Secondary: TelestratorSequence — the telestrator-style illustration of the
+ * TV reading grammar (scene → freeze → track → draw → board). It remains a
+ * hand-drawn ILLUSTRATION over an AI-generated still (see that file).
  */
 import { GhostNumber, SplitReveal } from './Cinema'
 import TelestratorSequence from './TelestratorSequence'
+import RealMatchAnalysis from './RealMatchAnalysis'
 
 export default function FootageIntel() {
   return (
@@ -23,13 +25,24 @@ export default function FootageIntel() {
             className="text-4xl font-black leading-[1.25] tracking-tightest text-ice-white arabic-text md:text-6xl"
           />
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-ice-muted arabic-text">
-            ارفع فيديو اللاعب أو المنافس، ثم تابع حالة التحليل وسجّل النتائج: اللمسات، السرعة، الاستحواذ ومناطق التحرك.
+            تحليل حقيقي بلقطة مباراة فعلية عبر الرؤية الحاسوبية: كشف اللاعبين وتتبّعهم، الكرة، والانتقال إلى توقيتات الأدلة.
           </p>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-ice-muted/80 arabic-text">
-            العرض أدناه توضيح لأسلوب القراءة التلفزيونية للّقطة: مشهد، تجميد، تتبّع، رسم، ثم لوحة.
+            النتائج من تشغيل YOLO11n + ByteTrack فعلي، دون معايرة ملعب — المواقع بإحداثيات الصورة فقط، وتعيين الفريق غير مؤكد.
           </p>
         </div>
 
+        {/* Real match analysis (primary) */}
+        <RealMatchAnalysis />
+
+        {/* Reading-grammar illustration (secondary, clearly labelled) */}
+        <div className="mb-8 mt-20 border-t border-white/10 pt-14">
+          <span className="text-label-caps mb-3 inline-block">توضيح أسلوب القراءة</span>
+          <h3 className="text-2xl font-bold text-ice-white arabic-text md:text-3xl">كيف تُقرأ اللقطة</h3>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ice-muted/80 arabic-text">
+            التسلسل أدناه توضيحي فوق لقطة مولّدة، لشرح أسلوب القراءة التلفزيونية: مشهد، تجميد، تتبّع، رسم، ثم لوحة.
+          </p>
+        </div>
         <TelestratorSequence />
       </div>
     </section>

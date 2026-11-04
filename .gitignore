@@ -33,3 +33,8 @@ dist/
 .env*.local
 .aidesigner/*
 !.aidesigner/.gitkeep
+
+# Local match analysis artifacts (large, not for git)
+match-clips/
+public/real-match-data.json
+public/ettifaq-muharraq-clip.mp4
