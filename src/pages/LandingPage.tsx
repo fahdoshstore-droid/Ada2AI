@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import {
@@ -7,7 +7,6 @@ import {
   Shield, Zap, Globe, Award, ChevronLeft, Eye
 } from 'lucide-react';
 import { EASE, GhostNumber, ImageReveal, Letterbox, SplitReveal, Stagger, StaggerItem } from '../components/cinema/Cinema';
-import FootageIntel from '../components/cinema/FootageIntel';
 import heroSprint from '../assets/cinema/hero-sprint.jpg';
 import coachTouchline from '../assets/cinema/coach-touchline.jpg';
 import keeperRain from '../assets/cinema/keeper-rain.jpg';
@@ -84,6 +83,9 @@ const stats = [
   { value: 'هوية رقمية', label: 'لكل لاعب رياضي', suffix: '' },
   { value: 'منصة سعودية', label: 'متكاملة وموثوقة', suffix: '' },
 ];
+
+// The telestrator sequence sits below the fold: load it as its own chunk so it never delays the hero.
+const FootageIntel = lazy(() => import('../components/cinema/FootageIntel'));
 
 // ─── Hero (full-bleed cinematic) ───
 function HeroSection() {
@@ -399,7 +401,9 @@ export default function LandingPage() {
     <div className="bg-[#000A0F]">
       <HeroSection />
       <ProductsSection />
-      <FootageIntel />
+      <Suspense fallback={<div className="min-h-[1100px] bg-[#000A0F]" aria-hidden="true" />}>
+        <FootageIntel />
+      </Suspense>
       <FeaturesSection />
       <CTASection />
     </div>
