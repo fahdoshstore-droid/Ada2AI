@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { usePlayerAnalyses } from '../hooks/useAnalysis'
+import { toUiStatus } from '../services/analysis'
 import { AnalysisResultsView } from '../components/coach/AnalysisResultsView'
 
 const STATUS_CONFIG: Record<string, { icon: typeof Clock; label: string; color: string; spin?: boolean }> = {
@@ -22,8 +23,9 @@ const STATUS_CONFIG: Record<string, { icon: typeof Clock; label: string; color: 
   failed: { icon: XCircle, label: 'فشل', color: 'text-red-400 bg-red-400/10' },
 }
 
-function StatusBadge({ status }: { status: string | null }) {
-  const cfg = STATUS_CONFIG[status ?? 'queued'] ?? STATUS_CONFIG.queued
+/** `status` must already be an English UI key — convert the Arabic DB value with toUiStatus() first. */
+function StatusBadge({ status }: { status: string }) {
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.queued
   const Icon = cfg.icon
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg arabic-text ${cfg.color}`}>
@@ -123,7 +125,11 @@ export default function VideoAnalysis() {
         {/* Analyses list */}
         {!loading && analyses.length > 0 && (
           <div className="space-y-4">
-            {analyses.map(analysis => (
+            {analyses.map(analysis => {
+              // DB stores Arabic ('قيد المعالجة' | 'مكتمل' | 'فشل'); normalise to the English
+              // keys used by STATUS_CONFIG and by the comparisons below.
+              const uiStatus = toUiStatus(analysis.status)
+              return (
               <motion.div
                 key={analysis.id}
                 initial={{ opacity: 0, y: 12 }}
@@ -149,18 +155,18 @@ export default function VideoAnalysis() {
                       </p>
                     </div>
                   </div>
-                  <StatusBadge status={analysis.status} />
+                  <StatusBadge status={uiStatus} />
                 </div>
 
                 {/* Results for completed analyses */}
-                {analysis.status === 'completed' && analysis.analysis_data && (
+                {uiStatus === 'completed' && analysis.analysis_data && (
                   <div className="mt-3 pt-3 border-t border-white/5">
                     <AnalysisResultsView results={analysis.analysis_data} />
                   </div>
                 )}
 
                 {/* Error for failed */}
-                {analysis.status === 'failed' && analysis.analysis_data?.error && (
+                {uiStatus === 'failed' && analysis.analysis_data?.error && (
                   <div className="mt-3 pt-3 border-t border-white/5">
                     <div className="bg-red-400/10 rounded-lg p-3 border border-red-400/20">
                       <p className="text-sm text-red-400 arabic-text">⚠️ {analysis.analysis_data.error}</p>
@@ -183,7 +189,8 @@ export default function VideoAnalysis() {
                   </div>
                 )}
               </motion.div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

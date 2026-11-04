@@ -195,8 +195,8 @@ export default function WelcomePage() {
 
         {/* Profile Completion Prompt */}
         <motion.div variants={itemVariants} className="glass-card rounded-2xl p-5 mb-8 flex items-center gap-4">
-          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gold/20 border border-gold/30 flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-gold" />
+          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-teal-prime/15 border border-teal-prime/30 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-teal-prime" />
           </div>
           <p className="text-ice-muted text-sm arabic-text leading-relaxed flex-1">
             {config.profilePrompt}

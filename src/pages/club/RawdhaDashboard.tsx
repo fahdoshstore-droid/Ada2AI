@@ -63,7 +63,7 @@ export default function RawdhaDashboard() {
               { label: 'اللاعبون', value: stats.playersCount, icon: <Users className="w-4 h-4" />, color: 'text-teal-prime' },
               { label: 'التحليلات', value: stats.videosCount, icon: <Video className="w-4 h-4" />, color: 'text-scout-blue' },
               { label: 'المكتملة', value: stats.completedCount, icon: <CheckCircle className="w-4 h-4" />, color: 'text-emerald-400' },
-              { label: 'التقييمات', value: stats.ratingsCount, icon: <Star className="w-4 h-4" />, color: 'text-amber-400' },
+              { label: 'التقييمات', value: stats.ratingsCount, icon: <Star className="w-4 h-4" />, color: 'text-teal-prime' },
             ].map(({ label, value, icon, color }) => (
               <div key={label} className="bg-white/5 rounded-xl p-4 text-center">
                 <div className={`mx-auto mb-2 w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center ${color}`}>
@@ -246,10 +246,10 @@ export default function RawdhaDashboard() {
 
             <button
               onClick={() => navigate('/scout')}
-              className="flex items-center gap-3 p-4 rounded-xl bg-amber-400/5 hover:bg-amber-400/10 border border-amber-400/10 transition-colors"
+              className="flex items-center gap-3 p-4 rounded-xl bg-teal-prime/5 hover:bg-teal-prime/10 border border-teal-prime/10 transition-colors"
             >
-              <div className="w-10 h-10 rounded-lg bg-amber-400/10 flex items-center justify-center flex-shrink-0">
-                <Search className="w-5 h-5 text-amber-400" />
+              <div className="w-10 h-10 rounded-lg bg-teal-prime/10 flex items-center justify-center flex-shrink-0">
+                <Search className="w-5 h-5 text-teal-prime" />
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium text-ice-white arabic-text">بحث في الكشافين</p>

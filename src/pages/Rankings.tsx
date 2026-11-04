@@ -16,16 +16,16 @@ export default function Rankings() {
   const [activeCategory, setActiveCategory] = useState('all');
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="w-5 h-5 text-gold" />;
+    if (rank === 1) return <Crown className="w-5 h-5 text-teal-prime" />;
     if (rank === 2) return <Medal className="w-5 h-5 text-gray-300" />;
-    if (rank === 3) return <Award className="w-5 h-5 text-amber-600" />;
+    if (rank === 3) return <Award className="w-5 h-5 text-scout-blue" />;
     return <span className="w-5 h-5 flex items-center justify-center text-sm text-ice-muted font-bold font-display">{rank}</span>;
   };
 
   const getRankBg = (rank: number) => {
-    if (rank === 1) return 'from-gold/20 to-gold/5 border-gold/30';
+    if (rank === 1) return 'from-teal-prime/20 to-teal-prime/5 border-teal-prime/30';
     if (rank === 2) return 'from-gray-300/10 to-gray-300/5 border-gray-300/20';
-    if (rank === 3) return 'from-amber-600/10 to-amber-600/5 border-amber-600/20';
+    if (rank === 3) return 'from-scout-blue/10 to-scout-blue/5 border-scout-blue/20';
     return 'border-white/5';
   };
 
@@ -88,7 +88,7 @@ export default function Rankings() {
       <section className="relative min-h-[40vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial opacity-50" />
         <div className="absolute inset-0 grid-pattern opacity-30" />
-        <div className="absolute top-1/4 right-1/3 w-96 h-96 bg-gold/10 rounded-full blur-[128px]" />
+        <div className="absolute top-1/4 right-1/3 w-96 h-96 bg-teal-prime/10 rounded-full blur-[128px]" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
           <motion.div
@@ -96,7 +96,7 @@ export default function Rankings() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 border border-gold/20 text-gold text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-prime/10 border border-teal-prime/20 text-teal-prime text-sm font-medium mb-6">
               <Trophy className="w-4 h-4" />
               <span className="arabic-text">ترتيب المواهب</span>
             </div>
@@ -152,7 +152,7 @@ export default function Rankings() {
                         transition={{ delay: i * 0.15, duration: 0.6 }}
                         className="flex flex-col items-center"
                       >
-                        <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-prime to-scout-blue flex items-center justify-center text-white font-bold text-xl mb-3 ${i === 1 ? 'ring-4 ring-gold/30' : ''}`}>
+                        <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-prime to-scout-blue flex items-center justify-center text-white font-bold text-xl mb-3 ${i === 1 ? 'ring-4 ring-teal-prime/30' : ''}`}>
                           {player.name.charAt(0)}
                         </div>
                         <div className="text-center mb-3">
@@ -193,7 +193,7 @@ export default function Rankings() {
                       </div>
                       
                       <div className="flex items-center gap-1 bg-teal-prime/10 px-3 py-1.5 rounded-lg">
-                        <Star className="w-4 h-4 text-gold fill-gold" />
+                        <Star className="w-4 h-4 text-teal-prime fill-teal-prime" />
                         <span className="text-teal-prime font-bold font-display">{player.rating || '—'}</span>
                       </div>
                     </div>
