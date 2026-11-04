@@ -38,3 +38,7 @@ dist/
 match-clips/
 public/real-match-data.json
 public/ettifaq-muharraq-clip.mp4
+
+# Local verification artifacts + recovery notes
+artifacts/
+ROLLBACK.md
