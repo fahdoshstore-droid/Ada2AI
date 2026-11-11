@@ -15,12 +15,13 @@ import DashboardLayout from '@/components/DashboardLayout'
 import BackButton from '@/components/BackButton'
 import { supabase } from '@/lib/supabase'
 import { useScoutPlayers, computeScore, type ScoutPlayer } from '@/hooks/useScoutPlayers'
+import ScoutReportsPanel, { type ReportPrefill } from './scout/ScoutReportsPanel'
 import {
   Search, Star, MapPin, Filter, Heart, Eye, Video,
   TrendingUp, Bell, X, Check, UserPlus, BarChart3,
   GitCompare, FileText, MessageSquare, Send, ChevronDown,
   Loader2, AlertCircle, UserCheck, Globe, Trophy, Target,
-  Activity, Users
+  Activity, Users, ClipboardList
 } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -68,6 +69,21 @@ export default function ScoutDashboard() {
   const [showNotifications, setShowNotifications] = useState(false)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
+
+  // Tabs: player discovery | scouting evaluation reports
+  const [tab, setTab] = useState<'discover' | 'reports'>('discover')
+  const [reportPrefill, setReportPrefill] = useState<ReportPrefill | null>(null)
+
+  const evaluatePlayer = (p: ScoutPlayer) => {
+    setReportPrefill({
+      player_id: p.id,
+      player_name: (lang === 'ar' && p.name_ar ? p.name_ar : p.name) || '',
+      birth_year: p.age ? new Date().getFullYear() - p.age : null,
+      club: p.academy_name || '',
+      position: p.position ? (positionLabels[p.position] ?? p.position) : '',
+    })
+    setTab('reports')
+  }
 
   // ─── STEP 3: Filters (position, region, rating, age, name) ────────────────
   const filteredPlayers = useMemo(() => {
@@ -172,8 +188,36 @@ export default function ScoutDashboard() {
       <div>
         <BackButton fallbackRoute="/dashboards" />
 
+        {/* ─── Tabs ────────────────────────────────────────────────────────── */}
+        <div role="tablist" className="no-print" style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1px solid #1F2937' }}>
+          {([
+            { key: 'discover', icon: <Search size={16} />, label: isRTL ? 'اكتشف اللاعبين' : 'Discover' },
+            { key: 'reports', icon: <ClipboardList size={16} />, label: isRTL ? 'تقارير التقييم' : 'Scouting Reports' },
+          ] as const).map(tb => (
+            <button
+              key={tb.key}
+              role="tab"
+              aria-selected={tab === tb.key}
+              onClick={() => setTab(tb.key)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '12px 18px', background: 'none', border: 'none',
+                borderBottom: `2px solid ${tab === tb.key ? '#00DCC8' : 'transparent'}`,
+                color: tab === tb.key ? '#00DCC8' : '#9CA3AF',
+                cursor: 'pointer', fontWeight: '600', fontSize: '14px',
+                fontFamily: "'Cairo', sans-serif", marginBottom: '-1px',
+              }}
+            >
+              {tb.icon}
+              {tb.label}
+            </button>
+          ))}
+        </div>
+
         {/* ─── Header ──────────────────────────────────────────────────────── */}
-        {isLoading ? (
+        {tab === 'reports' ? (
+          <ScoutReportsPanel isRTL={isRTL} prefill={reportPrefill} onPrefillConsumed={() => setReportPrefill(null)} />
+        ) : isLoading ? (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '60px', gap: '12px', color: '#9CA3AF' }}>
             <Loader2 size={24} style={{ animation: 'spin' }} />
             <span style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : 'inherit' }}>
@@ -837,6 +881,23 @@ export default function ScoutDashboard() {
                       >
                         <Eye size={14} />
                         {isRTL ? 'عرض' : 'View'}
+                      </button>
+
+                      <button
+                        onClick={() => evaluatePlayer(player)}
+                        style={{
+                          flex: 1, padding: '9px',
+                          backgroundColor: 'rgba(245,158,11,0.1)',
+                          border: '1px solid rgba(245,158,11,0.3)',
+                          borderRadius: '6px', color: '#F59E0B',
+                          cursor: 'pointer', display: 'flex',
+                          alignItems: 'center', justifyContent: 'center', gap: '6px',
+                          fontSize: '12px', fontWeight: '600',
+                          fontFamily: "'Cairo', sans-serif",
+                        }}
+                      >
+                        <ClipboardList size={14} />
+                        {isRTL ? 'تقييم' : 'Evaluate'}
                       </button>
 
                       {/* ─── INVITE BUTTON ─────────────────────────────────────── */}
