@@ -10,15 +10,18 @@
  * 6. React Query via useScoutPlayers (migrated hook)
  */
 import { useState } from 'react'
+import PageHeader from '../components/cinema/PageHeader';
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import {
-  UserSearch, Filter, Eye, Download,
+  UserSearch, Filter, Eye, Download, ClipboardCheck,
   Share2, GitCompareArrows, ChevronLeft, ChevronRight,
   AlertCircle
 } from 'lucide-react'
 import { useScoutPlayers } from '../hooks/useScoutPlayers'
+import type { Player } from '../lib/supabase'
+import EvaluationReport from '../components/evaluation/EvaluationReport'
 import { trackEvent } from '../lib/analytics'
 
 const filters = ['الكل', 'مهاجم', 'وسط', 'مدافع', 'حارس', 'جناح']
@@ -28,6 +31,7 @@ export default function ScoutDashboard() {
   const [activeFilter, setActiveFilter] = useState('الكل')
   const [page, setPage] = useState(0)
   const [compareList, setCompareList] = useState<string[]>([])
+  const [reportFor, setReportFor] = useState<Player | null>(null)
 
   const { players, loading, error, pageSize } = useScoutPlayers(
     activeFilter !== 'الكل' ? activeFilter : undefined,
@@ -75,30 +79,22 @@ export default function ScoutDashboard() {
 
   return (
     <div className="min-h-screen bg-[#000A0F]">
-      {/* Hero */}
-      <section className="relative min-h-[50vh] flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero-orb-1" />
-        <div className="absolute inset-0 bg-gradient-hero-orb-2" />
-        <div className="absolute inset-0 grain-overlay" />
+      <PageHeader
+        eyebrow="لوحة الكشافين"
+        icon={UserSearch}
+        titleTop="اكتشف المواهب"
+        titleBottom="بذكاء اصطناعي متقدم"
+      />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-prime/10 border border-teal-prime/20 text-teal-prime text-[11px] font-semibold uppercase tracking-widest mb-6">
-              <UserSearch className="w-4 h-4" />
-              <span className="arabic-text">لوحة الكشافين</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display tracking-tightest mb-6">
-              <span className="text-gradient-shimmer arabic-text">اكتشف المواهب</span>
-              <br />
-              <span className="text-ice-white arabic-text">بذكاء اصطناعي متقدم</span>
-            </h1>
-          </motion.div>
-        </div>
-      </section>
+      <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <button
+          onClick={() => navigate('/match-report')}
+          className="flex w-full items-center justify-between gap-3 rounded-xl border border-teal-prime/25 bg-teal-prime/5 px-4 py-3 text-sm font-medium text-teal-prime transition-colors hover:border-teal-prime/50 hover:bg-teal-prime/10 arabic-text"
+        >
+          <span>تقرير المباراة — اللاعبون وبطاقات Sport ID</span>
+          <span aria-hidden="true">←</span>
+        </button>
+      </div>
 
       {/* Compare bar */}
       {compareList.length > 0 && (
@@ -117,6 +113,20 @@ export default function ScoutDashboard() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Scout report — opens for one player at a time */}
+      {reportFor && (
+        <section className="relative scroll-mt-24 pt-8" id="scout-report">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <EvaluationReport
+              key={reportFor.id}
+              player={reportFor}
+              variant="scout"
+              onClose={() => setReportFor(null)}
+            />
+          </div>
+        </section>
       )}
 
       {/* Filters & Players Grid */}
@@ -243,6 +253,26 @@ export default function ScoutDashboard() {
                         >
                           <Eye className="w-3.5 h-3.5" />
                           عرض
+                        </button>
+
+                        {/* Evaluate — opens the scout report for this player */}
+                        <button
+                          onClick={() => {
+                            setReportFor(player)
+                            trackEvent('scout_report_opened', { playerId: player.id })
+                            requestAnimationFrame(() =>
+                              document.getElementById('scout-report')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            )
+                          }}
+                          title="تقييم"
+                          aria-label={`تقييم ${player.name || 'اللاعب'}`}
+                          className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                            reportFor?.id === player.id
+                              ? 'bg-teal-prime text-navy-dark'
+                              : 'bg-white/5 text-ice-muted hover:bg-white/10 hover:text-teal-prime'
+                          }`}
+                        >
+                          <ClipboardCheck className="w-4 h-4" />
                         </button>
 
                         {/* Compare — toggles local selection */}

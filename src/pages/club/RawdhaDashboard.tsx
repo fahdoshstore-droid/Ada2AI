@@ -52,7 +52,7 @@ export default function RawdhaDashboard() {
               رو
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-ice-white arabic-text">نادي الروضة</h1>
+              <h1 className="tracking-tightest text-2xl font-black text-ice-white arabic-text">نادي الروضة</h1>
               <p className="text-ice-muted text-sm arabic-text">لوحة التحكم الرسمية</p>
             </div>
           </div>
@@ -88,7 +88,7 @@ export default function RawdhaDashboard() {
           className="glass-card rounded-2xl p-5"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-ice-white flex items-center gap-2 arabic-text">
+            <h2 className="font-black text-ice-white flex items-center gap-2 arabic-text">
               <Users className="w-4 h-4 text-teal-prime" />
               اللاعبون النشطون
             </h2>
@@ -158,7 +158,7 @@ export default function RawdhaDashboard() {
           className="glass-card rounded-2xl p-5"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-ice-white flex items-center gap-2 arabic-text">
+            <h2 className="font-black text-ice-white flex items-center gap-2 arabic-text">
               <Activity className="w-4 h-4 text-teal-prime" />
               التحليلات الأخيرة
             </h2>
@@ -208,7 +208,7 @@ export default function RawdhaDashboard() {
           transition={{ delay: 0.3 }}
           className="glass-card rounded-2xl p-5"
         >
-          <h2 className="font-bold text-ice-white flex items-center gap-2 mb-4 arabic-text">
+          <h2 className="font-black text-ice-white flex items-center gap-2 mb-4 arabic-text">
             <BarChart3 className="w-4 h-4 text-teal-prime" />
             إجراءات سريعة
           </h2>

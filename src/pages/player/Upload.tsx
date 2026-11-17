@@ -125,7 +125,7 @@ export default function PlayerUpload() {
               <Video className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-ice-white arabic-text font-display tracking-tight">رفع فيديو</h1>
+              <h1 className="text-xl font-black text-ice-white arabic-text font-display tracking-tight">رفع فيديو</h1>
               <p className="text-ice-muted text-xs arabic-text mt-0.5">
                 ارفع مقطع فيديو لعرض أداءك
               </p>

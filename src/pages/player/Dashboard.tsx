@@ -10,6 +10,7 @@
  *   - Evaluations: evaluations table (player_id = player.id)
  */
 import { useEffect, useState } from 'react'
+import SportIdentityBadge from '../../components/coach/SportIdentityBadge'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
@@ -202,7 +203,7 @@ export default function PlayerDashboard() {
 
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl font-bold text-ice-white arabic-text">
+                  <h1 className="text-xl font-black text-ice-white arabic-text">
                     {profile?.full_name ?? playerRecord.name ?? 'اللاعب'}
                   </h1>
                   {playerRecord.is_verified && (
@@ -212,6 +213,7 @@ export default function PlayerDashboard() {
                 <p className="text-teal-prime text-sm arabic-text">
                   {playerRecord.position} · {playerRecord.sport}
                 </p>
+                <SportIdentityBadge profileId={profile?.id} />
                 {playerRecord.club && (
                   <p className="text-ice-muted text-xs mt-0.5 arabic-text">{playerRecord.club}</p>
                 )}
@@ -250,6 +252,14 @@ export default function PlayerDashboard() {
 
       {/* Main content */}
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+
+        <button
+          onClick={() => navigate('/match-report')}
+          className="flex w-full items-center justify-between gap-3 rounded-xl border border-teal-prime/25 bg-teal-prime/5 px-4 py-3 text-sm font-medium text-teal-prime transition-colors hover:border-teal-prime/50 hover:bg-teal-prime/10 arabic-text"
+        >
+          <span>تقرير المباراة — أدائي وبطاقتي</span>
+          <span aria-hidden="true">←</span>
+        </button>
 
         {/* ── MEDIA SECTION ── */}
         <motion.div
@@ -299,7 +309,7 @@ export default function PlayerDashboard() {
           className="glass-card rounded-2xl p-5"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-ice-white flex items-center gap-2 arabic-text">
+            <h2 className="font-black text-ice-white flex items-center gap-2 arabic-text">
               <BarChart3 className="w-4 h-4 text-teal-prime" />
               التحليل والتقييم
             </h2>
@@ -341,7 +351,7 @@ export default function PlayerDashboard() {
             className="glass-card rounded-2xl p-5"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-ice-white flex items-center gap-2 arabic-text">
+              <h2 className="font-black text-ice-white flex items-center gap-2 arabic-text">
                 <Activity className="w-4 h-4 text-teal-prime" />
                 نتائج التحليل
               </h2>
@@ -466,7 +476,7 @@ export default function PlayerDashboard() {
             className="glass-card rounded-2xl p-5"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-ice-white flex items-center gap-2 arabic-text">
+              <h2 className="font-black text-ice-white flex items-center gap-2 arabic-text">
                 <Activity className="w-4 h-4 text-teal-prime" />
                 نتائج التحليل
               </h2>
@@ -492,7 +502,7 @@ export default function PlayerDashboard() {
             transition={{ delay: 0.3 }}
             className="glass-card rounded-2xl p-5"
           >
-            <h2 className="font-bold text-ice-white flex items-center gap-2 mb-3 arabic-text">
+            <h2 className="font-black text-ice-white flex items-center gap-2 mb-3 arabic-text">
               <MessageSquare className="w-4 h-4 text-teal-prime" />
               ملاحظات المدرب
             </h2>
@@ -509,7 +519,7 @@ export default function PlayerDashboard() {
           transition={{ delay: 0.35 }}
           className="glass-card rounded-2xl p-5"
         >
-          <h2 className="font-bold text-ice-white flex items-center gap-2 mb-4 arabic-text">
+          <h2 className="font-black text-ice-white flex items-center gap-2 mb-4 arabic-text">
             <User className="w-4 h-4 text-teal-prime" />
             البيانات الشخصية
           </h2>

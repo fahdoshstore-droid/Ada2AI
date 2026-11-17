@@ -29,7 +29,7 @@ export default function NotFound() {
           404
         </div>
 
-        <h1 className="text-2xl font-bold text-ice-white mb-3 arabic-text">
+        <h1 className="tracking-tightest text-2xl font-black text-ice-white mb-3 arabic-text">
           الصفحة غير موجودة
         </h1>
         <p className="text-ice-muted text-sm leading-relaxed mb-8 arabic-text">

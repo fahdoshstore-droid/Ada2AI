@@ -102,7 +102,7 @@ function EditPlayerModal({ player, onClose }: { player: Player; onClose: () => v
           <button
             onClick={handleSave}
             disabled={updatePlayerMutation.isPending}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm arabic-text disabled:opacity-50 transition-all"
+            className="flex-1 px-4 py-2.5 rounded-xl btn-primary text-sm arabic-text disabled:opacity-50 transition-all"
           >
             {updatePlayerMutation.isPending ? 'جارٍ الحفظ...' : 'حفظ'}
           </button>
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gradient-teal arabic-text">لوحة إدارة نادي الروضة</h1>
+            <h1 className="tracking-tightest text-3xl font-black text-gradient-teal arabic-text">لوحة إدارة نادي الروضة</h1>
             <p className="text-ice-muted text-sm arabic-text mt-1">إدارة اللاعبين والتحليلات والإحصائيات</p>
           </div>
           <button onClick={() => navigate('/coach')} className="px-4 py-2 rounded-xl bg-white/5 text-ice-muted text-sm arabic-text hover:bg-white/10 transition-colors">
@@ -355,7 +355,7 @@ export default function AdminDashboard() {
         {activeTab === 'add-player' && (
           <div className="max-w-lg mx-auto" dir="rtl">
             <div className="glass-card rounded-2xl p-6">
-              <h2 className="text-lg font-bold text-ice-white arabic-text mb-6">
+              <h2 className="text-lg font-black text-ice-white arabic-text mb-6">
                 إضافة لاعب جديد — نادي الروضة
               </h2>
 
@@ -415,7 +415,7 @@ export default function AdminDashboard() {
                     }
                   }}
                   disabled={createPlayer.isPending || !newPlayer.firstName || !newPlayer.email}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold arabic-text disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-teal-prime/25 transition-all"
+                  className="w-full py-3 rounded-xl btn-primary arabic-text disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-teal-prime/25 transition-all"
                 >
                   {createPlayer.isPending ? 'جارٍ الإنشاء...' : 'إنشاء حساب اللاعب'}
                 </button>
@@ -496,7 +496,7 @@ export default function AdminDashboard() {
             <p className="text-ice-muted arabic-text mb-6">تحليلات الفيديو والتشكيلات التكتيكية</p>
             <button
               onClick={() => navigate('/coach/workspace')}
-              className="px-8 py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm arabic-text hover:shadow-xl hover:shadow-teal-prime/25 transition-all"
+              className="px-8 py-3 rounded-xl btn-primary text-sm arabic-text hover:shadow-xl hover:shadow-teal-prime/25 transition-all"
             >
               فتح مساحة العمل
             </button>

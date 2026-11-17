@@ -35,7 +35,7 @@ export default function PrivacyPolicy() {
           → العودة
         </Link>
 
-        <h1 className="text-2xl font-bold text-ice-white arabic-text mb-8">
+        <h1 className="tracking-tightest text-2xl font-black text-ice-white arabic-text mb-8">
           سياسة الخصوصية
         </h1>
 

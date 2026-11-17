@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import PageHeader from '../components/cinema/PageHeader';
 import { Users, TrendingUp, Building2, Shield, MapPin, Star, ExternalLink } from 'lucide-react';
 import { useOrganizations } from '../hooks/useOrganizations';
 
@@ -38,31 +39,12 @@ export default function OrganizationsDashboard() {
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative min-h-[50vh] flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial opacity-50" />
-        <div className="absolute inset-0 grid-pattern opacity-30" />
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-teal-prime/10 rounded-full blur-[128px]" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-prime/10 border border-teal-prime/20 text-teal-prime text-sm font-medium mb-6">
-              <Building2 className="w-4 h-4" />
-              <span className="arabic-text">لوحة المنشآت</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              <span className="text-gradient-teal arabic-text">إدارة المنشآت الرياضية</span>
-            </h1>
-            <p className="text-ice-muted text-lg max-w-2xl arabic-text">
-              عرض شامل للأندية والأكاديميات الرياضية المسجلة في المنصة
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow="لوحة المنشآت"
+        icon={Building2}
+        titleTop="إدارة المنشآت الرياضية"
+        description="عرض شامل للأندية والأكاديميات الرياضية المسجلة في المنصة"
+      />
 
       {/* Stats */}
       <section className="relative py-16">
@@ -93,7 +75,7 @@ export default function OrganizationsDashboard() {
           ) : (
             <div className="glass-card rounded-2xl overflow-hidden">
               <div className="p-6 border-b border-white/5">
-                <h2 className="text-xl font-bold text-ice-white arabic-text">المنشآت المسجلة</h2>
+                <h2 className="text-xl font-black text-ice-white arabic-text">المنشآت المسجلة</h2>
               </div>
               <div className="divide-y divide-white/5">
                 {organizations.map((org, i) => (

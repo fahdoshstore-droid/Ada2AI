@@ -39,6 +39,9 @@ const PlayerUpload = React.lazy(() => import('./pages/player/Upload'))
 // Coach tools
 const EvaluationForm = React.lazy(() => import('./pages/coach/EvaluationForm'))
 const CoachWorkspace = React.lazy(() => import('./pages/coach/Workspace'))
+const CoachMatchAnalysis = React.lazy(() => import('./pages/coach/MatchAnalysis'))
+const MatchReportPage = React.lazy(() => import('./pages/MatchReportPage'))
+const MatchIntelligence = React.lazy(() => import('./pages/MatchIntelligence'))
 const RawdhaDashboard = React.lazy(() => import('./pages/club/RawdhaDashboard'))
 
 // Admin
@@ -196,6 +199,30 @@ export default function App() {
               <ProtectedRoute allowedRoles={['coach']}>
                 <ErrorBoundary fallback={<RouteErrorFallback />}>
                   <CoachWorkspace />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/coach/match-analysis" element={
+              <ProtectedRoute allowedRoles={['coach']}>
+                <ErrorBoundary fallback={<RouteErrorFallback />}>
+                  <CoachMatchAnalysis />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/match-report" element={
+              <ProtectedRoute allowedRoles={['coach', 'player', 'scout']}>
+                <ErrorBoundary fallback={<RouteErrorFallback />}>
+                  <MatchReportPage />
+                </ErrorBoundary>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/coach/match-intelligence" element={
+              <ProtectedRoute allowedRoles={['coach']}>
+                <ErrorBoundary fallback={<RouteErrorFallback />}>
+                  <MatchIntelligence />
                 </ErrorBoundary>
               </ProtectedRoute>
             } />

@@ -18,6 +18,8 @@ import { useInView } from 'framer-motion'
 
 const TEAL = '#00DCC8'
 const ICE = '#EEEFEE'
+const RED = '#E5484D'
+const WHITE = '#F5F7FA'
 
 interface Observation { t: number; id: number; x: number; y: number; c: number }
 interface BallObs { t: number; x: number; y: number; c: number }
@@ -30,6 +32,7 @@ interface RealData {
   team_assignment: { method: string; note: string }
   calibration: { status: string; note: string }
   scenario: { title: string; problem: string; proposal: string; source: string }
+  tactical: { questions: { q: string; verdict: string; reason: string }[] }
 }
 
 function formatTime(t: number): string {
@@ -52,10 +55,10 @@ const TACTICAL = {
     { label: 'ازدحام الوسط', text: 'تمركز خاطئ قد يزاحم خط الوسط ويقلل المساحة المتاحة.' },
   ],
   evidence: 'اللقطات تُظهر توزيع اللاعبين على أرض الملعب، لكن لا توجد معايرة ملعب ولا هوية لاعب مؤكدة ولا تعيين فريق موثوق.',
-  aiCan: 'كشف مواقع اللاعبين وTrack IDs، وكشف الكرة (كشف فقط وليس مساراً مؤكداً).',
-  aiCannot: 'إثبات هوية اللاعبين، تعيين الفريق (13 مقابل 1 غير موثوق)، إحداثيات الملعب، السرعة/المسافة، أو أحداث الاستحواذ/التمرير/التسديد.',
-  verdict: 'INCONCLUSIVE',
-  verdictNote: 'بيانات الرؤية الحاسوبية الحالية لا تثبت ولا تنفي الادعاء التكتيكي (انقسام الفريق إلى 5 دفاع + 5 هجوم).',
+  aiCan: 'كشف مواقع اللاعبين ورموزهم، وكشف الكرة (كشف فقط وليس مساراً مؤكداً).',
+  aiCannot: 'إثبات هوية اللاعبين، إحداثيات الملعب، السرعة/المسافة، أو أحداث الاستحواذ/التمرير/التسديد.',
+  verdict: 'لا تكفي المعلومات للحكم',
+  verdictNote: 'التحليل الحالي يكشف مواقع اللاعبين وتحركاتهم، لكنه لا يملك معايرة ملعب أو هوية لاعب أو أحداث استحواذ تُثبت أو تنفي الادعاء التكتيكي.',
 }
 
 export default function RealMatchAnalysis() {
@@ -80,6 +83,14 @@ export default function RealMatchAnalysis() {
       .catch(() => { if (active) setError(true) })
     return () => { active = false }
   }, [])
+
+  // track_id -> team (1 = red, 2 = white, null = غير محدد) من تمييز ألوان القمصان.
+  const teamMap = useMemo(() => {
+    if (!data) return new Map<number, number | null>()
+    const m = new Map<number, number | null>()
+    for (const p of data.players) m.set(p.track_id, p.team)
+    return m
+  }, [data])
 
   // Detections near the current playback time — per track, highest confidence.
   const obsAtTime = useMemo(() => {
@@ -165,24 +176,26 @@ export default function RealMatchAnalysis() {
             {/* detection overlay (image-space, synced) */}
             <div className="pointer-events-none absolute inset-0" aria-hidden="true">
               {showIds &&
-                obsAtTime.map((o) => (
-                  <div
-                    key={o.id}
-                    className="absolute -translate-x-1/2 -translate-y-1/2"
-                    style={{ left: `${(o.x * 100).toFixed(3)}%`, top: `${(o.y * 100).toFixed(3)}%` }}
-                  >
+                obsAtTime.map((o) => {
+                  const team = teamMap.get(o.id)
+                  const bg = team === 1 ? RED : team === 2 ? WHITE : TEAL
+                  return (
                     <div
-                      className="flex items-center justify-center rounded-full font-display font-bold text-[#EEEFEE]"
-                      style={{
-                        width: 26, height: 26, background: TEAL,
-                        border: '1.5px solid rgba(0,0,0,0.7)', fontSize: 10,
-                        boxShadow: `0 0 8px ${TEAL}66`,
-                      }}
+                      key={o.id}
+                      className="absolute -translate-x-1/2 -translate-y-1/2"
+                      style={{ left: `${(o.x * 100).toFixed(3)}%`, top: `${(o.y * 100).toFixed(3)}%` }}
                     >
-                      {o.id}
+                      <div
+                        className="rounded-full"
+                        style={{
+                          width: 20, height: 20, background: bg,
+                          border: '2px solid rgba(0,0,0,0.7)',
+                          boxShadow: `0 0 8px ${bg}88`,
+                        }}
+                      />
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               {showBall && ballAtTime && (
                 <div
                   className="absolute -translate-x-1/2 -translate-y-1/2"
@@ -243,7 +256,7 @@ export default function RealMatchAnalysis() {
 
             {/* provenance badge */}
             <div className="absolute end-2 top-2 z-10 border border-[#FFB800]/50 bg-[#000A0F]/85 px-2 py-1 text-[9px] font-bold text-[#FFB800] backdrop-blur-sm md:end-3 md:top-3 md:px-3 md:py-1.5 md:text-[11px] arabic-text">
-              نتائج حقيقية — YOLO11n + ByteTrack
+              تحليل المباراة — نتائج حقيقية
             </div>
           </>
         )}
@@ -270,6 +283,11 @@ export default function RealMatchAnalysis() {
                 <input type="checkbox" checked={showSpace} onChange={(e) => setShowSpace(e.target.checked)} className="accent-[#FFB800]" />
                 المساحة المقترحة
               </label>
+              <div className="flex items-center gap-3 border-s border-white/10 ps-3 text-[10px] text-ice-muted arabic-text">
+                <span className="flex items-center gap-1"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: RED }} /> أحمر (الاتفاق)</span>
+                <span className="flex items-center gap-1"><span className="inline-block h-2.5 w-2.5 rounded-full border border-black/40" style={{ background: WHITE }} /> أبيض (المحرق)</span>
+                <span className="flex items-center gap-1"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: TEAL }} /> غير محدد</span>
+              </div>
               <button
                 type="button"
                 onClick={() => {
@@ -317,7 +335,7 @@ export default function RealMatchAnalysis() {
           {/* ── provenance strip ── */}
           <div className="flex flex-wrap gap-2 border-t border-white/10 p-4 text-[11px]">
             <span className="px-2 py-1 text-[#00DCC8]" style={{ background: 'rgba(0,220,200,0.10)' }}>
-              {data.meta.model} · {data.meta.tracking} · device={data.meta.device}
+              تحليل المباراة · تحركات اللاعبين
             </span>
             <span className="px-2 py-1 text-[#FFB800]" style={{ background: 'rgba(255,184,0,0.10)' }}>
               {data.team_assignment.note}
@@ -334,7 +352,7 @@ export default function RealMatchAnalysis() {
                 التفسير التكتيكي — ادعاء مقابل سيناريو
               </span>
               <span className="border border-[#FFB800] bg-[#FFB800]/15 px-2 py-0.5 font-display text-[10px] font-black tracking-wider text-[#FFB800] md:text-xs">
-                VERDICT: {TACTICAL.verdict}
+                النتيجة: {TACTICAL.verdict}
               </span>
             </div>
 
@@ -383,9 +401,23 @@ export default function RealMatchAnalysis() {
             <p className="mt-2 text-[11px] text-ice-muted/60 arabic-text">{data.scenario.source}</p>
           </div>
 
+          {/* ── الأسئلة التكتيكية الثلاثة ── */}
+          <div className="border-t border-white/10 p-4 md:p-5">
+            <p className="text-xs font-bold text-ice-white arabic-text">الأسئلة التكتيكية — الدليل من المباراة</p>
+            <div className="mt-3 space-y-2">
+              {data.tactical.questions.map((q, i) => (
+                <div key={i} className="border border-white/10 bg-white/[0.02] p-3">
+                  <p className="text-sm font-bold text-ice-white arabic-text">{i + 1}. {q.q}</p>
+                  <p className="mt-1 text-xs font-bold text-[#FFB800] arabic-text">النتيجة: {q.verdict}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-ice-muted/80 arabic-text">{q.reason}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* ── meta ── */}
           <div className="border-t border-white/10 px-4 py-3 text-[11px] text-ice-muted/70 arabic-text">
-            {data.match.home} × {data.match.away} · {data.match.competition} · {data.meta.duration}s · {data.meta.frames_processed} إطار معالَج · {data.meta.processing_time}s معالجة
+            {data.match.home} × {data.match.away} · {data.match.competition}
           </div>
         </>
       )}

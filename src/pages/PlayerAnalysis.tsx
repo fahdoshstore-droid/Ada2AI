@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PageHeader from '../components/cinema/PageHeader';
 import { motion } from 'framer-motion';
 import { Search, BarChart3, Activity, Zap, Target, TrendingUp, User } from 'lucide-react';
 import { usePlayers } from '../hooks/usePlayers';
@@ -42,30 +43,14 @@ export default function PlayerAnalysis() {
 
   return (
     <div className="min-h-screen bg-[#000A0F]">
-      {/* Hero */}
-      <section className="relative min-h-[50vh] flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero-orb-1" />
-        <div className="absolute inset-0 bg-gradient-hero-orb-2" />
-        <div className="absolute inset-0 grain-overlay" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-prime/10 border border-teal-prime/20 text-teal-prime text-[11px] font-semibold uppercase tracking-widest mb-6">
-              <Activity className="w-4 h-4" />
-              <span className="arabic-text">تحليل اللاعب</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display tracking-tightest mb-6">
-              <span className="text-gradient-shimmer arabic-text">تحليل شامل للاعب</span>
-            </h1>
-            <p className="text-ice-muted text-lg max-w-2xl mx-auto mb-10 arabic-text">
-              أدخل اسم اللاعب أو رقم الهوية للحصول على تحليل مفصل وشامل لأدائه
-            </p>
-            
+      <PageHeader
+        eyebrow="تحليل اللاعب"
+        icon={Activity}
+        titleTop="تحليل شامل للاعب"
+        description="أدخل اسم اللاعب أو رقم الهوية للحصول على تحليل مفصل وشامل لأدائه"
+        align="center"
+      >
+        <div className="mt-10">
             {/* Search Bar — HUGE and prominent */}
             <div className="max-w-xl mx-auto relative">
               <div className="glass-premium rounded-2xl p-3 flex items-center gap-3 depth-lg">
@@ -84,9 +69,8 @@ export default function PlayerAnalysis() {
                 </button>
               </div>
             </div>
-          </motion.div>
         </div>
-      </section>
+      </PageHeader>
 
       {/* Loading State */}
       {loading && (

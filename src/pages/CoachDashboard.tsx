@@ -72,6 +72,13 @@ export default function CoachDashboard() {
                 <Briefcase className="h-4 w-4" />
                 مساحة العمل
               </button>
+              <button
+                onClick={() => navigate('/coach/match-analysis')}
+                className="glass-card flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-teal-prime transition-colors hover:text-ice-white arabic-text"
+              >
+                <PlayCircle className="h-4 w-4" />
+                تحليل المباراة
+              </button>
               {showAdmin && (
                 <button
                   onClick={() => navigate('/admin')}

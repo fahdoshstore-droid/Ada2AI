@@ -28,6 +28,8 @@ export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '', {
  */
 
 // Types
+import type { EvaluationDetails } from '../components/evaluation/axes'
+
 export type UserType = 'player' | 'coach' | 'scout'
 
 export interface Profile {
@@ -88,6 +90,7 @@ export interface Evaluation {
   id: string
   player_id: string
   coach_id?: string
+  /** Axis percentages, 0-100. Unchanged meaning — rankings still read these. */
   technical: number
   tactical: number
   physical: number
@@ -96,6 +99,8 @@ export interface Evaluation {
   notes?: string
   evaluation_date?: string
   created_at?: string
+  /** 32-item breakdown; see components/evaluation/axes.ts and migration 20261117. */
+  details?: EvaluationDetails | null
 }
 
 export interface Match {

@@ -35,6 +35,10 @@ module.exports = {
           white: "#EEEFEE",
           muted: "#6B7280",
         },
+        // Unconfirmed / needs-attention. Same hue as status.queued so one
+        // warning colour runs through the product (text-gold was already used
+        // in four files before this token existed, and rendered as no colour).
+        gold: "#F59E0B",
         status: {
           queued: '#F59E0B',
           processing: '#3B82F6',

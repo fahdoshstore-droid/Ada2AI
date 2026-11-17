@@ -85,7 +85,7 @@ export default function LoginPage() {
             <span className="text-2xl font-bold text-gradient-teal">Ada2AI</span>
           </div>
 
-          <h1 className="text-2xl font-bold text-ice-white text-center mb-2 arabic-text">
+          <h1 className="tracking-tightest text-2xl font-black text-ice-white text-center mb-2 arabic-text">
             {isSignUp ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}
           </h1>
           <p className="text-ice-muted text-center text-sm mb-6 arabic-text">

@@ -78,13 +78,13 @@ export default function VideoAnalysis() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-ice-white arabic-text">تحليلات الفيديو</h1>
+              <h1 className="tracking-tightest text-2xl font-black text-ice-white arabic-text">تحليلات الفيديو</h1>
               <p className="text-ice-muted text-sm arabic-text">جميع تحليلات الفيديو الخاصة بك</p>
             </div>
           </div>
           <button
             onClick={() => navigate('/player/upload')}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl btn-primary text-sm arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all"
           >
             <Upload className="w-4 h-4" />
             رفع فيديو
@@ -108,13 +108,13 @@ export default function VideoAnalysis() {
             <div className="w-16 h-16 rounded-2xl bg-teal-prime/10 flex items-center justify-center mx-auto mb-6">
               <Film className="w-8 h-8 text-teal-prime" />
             </div>
-            <h2 className="text-xl font-bold text-ice-white arabic-text mb-2">لا توجد تحليلات بعد</h2>
+            <h2 className="text-xl font-black text-ice-white arabic-text mb-2">لا توجد تحليلات بعد</h2>
             <p className="text-ice-muted arabic-text mb-6">
               ارفع فيديو أولاً ليتم تحليله بواسطة الذكاء الاصطناعي
             </p>
             <button
               onClick={() => navigate('/player/upload')}
-              className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all"
+              className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl btn-primary text-sm arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all"
             >
               <Upload className="w-4 h-4" />
               ارفع فيديو

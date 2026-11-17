@@ -152,7 +152,7 @@ export default function PlayerOnboarding() {
       {/* Header */}
       <div className="relative overflow-hidden bg-navy-light/50 border-b border-white/5">
         <div className="max-w-2xl mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold text-ice-white arabic-text mb-1">
+          <h1 className="tracking-tightest text-2xl font-black text-ice-white arabic-text mb-1">
             مرحباً {profile?.full_name?.split(' ')[0] ?? ''} 👋
           </h1>
           <p className="text-ice-muted text-sm arabic-text">
@@ -199,7 +199,7 @@ export default function PlayerOnboarding() {
               className="space-y-6"
             >
               <div className="glass-card rounded-2xl p-6">
-                <h2 className="text-lg font-bold text-ice-white mb-5 flex items-center gap-2 arabic-text">
+                <h2 className="text-lg font-black text-ice-white mb-5 flex items-center gap-2 arabic-text">
                   <Dumbbell className="w-5 h-5 text-teal-prime" />
                   الرياضة والمركز
                 </h2>
@@ -293,7 +293,7 @@ export default function PlayerOnboarding() {
               className="space-y-6"
             >
               <div className="glass-card rounded-2xl p-6">
-                <h2 className="text-lg font-bold text-ice-white mb-5 flex items-center gap-2 arabic-text">
+                <h2 className="text-lg font-black text-ice-white mb-5 flex items-center gap-2 arabic-text">
                   <User className="w-5 h-5 text-teal-prime" />
                   البيانات التفصيلية
                 </h2>
@@ -391,7 +391,7 @@ export default function PlayerOnboarding() {
               transition={{ duration: 0.3 }}
             >
               <div className="glass-card rounded-2xl p-6">
-                <h2 className="text-lg font-bold text-ice-white mb-5 flex items-center gap-2 arabic-text">
+                <h2 className="text-lg font-black text-ice-white mb-5 flex items-center gap-2 arabic-text">
                   <Check className="w-5 h-5 text-teal-prime" />
                   مراجعة البيانات
                 </h2>
@@ -443,7 +443,7 @@ export default function PlayerOnboarding() {
                   setStep(s => s + 1)
                 }}
               disabled={step === 1 ? !step1Valid : !step2Valid}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-teal-prime/25 transition-all arabic-text"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl btn-primary text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-teal-prime/25 transition-all arabic-text"
             >
               التالي
               <ChevronLeft className="w-4 h-4" />
@@ -462,7 +462,7 @@ export default function PlayerOnboarding() {
               <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm disabled:opacity-60 hover:shadow-lg hover:shadow-teal-prime/25 transition-all arabic-text"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl btn-primary text-sm disabled:opacity-60 hover:shadow-lg hover:shadow-teal-prime/25 transition-all arabic-text"
             >
               {submitting ? (
                 <>

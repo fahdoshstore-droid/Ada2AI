@@ -1,0 +1,12 @@
+-- SUPERSEDED — do not run this expecting an effect.
+--
+-- This file was written on the assumption that `public.evaluations` existed.
+-- It does not: the table the app's evaluation code reads and writes is absent
+-- from the database, which is why that feature has never worked.
+--
+-- The unified 32-item report now writes to `public.scout_reports`, which was
+-- already built for it (ratings jsonb + notes jsonb + a write trigger that
+-- validates the four pillars and computes total_score). No new column needed.
+--
+-- Kept only so the filename is not reused. Running it is a no-op.
+select 1;

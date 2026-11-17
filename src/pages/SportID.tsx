@@ -1,4 +1,6 @@
 import { useRef } from 'react';
+import OwnSportIdentity from '../components/coach/OwnSportIdentity';
+import PageHeader from '../components/cinema/PageHeader';
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { Badge, Shield, BarChart3, Globe, QrCode, TrendingUp, FileText, Award } from 'lucide-react';
@@ -43,42 +45,28 @@ export default function SportID() {
   
   return (
     <div>
-      {/* Hero */}
-      <section className="relative min-h-[60vh] flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-radial opacity-50" />
-        <div className="absolute inset-0 grid-pattern opacity-30" />
-        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-teal-prime/10 rounded-full blur-[128px]" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-3xl"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-prime/10 border border-teal-prime/20 text-teal-prime text-sm font-medium mb-6">
-              <Badge className="w-4 h-4" />
-              <span className="arabic-text">المنتج الرئيسي</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              <span className="text-gradient-teal arabic-text">الهوية الرياضية</span>
-            </h1>
-            <p className="text-ice-muted text-lg md:text-xl leading-relaxed mb-8 arabic-text">
-              بطاقة FIFA رقمية شاملة لكل لاعب. احصل على هويتك الرياضية الموثقة 
-              مع تقييم شامل وتحليل أداء مستمر يتتبع تطورك في كل مباراة.
-            </p>
-            <button onClick={() => navigate('/player/onboarding')} className="px-8 py-4 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text">
-              احصل على هويتك الرياضية
-            </button>
-          </motion.div>
-        </div>
+      <PageHeader
+        eyebrow="المنتج الرئيسي"
+        icon={Badge}
+        titleTop="الهوية"
+        titleBottom="الرياضية"
+        description="بطاقة FIFA رقمية شاملة لكل لاعب. احصل على هويتك الرياضية الموثقة مع تقييم شامل وتحليل أداء مستمر يتتبع تطورك في كل مباراة."
+      >
+        <button onClick={() => navigate('/player/onboarding')} className="btn-primary mt-8 rounded-xl px-8 py-4 arabic-text">
+          احصل على هويتك الرياضية
+        </button>
+      </PageHeader>
+
+      {/* The signed-in account's own Sport ID — real data, or an honest empty state. */}
+      <section className="relative mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <OwnSportIdentity />
       </section>
 
       {/* Features Grid */}
       <section className="relative py-24" ref={ref}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gradient-teal mb-4 arabic-text">مميزات الهوية الرياضية</h2>
+            <h2 className="tracking-tightest text-3xl md:text-4xl font-black text-gradient-teal mb-4 arabic-text">مميزات الهوية الرياضية</h2>
             <p className="text-ice-muted text-lg max-w-2xl mx-auto arabic-text">
               كل ما يحتاجه اللاعب لبناء ملفه الرياضي الاحترافي
             </p>
@@ -118,7 +106,7 @@ export default function SportID() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              <h2 className="tracking-tightest text-3xl md:text-4xl font-black mb-6">
                 <span className="text-gradient-teal arabic-text">بطاقة اللاعب الذكية</span>
               </h2>
               <p className="text-ice-muted text-lg leading-relaxed mb-8 arabic-text">
@@ -171,9 +159,8 @@ export default function SportID() {
                       </div>
                     ))}
                   </div>
-                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                    <span className="text-xs text-ice-muted">ID: AD-2026-8842</span>
-                    <span className="text-xs text-teal-prime font-semibold">موثق</span>
+                  <div className="pt-4 border-t border-white/5">
+                    <span className="text-xs text-ice-muted arabic-text">مثال توضيحي للبطاقة</span>
                   </div>
                 </div>
               </div>

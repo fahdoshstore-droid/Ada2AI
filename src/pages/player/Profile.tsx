@@ -6,6 +6,8 @@
  * Reads player id from useParams(), fetches player + latest evaluation.
  */
 import { useEffect, useRef, useState } from 'react'
+import EvaluationBreakdown from '../../components/evaluation/EvaluationBreakdown'
+import SportIdentityBadge from '../../components/coach/SportIdentityBadge'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { supabase, type Player, type Evaluation } from '../../lib/supabase'
@@ -111,6 +113,7 @@ function ProfileLayout({ player, evaluation, copied, onShare, onBack }: ProfileL
               {player.is_verified && <CheckCircle className="h-8 w-8 flex-shrink-0 text-teal-prime" aria-label="موثّق" />}
             </div>
             {player.name_en && <p className="mt-1 text-sm tracking-widest text-ice-muted">{player.name_en.split(' ')[0]}</p>}
+            <SportIdentityBadge profileId={player.user_id ?? undefined} />
 
             <button
               onClick={onShare}
@@ -166,7 +169,7 @@ function ProfileLayout({ player, evaluation, copied, onShare, onBack }: ProfileL
             {/* Skills — from evaluation */}
             {evaluation && (
               <SideReveal from="start" className="mt-12 border-t border-white/10 pt-8">
-                <h2 className="mb-5 flex items-center gap-2 text-base font-bold text-ice-white arabic-text">
+                <h2 className="mb-5 flex items-center gap-2 text-base font-black text-ice-white arabic-text">
                   <Star className="h-4 w-4 text-teal-prime" />
                   المهارات
                 </h2>
@@ -181,13 +184,14 @@ function ProfileLayout({ player, evaluation, copied, onShare, onBack }: ProfileL
                     {evaluation.notes}
                   </p>
                 )}
+                <EvaluationBreakdown details={evaluation.details} />
               </SideReveal>
             )}
 
             {/* Player Stats — from players table */}
             {(player.speed || player.passing || player.shooting || player.fitness || player.dribbling || player.defense) && (
               <SideReveal from="start" className="mt-12 border-t border-white/10 pt-8">
-                <h2 className="mb-5 flex items-center gap-2 text-base font-bold text-ice-white arabic-text">
+                <h2 className="mb-5 flex items-center gap-2 text-base font-black text-ice-white arabic-text">
                   <BarChart3 className="h-4 w-4 text-teal-prime" />
                   إحصائيات اللعب
                 </h2>
@@ -205,7 +209,7 @@ function ProfileLayout({ player, evaluation, copied, onShare, onBack }: ProfileL
             {/* Video */}
             {player.video_url && (
               <SideReveal from="start" className="mt-12 border-t border-white/10 pt-8">
-                <h2 className="mb-5 flex items-center gap-2 text-base font-bold text-ice-white arabic-text">
+                <h2 className="mb-5 flex items-center gap-2 text-base font-black text-ice-white arabic-text">
                   <Video className="h-4 w-4 text-teal-prime" />
                   فيديو اللاعب
                 </h2>
@@ -363,7 +367,7 @@ export default function PlayerProfile() {
           className="relative glass-card rounded-2xl p-8 max-w-sm w-full text-center"
         >
           <User className="w-16 h-16 text-ice-muted mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-ice-white mb-2 arabic-text">اللاعب غير موجود</h1>
+          <h1 className="text-xl font-black text-ice-white mb-2 arabic-text">اللاعب غير موجود</h1>
           <p className="text-ice-muted text-sm mb-6 arabic-text">
             لم نتمكن من العثور على اللاعب المطلوب.
           </p>

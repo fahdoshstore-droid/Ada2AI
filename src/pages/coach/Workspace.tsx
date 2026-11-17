@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Clock, Loader2, CheckCircle, XCircle,
   Play, ClipboardList, BarChart3,
-  ChevronDown, ChevronUp, ArrowLeft, Users, Swords, Upload as UploadIcon, FileText
+  ChevronDown, ChevronUp, ArrowLeft, Users, Swords, Upload as UploadIcon, FileText, Radar
 } from 'lucide-react'
 import {
   usePendingAnalyses,
@@ -192,7 +192,7 @@ function ResultsForm({
       <div className="flex gap-2 pt-2">
         <button
           onClick={handleSubmit}
-          className="px-6 py-2 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text"
+          className="px-6 py-2 rounded-xl btn-primary text-sm hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text"
         >
           حفظ النتائج
         </button>
@@ -335,7 +335,7 @@ export default function CoachWorkspace() {
                 رجوع
               </button>
             </div>
-            <h1 className="text-xl font-bold font-display text-ice-white arabic-text">مساحة العمل</h1>
+            <h1 className="text-xl font-black font-display text-ice-white arabic-text">مساحة العمل</h1>
           </div>
           {/* Tab Buttons */}
           <div className="flex gap-2">
@@ -373,6 +373,34 @@ export default function CoachWorkspace() {
               تحليل لاعب
             </button>
           </div>
+
+          {/*
+           * Match-level video analysis (track → Sport ID linking, pitch
+           * calibration, positioning map) lives on its own route at
+           * /coach/match-analysis — previously reachable only as a sibling
+           * button on /coach, with no way back into it from inside the
+           * workspace itself. This is the path out from مساحة العمل.
+           */}
+          <button
+            onClick={() => navigate('/match-report')}
+            className="flex w-full items-center justify-between gap-3 rounded-xl border border-teal-prime/25 bg-teal-prime/5 px-4 py-3 text-sm transition-colors hover:border-teal-prime/50 hover:bg-teal-prime/10"
+          >
+            <span className="flex items-center gap-2 font-medium text-teal-prime arabic-text">
+              <ClipboardList className="h-4 w-4" />
+              تقرير المباراة — الفريق، اللاعبون، Sport ID
+            </span>
+            <ArrowLeft className="h-4 w-4 rotate-180 text-teal-prime/70" />
+          </button>
+          <button
+            onClick={() => navigate('/coach/match-analysis')}
+            className="flex w-full items-center justify-between gap-3 rounded-xl border border-teal-prime/25 bg-teal-prime/5 px-4 py-3 text-sm transition-colors hover:border-teal-prime/50 hover:bg-teal-prime/10"
+          >
+            <span className="flex items-center gap-2 font-medium text-teal-prime arabic-text">
+              <Radar className="h-4 w-4" />
+              تحليل المباراة بالفيديو — ربط المسارات، معايرة الملعب، وخريطة التمركز
+            </span>
+            <ArrowLeft className="h-4 w-4 rotate-180 text-teal-prime/70" />
+          </button>
         </div>
 
         {/* ── Tab Content ── */}
@@ -633,7 +661,7 @@ export default function CoachWorkspace() {
             animate={{ opacity: 1, y: 0 }}
             className="glass-card rounded-2xl p-5 space-y-5"
           >
-            <h2 className="font-bold font-display text-ice-white flex items-center gap-2 arabic-text">
+            <h2 className="font-black font-display text-ice-white flex items-center gap-2 arabic-text">
               <Swords className="w-5 h-5 text-teal-prime" />
               تحليل المنافس
             </h2>
@@ -697,7 +725,7 @@ export default function CoachWorkspace() {
             <button
               onClick={handleOpponentUpload}
               disabled={uploading || !opponentTeam.trim() || !opponentVideo}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl btn-primary text-sm hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {uploading ? (
                 <>
@@ -728,7 +756,7 @@ export default function CoachWorkspace() {
             animate={{ opacity: 1, y: 0 }}
             className="glass-card rounded-2xl p-5 space-y-5"
           >
-            <h2 className="font-bold font-display text-ice-white flex items-center gap-2 arabic-text">
+            <h2 className="font-black font-display text-ice-white flex items-center gap-2 arabic-text">
               <UploadIcon className="w-5 h-5 text-teal-prime" />
               تحليل لاعب
             </h2>
@@ -780,7 +808,7 @@ export default function CoachWorkspace() {
             <button
               onClick={handlePlayerUpload}
               disabled={uploading || !playerName.trim() || !playerVideo}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl btn-primary text-sm hover:shadow-xl hover:shadow-teal-prime/25 transition-all arabic-text disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {uploading ? (
                 <>

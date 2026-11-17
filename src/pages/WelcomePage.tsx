@@ -164,7 +164,7 @@ export default function WelcomePage() {
             {config.icon}
           </motion.div>
 
-          <h1 className="text-4xl md:text-5xl font-bold text-gradient-teal arabic-text mb-3">
+          <h1 className="tracking-tightest text-4xl md:text-5xl font-black text-gradient-teal arabic-text mb-3">
             {config.greeting}
           </h1>
           <p className="text-ice-muted text-lg arabic-text">
@@ -207,7 +207,7 @@ export default function WelcomePage() {
         <motion.div variants={itemVariants} className="text-center">
           <button
             onClick={handleStart}
-            className="px-8 py-4 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-lg arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all duration-300 active:scale-95"
+            className="px-8 py-4 rounded-xl btn-primary text-lg arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all duration-300 active:scale-95"
           >
             ابدأ الآن
           </button>
