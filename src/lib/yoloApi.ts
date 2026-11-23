@@ -3,17 +3,20 @@
  * Python computer-vision backend (backend/main.py FastAPI).
  *
  * Routing:
- *  - Development: requests go to "/yolo/*" which vite.config.ts proxies
- *    to the local FastAPI (default http://localhost:5001).
- *  - Production:  requests go directly to VITE_YOLO_API_URL (the deployed
- *    YOLO backend origin). CORS is enabled on the backend (main.py).
+ *  - Production:  "/api/*" on the same origin (ada2ai.com → Nginx → FastAPI).
+ *  - Development: "/api/*" is proxied by vite.config.ts to API_PROXY_TARGET
+ *    (default https://ada2ai.com; set http://localhost:5001 for a local backend).
+ *  - VITE_YOLO_API_URL overrides the base entirely when set.
  *
  * IMPORTANT: This is COMPUTER VISION data (YOLO detection + tracking +
  * heuristic events). It is NOT LLM interpretation. Consumers must label
  * CV-derived values accordingly (see metric provenance in the response).
  */
 
-const YOLO_BASE = import.meta.env.VITE_YOLO_API_URL || "/yolo";
+// Production is served from ada2ai.com, where Nginx routes /api/ to FastAPI
+// on the same origin (the backend's CORS only admits that origin, and the CSP
+// connect-src is 'self'). In development, vite.config.ts proxies /api.
+const YOLO_BASE = import.meta.env.VITE_YOLO_API_URL || "/api";
 
 export function yoloEndpoint(path: string): string {
   // path is like "/analyze/full" (no /yolo prefix)

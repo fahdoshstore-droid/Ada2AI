@@ -7,6 +7,7 @@ import { useMatches } from '../hooks/useMatches';
 import { useAuth, isAdmin } from '../contexts/AuthContext';
 import { EASE, GhostNumber, Letterbox, SideReveal, SplitReveal, Stagger, StaggerItem } from '../components/cinema/Cinema';
 import coachTouchline from '../assets/cinema/coach-touchline.jpg';
+import MatchReportsPanel from '../components/coach/MatchReportsPanel';
 
 export default function CoachDashboard() {
   const { players, loading: playersLoading, error: playersError } = useCoachPlayers();
@@ -269,6 +270,11 @@ export default function CoachDashboard() {
                 </div>
               </SideReveal>
             </div>
+
+            {/* Saved match-analysis reports, shown inline */}
+            <SideReveal from="start" delay={0.05} className="mt-8">
+              <MatchReportsPanel />
+            </SideReveal>
 
             {/* Training Plans CTA */}
             <SideReveal from="start" delay={0.05} className="mt-8">
