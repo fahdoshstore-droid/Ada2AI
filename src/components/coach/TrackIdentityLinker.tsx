@@ -23,10 +23,6 @@ interface Props {
 
 const TEAM_COLOR: Record<number, string> = { 1: '#00DCC8', 2: '#0095E0' }
 
-function meters(v: number | null) {
-  return v == null ? '—' : `${v.toFixed(1)} م`
-}
-
 export default function TrackIdentityLinker({ matchId, players }: Props) {
   const { tracks, links, loading, error } = useMatchTracks(matchId)
   const { link, unlink } = useLinkTrack(matchId)
@@ -122,9 +118,10 @@ export default function TrackIdentityLinker({ matchId, players }: Props) {
               <span className="flex-1 min-w-[140px] text-xs text-ice-muted arabic-text">
                 ظهر <span className="num text-ice-white">{t.framesVisible ?? 0}</span> إطاراً
                 <span className="mx-2 opacity-40">·</span>
-                مسافة <span className="num text-ice-white">{meters(t.totalDistanceMeters)}</span>
-                <span className="mx-2 opacity-40">·</span>
-                <span className="text-gold">غير معايرة</span>
+                {/* totalDistanceMeters comes from the backend's fixed 100 px/m
+                    (graph.py), not from the pitch — it is not a distance, so it
+                    is not shown until the match is calibrated. */}
+                <span className="text-ice-muted/70">المسافة غير متاحة قبل معايرة الملعب</span>
               </span>
 
               {isLinked ? (

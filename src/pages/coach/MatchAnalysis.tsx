@@ -315,6 +315,7 @@ export default function CoachMatchAnalysis() {
                       history={trackHistory.history}
                       homography={calibration?.homography ?? null}
                       calibrationValidated={!!calibration?.validated}
+                      reprojectionErrorMeters={calibration?.reprojection_error_meters ?? null}
                       label={chosen.player.name || `T-${heatmapTrackId}`}
                     />
                   )

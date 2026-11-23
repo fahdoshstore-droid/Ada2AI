@@ -19,7 +19,7 @@
 import { useMemo } from 'react'
 import { AlertTriangle, MapPin } from 'lucide-react'
 import {
-  projectHistory, buildDensityGrid, SPARSE_POINTS_THRESHOLD,
+  projectHistory, buildDensityGrid, SPARSE_POINTS_THRESHOLD, MAX_HEATMAP_ERROR_METERS,
   PITCH_LENGTH, PITCH_WIDTH,
   type PositionSample, type Homography,
 } from '../../services/calibration'
@@ -28,6 +28,8 @@ interface Props {
   history: PositionSample[]
   homography: Homography | null
   calibrationValidated: boolean
+  /** match_calibrations.reprojection_error_meters; null = unknown. */
+  reprojectionErrorMeters: number | null
   label: string
 }
 
@@ -57,7 +59,7 @@ function toPercent(x: number, y: number): { left: number; top: number } {
   }
 }
 
-export default function PositionHeatmap({ history, homography, calibrationValidated, label }: Props) {
+export default function PositionHeatmap({ history, homography, calibrationValidated, reprojectionErrorMeters, label }: Props) {
   const projection = useMemo(
     () => (homography ? projectHistory(history, homography) : null),
     [history, homography],
@@ -69,6 +71,23 @@ export default function PositionHeatmap({ history, homography, calibrationValida
         <AlertTriangle className="me-1 inline h-3.5 w-3.5" />
         لا توجد معايرة محفوظة لهذه المباراة. المواضع المخزَّنة إحداثيات داخل إطار الكاميرا، لا موضعاً على الملعب —
         عرضها بلا معايرة يُظهر تأطير الكاميرا لا تمركز اللاعب. عايِر الملعب في القسم 03 أولاً.
+      </div>
+    )
+  }
+
+  // A calibration that misplaces points by more than a few metres would draw a
+  // confident-looking map in the wrong place. Refuse rather than mislead; an
+  // unknown error is treated the same way, since there is no number to trust.
+  const errorTooLarge =
+    reprojectionErrorMeters == null || !Number.isFinite(reprojectionErrorMeters) || reprojectionErrorMeters > MAX_HEATMAP_ERROR_METERS
+  if (errorTooLarge) {
+    return (
+      <div role="alert" className="rounded-xl border border-gold/30 bg-gold/5 p-4 text-xs leading-relaxed text-gold arabic-text">
+        <AlertTriangle className="me-1 inline h-3.5 w-3.5" />
+        {reprojectionErrorMeters == null || !Number.isFinite(reprojectionErrorMeters)
+          ? 'خطأ المعايرة المحفوظة غير معروف، فلا يمكن الوثوق بإسقاط المواضع على الملعب.'
+          : <>خطأ المعايرة المحفوظة <span className="font-display" dir="ltr">{reprojectionErrorMeters.toFixed(1)} م</span>، أكبر من الحد المقبول للعرض (<span className="font-display" dir="ltr">{MAX_HEATMAP_ERROR_METERS} م</span>) — المواضع ستظهر في مكان خاطئ من الملعب.</>}
+        {' '}أعِد المعايرة في القسم 03 بسبع نقاط على الأقل موزّعة على الملعب.
       </div>
     )
   }

@@ -171,6 +171,12 @@ function meanError(points: Correspondence[], H: Homography): number {
  *  belongs to becomes a guess. */
 export const HOLDOUT_TOLERANCE_METERS = 1.5
 
+/** Above this reprojection error the projected positions are too far off to
+ *  draw as a positioning map at all (a 3 m error moves a player across a
+ *  penalty-box line). Between HOLDOUT_TOLERANCE_METERS and this the map is
+ *  shown with the "unverified" badge; above it, PositionHeatmap refuses. */
+export const MAX_HEATMAP_ERROR_METERS = 3
+
 /**
  * Leave-one-out needs enough points that the reduced solve is still
  * constrained. Measured over 400 trials per row with synthetic perspective
