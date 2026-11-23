@@ -7,26 +7,8 @@
  * analysis marks as unavailable or uncalibrated.
  */
 import { useQuery } from '@tanstack/react-query'
-import { ExternalLink, Cpu, Users, AlertTriangle } from 'lucide-react'
+import { ExternalLink, Users } from 'lucide-react'
 import { getSavedAnalyses, type SavedAnalysis } from '../../services/savedAnalyses'
-
-const METRIC_AR: Record<string, string> = {
-  pass_accuracy: 'دقة التمرير', shots_on_target: 'التسديد على المرمى', goals: 'الأهداف',
-  assists: 'صناعة الأهداف', tackles: 'الافتكاك', interceptions: 'قطع الكرة',
-  duels_won: 'الالتحامات الناجحة', duels_lost: 'الالتحامات الخاسرة',
-}
-
-function mmss(sec?: number) {
-  if (sec == null) return '—'
-  const m = Math.floor(sec / 60); const s = Math.round(sec % 60)
-  return `${m}:${String(s).padStart(2, '0')}`
-}
-
-function modelName(path?: string) {
-  if (!path) return null
-  const file = path.split('/').pop() ?? path
-  return file.replace(/\.pt$/i, '').toUpperCase()
-}
 
 function AnalysisCard({ a }: { a: SavedAnalysis }) {
   const home = a.match?.home_team ?? 'الفريق الأول'
@@ -44,7 +26,7 @@ function AnalysisCard({ a }: { a: SavedAnalysis }) {
         <div className="space-y-5 p-6 lg:col-span-3">
           <div>
             <p className="text-xs font-semibold text-teal-prime arabic-text">
-              تحليل حقيقي محفوظ{a.match?.competition ? ` · ${a.match.competition}` : ''}
+              تحليل محفوظ{a.match?.competition ? ` · ${a.match.competition}` : ''}
             </p>
             <h3 className="mt-2 text-3xl font-black tracking-tightest text-ice-white arabic-text">
               {home} <span className="text-ice-muted">×</span> {away}
@@ -55,28 +37,19 @@ function AnalysisCard({ a }: { a: SavedAnalysis }) {
             </p>
           </div>
 
-          {a.source && (
-            <div className="border-t border-white/10 pt-4 text-sm">
-              <p className="text-ice-muted arabic-text">المصدر</p>
-              <p className="mt-1 text-ice-white arabic-text">{a.source.source_title ?? '—'}</p>
-              <p className="mt-1 text-xs text-ice-muted arabic-text">
-                {a.source.channel ? `قناة ${a.source.channel} · ` : ''}مقطع من الدقيقة {mmss(start)} لمدة {mmss(a.source.segment_duration_seconds)}
-              </p>
-              {yt && (
-                <a
-                  href={`https://www.youtube.com/watch?v=${encodeURIComponent(yt)}&t=${Math.round(start)}s`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-2 rounded-full border border-teal-prime/40 px-4 py-2 text-sm font-bold text-teal-prime transition-colors hover:bg-teal-prime/10 arabic-text"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  شاهد المقطع المحلَّل على يوتيوب
-                </a>
-              )}
-            </div>
+          {yt && (
+            <a
+              href={`https://www.youtube.com/watch?v=${encodeURIComponent(yt)}&t=${Math.round(start)}s`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-teal-prime/40 px-4 py-2 text-sm font-bold text-teal-prime transition-colors hover:bg-teal-prime/10 arabic-text"
+            >
+              <ExternalLink className="h-4 w-4" />
+              شاهد المقطع
+            </a>
           )}
 
-          <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
             <div>
               <p className="flex items-center gap-1.5 text-[11px] text-ice-muted arabic-text"><Users className="h-3.5 w-3.5" /> لاعبون رُصدوا</p>
               <p className="mt-1 font-display text-3xl font-bold text-teal-prime">{a.playersTracked}</p>
@@ -85,33 +58,13 @@ function AnalysisCard({ a }: { a: SavedAnalysis }) {
               <p className="text-[11px] text-ice-muted arabic-text">لقطات حُلّلت</p>
               <p className="mt-1 font-display text-3xl font-bold text-ice-white">{a.method?.frames_processed ?? '—'}</p>
             </div>
-            <div>
-              <p className="flex items-center gap-1.5 text-[11px] text-ice-muted arabic-text"><Cpu className="h-3.5 w-3.5" /> طريقة الرصد</p>
-              <p className="mt-1 text-sm font-bold text-ice-white" dir="ltr">
-                {[modelName(a.method?.model), a.method?.tracking ? a.method.tracking.replace(/bytetrack/i, 'ByteTrack') : null].filter(Boolean).join(' + ') || '—'}
-              </p>
-            </div>
           </div>
 
-          <div className="space-y-2 border-t border-white/10 pt-4 text-xs leading-relaxed arabic-text">
-            {!a.calibrated && (
-              <p className="flex items-start gap-2 text-gold">
-                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-none" />
-                الملعب لم يُضبط لهذه المباراة، فلا تُعرض مسافات أو سرعات.
-              </p>
-            )}
-            {!a.identityConfirmed && (
-              <p className="text-ice-muted">أسماء اللاعبين لم تُحدَّد بعد؛ يحددها المدرب في «هوية اللاعبين» بالأسفل.</p>
-            )}
-            {a.notAvailable.length > 0 && (
-              <p className="text-ice-muted">
-                غير متاح من هذا التحليل: {a.notAvailable.map(k => METRIC_AR[k] ?? k).join('، ')}.
-              </p>
-            )}
-            {a.video?.width && a.video.width < 640 && (
-              <p className="text-ice-muted">دقة الفيديو المحلَّل منخفضة ({a.video.width}×{a.video.height})، لذلك عدد اللاعبين المرصودين أقل من الموجودين في الملعب.</p>
-            )}
-          </div>
+          {!a.identityConfirmed && (
+            <p className="border-t border-white/10 pt-4 text-xs text-ice-muted arabic-text">
+              حدّد أسماء اللاعبين في «هوية اللاعبين» بالأسفل.
+            </p>
+          )}
         </div>
 
         {/* Snapshot of positions in the camera frame */}
@@ -134,9 +87,6 @@ function AnalysisCard({ a }: { a: SavedAnalysis }) {
             <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-teal-prime" /> مجموعة أ ({t1.length})</span>
             <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-scout-blue" /> مجموعة ب ({t2.length})</span>
           </div>
-          <p className="mt-2 text-[11px] leading-relaxed text-ice-muted/80 arabic-text">
-            المواقع داخل إطار الكاميرا لا على الملعب، والتقسيم إلى مجموعتين تقريبي وليس تحديداً مؤكداً للفريقين.
-          </p>
         </div>
       </div>
     </article>

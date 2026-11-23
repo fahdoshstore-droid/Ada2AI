@@ -7,21 +7,12 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { FileText, Loader2, AlertCircle, ExternalLink, Users, Target, ShieldCheck, ChevronLeft } from 'lucide-react'
+import { FileText, Loader2, AlertCircle, Users, Target, ShieldCheck, ChevronLeft } from 'lucide-react'
 import {
   listEligibleReports, getMatchReport, ApiAuthError,
   type EligibleReport, type MatchReport, type MatchSummary, type ExternalGoal,
 } from '../../services/matchIntelligence'
 
-const PROVENANCE_AR: Record<string, string> = {
-  verified: 'مؤكد', derived: 'محسوب', heuristic: 'تقدير', not_available: 'غير متاح',
-  'EXTERNAL VERIFIED': 'مصدر خارجي موثّق',
-}
-const METRIC_AR: Record<string, string> = {
-  pass_accuracy: 'دقة التمرير', shots_on_target: 'التسديد على المرمى', goals: 'الأهداف',
-  assists: 'صناعة الأهداف', tackles: 'الافتكاك', interceptions: 'قطع الكرة',
-  duels_won: 'الالتحامات الناجحة', duels_lost: 'الالتحامات الخاسرة',
-}
 
 function title(m: MatchSummary) {
   return `${m.home_team || '؟'} × ${m.away_team || '؟'}`
@@ -63,7 +54,6 @@ function ReportView({ match, report }: { match: MatchSummary; report: MatchRepor
   const dq = report.data_quality
   const tracked = dq?.tracking_quality?.person_tracks ?? players.length
   const isExternalOnly = !!ext && tracked === 0
-  const calibrated = !!(report.calibration?.calibrated ?? dq?.calibrated)
 
   return (
     <div className="space-y-5" data-testid="match-report-view" data-match-id={report.match_id}>
@@ -78,15 +68,12 @@ function ReportView({ match, report }: { match: MatchSummary; report: MatchRepor
         </p>
       </div>
 
-      <Section heading="مصدر البيانات" icon={ShieldCheck}>
+      <Section heading="ملخص التقرير" icon={ShieldCheck}>
         <p className="text-sm text-ice-white arabic-text">
           {isExternalOnly
-            ? 'بيانات خارجية موثّقة من مصادر إعلامية (أهداف وتشكيلات) — لا يوجد تتبع فيديو لهذه المباراة.'
-            : `رصد اللاعبين من فيديو المباراة (${tracked} لاعباً).`}
+            ? 'أهداف المباراة وتشكيلة الفريقين.'
+            : `رصدت المنصة ${tracked} لاعبين من فيديو المباراة.`}
         </p>
-        {dq?.positioning_evidence?.note && !isExternalOnly && (
-          <p className="mt-1 text-xs text-ice-muted arabic-text">{dq.positioning_evidence.note}</p>
-        )}
       </Section>
 
       {ext?.goals && (ext.goals.first_half?.length || ext.goals.second_half?.length) ? (
@@ -95,7 +82,6 @@ function ReportView({ match, report }: { match: MatchSummary; report: MatchRepor
             <GoalsList goals={ext.goals.first_half} half="الشوط الأول" />
             <GoalsList goals={ext.goals.second_half} half="الشوط الثاني" />
           </div>
-          <p className="mt-2 text-[11px] text-ice-muted arabic-text">{PROVENANCE_AR[ext.provenance ?? ''] ?? ext.provenance}</p>
         </Section>
       ) : null}
 
@@ -116,7 +102,7 @@ function ReportView({ match, report }: { match: MatchSummary; report: MatchRepor
         <Section heading="اللاعبون المرصودون" icon={Users}>
           {teams.length > 0 && (
             <p className="mb-3 text-xs text-ice-muted arabic-text">
-              {teams.map(t => `${t.team_label ?? 'مجموعة'}: ${t.player_count ?? 0}`).join(' · ')} — التقسيم إلى مجموعتين تقريبي.
+              {teams.map(t => `${t.team_label ?? 'مجموعة'}: ${t.player_count ?? 0}`).join(' · ')}
             </p>
           )}
           <ul className="grid gap-2 sm:grid-cols-2">
@@ -128,7 +114,6 @@ function ReportView({ match, report }: { match: MatchSummary; report: MatchRepor
                     <span className="font-bold text-ice-white arabic-text">رقم {p.track_id}</span>
                     <span className="text-ice-muted arabic-text">{p.team ? `مجموعة ${p.team === 1 ? 'أ' : 'ب'}` : ''}{frames != null ? ` · ظهر في ${frames} لقطات` : ''}</span>
                   </div>
-                  {p.match_impact && <p className="mt-1 text-ice-muted arabic-text">{p.match_impact}</p>}
                 </li>
               )
             })}
@@ -138,46 +123,17 @@ function ReportView({ match, report }: { match: MatchSummary; report: MatchRepor
 
       {report.coach?.tactical_shape && players.length > 0 && (
         <Section heading="الشكل التكتيكي">
-          <p className="text-sm text-ice-white arabic-text">{report.coach.tactical_shape}</p>
-          <p className="mt-1 text-[11px] text-ice-muted arabic-text">
-            {PROVENANCE_AR[report.coach.provenance ?? ''] ?? 'تقدير'}
-            {typeof report.coach.confidence === 'number' ? ` · الثقة ${Math.round(report.coach.confidence * 100)}٪` : ''}
-          </p>
+          <p className="text-sm text-ice-white arabic-text">{report.coach.tactical_shape.replace(/\bvs\b/gi, 'مقابل')}</p>
         </Section>
       )}
 
-      <Section heading="جودة البيانات">
-        <ul className="space-y-1.5 text-xs leading-relaxed arabic-text">
-          {!isExternalOnly && (
-            <li className={calibrated ? 'text-teal-prime' : 'text-gold'}>
-              {calibrated ? 'الملعب مضبوط لهذه المباراة.' : 'الملعب غير مضبوط لهذه المباراة، فلا تُعرض مسافات أو سرعات.'}
-            </li>
-          )}
-          {players.length > 0 && (
-            <li className="text-ice-muted">{dq?.player_identity_confirmed ? 'أسماء اللاعبين محدَّدة.' : 'أرقام اللاعبين مؤقتة، وأسماؤهم لم تُحدَّد بعد.'}</li>
-          )}
-          <li className="text-ice-muted">{match.has_replay ? 'إعادة المباراة متاحة.' : 'لا توجد إعادة متحركة لهذه المباراة؛ التقرير متاح رغم ذلك.'}</li>
-          {dq?.not_available_metrics?.length ? (
-            <li className="text-ice-muted">غير متاح: {dq.not_available_metrics.map(k => METRIC_AR[k] ?? k).join('، ')}.</li>
-          ) : null}
-        </ul>
-      </Section>
+      {players.length > 0 && !dq?.player_identity_confirmed && (
+        <p className="border-t border-white/10 pt-4 text-xs text-ice-muted arabic-text">
+          الأرقام مؤقتة لكل لاعب ظهر في الفيديو؛ يحدد المدرب أسماءهم من صفحة «تحليل المباراة».
+        </p>
+      )}
 
-      {ext?.sources?.length ? (
-        <Section heading="المصادر">
-          <ul className="flex flex-wrap gap-2">
-            {ext.sources.map(s => (
-              <li key={s.url}>
-                <a href={s.url} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1 text-xs text-teal-prime hover:border-teal-prime/40">
-                  <ExternalLink className="h-3 w-3" />
-                  <span dir="ltr">{s.name ?? new URL(s.url).hostname}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
+
     </div>
   )
 }
@@ -256,7 +212,6 @@ export default function MatchReportsPanel() {
           <ul className="space-y-2 lg:col-span-1" aria-label="المباريات المحللة">
             {items.map(item => {
               const active = selected.phase !== 'idle' && selected.id === item.match.id
-              const external = !!item.report.external_match_data && (item.report.data_quality?.tracking_quality?.person_tracks ?? 0) === 0
               return (
                 <li key={item.match.id}>
                   <button
@@ -270,7 +225,7 @@ export default function MatchReportsPanel() {
                       <p className="mt-0.5 text-[11px] text-ice-muted arabic-text">
                         {[item.match.competition, item.match.match_date ? new Date(item.match.match_date).toLocaleDateString('ar-SA') : null].filter(Boolean).join(' · ')}
                       </p>
-                      <p className="mt-1 text-[11px] text-teal-prime arabic-text">{external ? 'تقرير متاح · بيانات خارجية' : 'تقرير متاح · رصد بالفيديو'}</p>
+                      <p className="mt-1 text-[11px] text-teal-prime arabic-text">تقرير متاح</p>
                     </div>
                     <ChevronLeft className="h-4 w-4 text-teal-prime" />
                   </button>
