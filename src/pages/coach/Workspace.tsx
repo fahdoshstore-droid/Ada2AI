@@ -541,6 +541,9 @@ export default function CoachWorkspace() {
               {completed.map((analysis) => {
                 const results = analysis.analysis_data
                 const isExpanded = expandedId === analysis.id
+                // A record marked "completed" with no analysis data is a demo row,
+                // not an analysed match — label it so it is never read as real.
+                const isExample = !results || Object.keys(results).length === 0
 
                 return (
                   <div key={analysis.id} className="bg-white/5 rounded-xl p-4">
@@ -549,7 +552,7 @@ export default function CoachWorkspace() {
                       onClick={() => setExpandedId(isExpanded ? null : analysis.id)}
                     >
                       <div className="flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-teal-prime flex-shrink-0" />
+                        <CheckCircle className={`w-5 h-5 flex-shrink-0 ${isExample ? 'text-ice-muted' : 'text-teal-prime'}`} />
                         <div>
                           <p className="text-ice-white text-sm font-medium arabic-text">
                             {analysis.title || 'تحليل فيديو'}
@@ -562,16 +565,24 @@ export default function CoachWorkspace() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <StatusBadge status={toUiStatus(analysis.status)} />
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            navigate(`/player/${analysis.uploaded_by}`)
-                          }}
-                          className="text-xs text-teal-prime hover:underline arabic-text"
-                        >
-                          عرض اللاعب
-                        </button>
+                        {isExample ? (
+                          <span className="inline-flex items-center rounded-lg border border-gold/40 bg-gold/10 px-2.5 py-1 text-xs text-gold arabic-text">
+                            مثال توضيحي
+                          </span>
+                        ) : (
+                          <StatusBadge status={toUiStatus(analysis.status)} />
+                        )}
+                        {analysis.uploaded_by && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              navigate(`/player/${analysis.uploaded_by}`)
+                            }}
+                            className="text-xs text-teal-prime hover:underline arabic-text"
+                          >
+                            عرض اللاعب
+                          </button>
+                        )}
                         {isExpanded ? (
                           <ChevronUp className="w-4 h-4 text-ice-muted" />
                         ) : (
@@ -581,6 +592,11 @@ export default function CoachWorkspace() {
                     </div>
 
                     {/* Expanded Results */}
+                    {isExpanded && isExample && (
+                      <p className="mt-3 border-t border-white/5 pt-3 text-xs text-ice-muted arabic-text">
+                        هذا سجل توضيحي لعرض شكل القائمة، ولا يحتوي على تحليل حقيقي لهذه المباراة.
+                      </p>
+                    )}
                     <AnimatePresence>
                       {isExpanded && results && (
                         <motion.div
