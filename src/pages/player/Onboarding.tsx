@@ -158,12 +158,14 @@ export default function PlayerOnboarding() {
   // ── UI ────────────────────────────────────────────────────
 
   return (
-    <div dir="rtl" className="min-h-screen bg-navy flex flex-col">
-      {/* Header */}
-      <div className="relative overflow-hidden bg-navy-light/50 border-b border-white/5">
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <h1 className="tracking-tightest text-2xl font-black text-ice-white arabic-text mb-1">
-            مرحباً {profile?.full_name?.split(' ')[0] ?? ''} 👋
+    <div dir="rtl" className="min-h-screen bg-[#000A0F] flex flex-col">
+      {/* Header — Floodlight working register */}
+      <div className="relative overflow-hidden border-b border-white/10">
+        <div className="absolute inset-0 bg-[radial-gradient(55%_60%_at_80%_0%,rgba(0,220,200,0.12),transparent_70%)]" aria-hidden="true" />
+        <div className="grain-overlay" />
+        <div className="relative max-w-2xl mx-auto px-4 py-10">
+          <h1 className="tracking-tightest text-3xl md:text-4xl font-black leading-[1.25] text-ice-white arabic-text mb-1">
+            مرحباً <span className="text-teal-prime">{profile?.full_name?.split(' ')[0] ?? ''}</span>
           </h1>
           <p className="text-ice-muted text-sm arabic-text">
             أنشئ هويتك الرياضية في دقيقتين

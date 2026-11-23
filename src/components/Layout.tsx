@@ -11,11 +11,10 @@ const navLinks = [
     name: 'المنتجات', 
     path: '/sport-id',
     dropdown: [
-      { name: 'الهوية الرياضية', path: '/sport-id', icon: 'badge', desc: 'بطاقة FIFA لكل لاعب' },
+      { name: 'الهوية الرياضية', path: '/sport-id', icon: 'badge', desc: 'بطاقة رقمية لكل لاعب' },
       { name: 'لوحة الكشافين', path: '/scout', icon: 'person_search', desc: 'اكتشاف المواهب' },
       { name: 'لوحة المدربين', path: '/coach', icon: 'sports', desc: 'إدارة الفريق' },
       { name: 'لوحة المنشآت', path: '/organizations', icon: 'groups', desc: 'إدارة اللاعبين' },
-      { name: 'نادي الروضة', path: '/club/rawdha', icon: 'stadium', desc: 'لوحة تحكم النادي' },
     ]
   },
   { name: 'الترتيب', path: '/rankings' },
@@ -319,7 +318,6 @@ export default function Layout() {
                 {[
                   { name: 'ترتيب المواهب', path: '/rankings' },
                   { name: 'تحليل اللاعبين', path: '/player-analysis' },
-                  { name: 'نادي الروضة', path: '/club/rawdha' },
                 ].map((item) => (
                   <li key={item.name}>
                     <Link to={item.path} className="text-sm text-ice-muted/60 hover:text-teal-prime transition-colors arabic-text">

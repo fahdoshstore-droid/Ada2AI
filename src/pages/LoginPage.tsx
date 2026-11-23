@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import type { UserType } from '../lib/supabase'
+import { Letterbox } from '../components/cinema/Cinema'
+import keeperRain from '../assets/cinema/keeper-rain.jpg'
 
 export default function LoginPage() {
   const { signIn, signUp, user, profile, profileError, loading: authLoading } = useAuth()
@@ -66,13 +68,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-navy flex items-center justify-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-radial opacity-50" />
-      <div className="absolute inset-0 grid-pattern opacity-30" />
-      <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-teal-prime/10 rounded-full blur-[128px]" />
-
-      <div className="relative w-full max-w-md mx-4">
-        <div className="glass-card rounded-2xl p-8">
+    <div className="relative grid min-h-screen overflow-hidden bg-[#000A0F] lg:grid-cols-2" dir="rtl">
+      {/* Form side */}
+      <div className="relative flex items-center justify-center px-4 pb-16 pt-28">
+        <div className="absolute inset-0 bg-[radial-gradient(55%_50%_at_70%_10%,rgba(0,220,200,0.12),transparent_70%)]" aria-hidden="true" />
+        <div className="grain-overlay" />
+      <div className="relative w-full max-w-md">
+        <div className="border border-white/10 bg-white/[0.03] p-8 backdrop-blur-sm">
           {/* Logo */}
           <div className="flex items-center justify-center gap-3 mb-8">
             <div className="w-12 h-12 bg-gradient-to-br from-teal-prime to-scout-blue rounded-xl flex items-center justify-center rotate-45 scale-75">
@@ -181,7 +183,7 @@ export default function LoginPage() {
               onClick={() => navigate('/#footage-intel')}
               className="w-full py-2.5 rounded-lg text-sm font-medium border border-teal-prime/30 text-teal-prime hover:bg-teal-prime/10 transition-colors arabic-text"
             >
-              🎬 عرض تجريبي
+              عرض تجريبي
             </button>
             <p className="text-ice-muted text-xs mt-2 arabic-text">
               شاهد جولة المنصة وتجربة التحليل بدون تسجيل دخول
@@ -189,6 +191,27 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+      </div>
+
+      {/* Image side — cinematic frame, desktop only */}
+      <aside className="relative hidden overflow-hidden lg:block" aria-hidden="true">
+        <img src={keeperRain} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover object-[68%_50%]" />
+        <div className="absolute inset-0 bg-gradient-to-l from-[#000A0F] via-[#000A0F]/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#000A0F]/90 via-transparent to-[#000A0F]/40" />
+        <div className="grain-overlay" />
+        <Letterbox height="4svh" />
+        <div className="absolute inset-x-0 bottom-0 z-10 p-12">
+          <div className="mb-4 flex items-center gap-3 text-sm font-semibold text-teal-prime">
+            <span className="h-px w-10 bg-teal-prime" />
+            <span className="arabic-text">أدائي</span>
+          </div>
+          <p className="max-w-md text-4xl font-black leading-[1.3] tracking-tightest text-ice-white arabic-text">
+            كل لاعب له قصة.
+            <span className="block text-teal-prime">نحن نقيسها.</span>
+          </p>
+          <span className="mt-6 block text-[10px] text-ice-muted/70 arabic-text">صورة مولّدة بالذكاء الاصطناعي</span>
+        </div>
+      </aside>
     </div>
   )
 }

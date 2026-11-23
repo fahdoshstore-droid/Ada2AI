@@ -2,9 +2,9 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import {
-  Badge, UserSearch, Dumbbell, Users, TrendingUp,
-  Bot, School, Play, ArrowLeft, BarChart3,
-  Shield, Zap, Globe, Award, ChevronLeft, Eye
+  Badge, UserSearch, Dumbbell, Users, Star, Share2, Filter, LayoutGrid, Film,
+  Play, ArrowLeft, BarChart3,
+  Shield, Zap, Languages, Award, ChevronLeft, Eye
 } from 'lucide-react';
 import { EASE, GhostNumber, ImageReveal, Letterbox, SplitReveal, Stagger, StaggerItem } from '../components/cinema/Cinema';
 import heroSprint from '../assets/cinema/hero-sprint.jpg';
@@ -18,14 +18,14 @@ const mainProducts = [
     id: 'sport-identity',
     icon: Badge,
     title: 'الهوية الرياضية',
-    desc: 'بطاقة FIFA رقمية لكل لاعب مع تقييم شامل وتحليل أداء مستمر',
+    desc: 'بطاقة رقمية لكل لاعب بأسلوب بطاقات اللاعبين، مع تقييم مدربه وتحليل أدائه',
     path: '/sport-id',
     color: 'from-teal-prime to-teal-glow',
     accent: 'teal-prime',
     addons: [
-      { title: 'محرك تطوير الأداء', icon: TrendingUp, desc: 'تحليل تطوري مخصص' },
-      { title: 'مساعد افتراضي', icon: Bot, desc: 'دعم ذكي 24/7' },
-      { title: 'مركز التطوير', icon: School, desc: 'برامج تدريب متقدمة' },
+      { title: 'تقييم المدرب', icon: Star, desc: 'أربعة محاور' },
+      { title: 'ترتيب المواهب', icon: Award, desc: 'حسب المركز' },
+      { title: 'بطاقة قابلة للمشاركة', icon: Share2, desc: 'رابط واحد' },
     ]
   },
   {
@@ -37,23 +37,23 @@ const mainProducts = [
     color: 'from-scout-blue to-scout-light',
     accent: 'scout-blue',
     addons: [
-      { title: 'محرك تطوير الأداء', icon: TrendingUp, desc: 'تحليل تطوري مخصص' },
-      { title: 'مساعد افتراضي', icon: Bot, desc: 'دعم ذكي 24/7' },
-      { title: 'مركز التطوير', icon: School, desc: 'برامج تدريب متقدمة' },
+      { title: 'تصفية متقدمة', icon: Filter, desc: 'الاسم والعمر والمركز' },
+      { title: 'مقارنة لاعبين', icon: BarChart3, desc: 'جنباً إلى جنب' },
+      { title: 'مشاركة ملف اللاعب', icon: Share2, desc: 'رابط مباشر' },
     ]
   },
   {
     id: 'coach-dashboard',
     icon: Dumbbell,
     title: 'لوحة المدربين',
-    desc: 'إدارة الفريق والتدريبات مع خطط تكتيكية مدعومة بالذكاء الاصطناعي',
+    desc: 'تشكيل الفريق وتقييم اللاعبين، مع تحليل المباريات بالفيديو ورصد اللاعبين تلقائياً',
     path: '/coach',
     color: 'from-scout-blue to-teal-prime',
     accent: 'teal-prime',
     addons: [
-      { title: 'محرك تطوير الأداء', icon: TrendingUp, desc: 'تحليل تطوري مخصص' },
-      { title: 'مساعد افتراضي', icon: Bot, desc: 'دعم ذكي 24/7' },
-      { title: 'مركز التطوير', icon: School, desc: 'برامج تدريب متقدمة' },
+      { title: 'تشكيل الفريق', icon: LayoutGrid, desc: 'ست خطط وحفظ' },
+      { title: 'تقييم اللاعبين', icon: Star, desc: 'أربعة محاور' },
+      { title: 'تحليل المباراة بالفيديو', icon: Film, desc: 'رصد اللاعبين' },
     ]
   },
   {
@@ -72,9 +72,9 @@ const features = [
   { icon: Zap, title: 'تحليل بالذكاء الاصطناعي', desc: 'تحليل مباريات فيديو متقدم عبر الرؤية الحاسوبية ونماذج التعلم العميق', wide: true },
   { icon: Shield, title: 'هوية رقمية موثقة', desc: 'بطاقة رقمية لكل لاعب تتضمن جميع البيانات والإحصائيات والإنجازات' },
   { icon: BarChart3, title: 'إحصائيات متقدمة', desc: 'مؤشرات أداء دقيقة ومقارنات تفصيلية بين اللاعبين' },
-  { icon: Globe, title: 'تغطية عالمية', desc: 'قاعدة بيانات واسعة تشمل آلاف اللاعبين حول العالم' },
-  { icon: Eye, title: 'كشف المواهب', desc: 'خوارزميات متقدمة لاكتشاف المواهب الواعدة تلقائياً', wide: true },
-  { icon: Award, title: 'تقييم احترافي', desc: 'نظام تقييم يعتمد على معايير دولية موثقة من FIFA' },
+  { icon: Languages, title: 'عربية بالكامل', desc: 'واجهة عربية من اليمين لليسار، بمصطلحات المدربين والكشافين' },
+  { icon: Eye, title: 'اكتشاف المواهب', desc: 'تصفية ومقارنة اللاعبين حسب المركز والعمر والتقييم في مكان واحد', wide: true },
+  { icon: Award, title: 'تقييم احترافي', desc: 'تقييم المدرب على أربعة محاور: فني، تكتيكي، بدني، وذهني' },
 ];
 
 const stats = [

@@ -194,11 +194,11 @@ export default function PlayerDashboard() {
   // ── Render ───────────────────────────────────────────────
 
   return (
-    <div dir="rtl" className="min-h-screen bg-navy">
-      {/* Header */}
-      <div className="relative bg-navy-light/50 border-b border-white/5 overflow-hidden">
-        <div className="absolute inset-0 grid-pattern opacity-10" />
-        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-prime/5 rounded-full blur-[80px]" />
+    <div dir="rtl" className="min-h-screen bg-[#000A0F]">
+      {/* Header — Floodlight working register */}
+      <div className="relative border-b border-white/10 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(55%_60%_at_80%_0%,rgba(0,220,200,0.12),transparent_70%)]" aria-hidden="true" />
+        <div className="grain-overlay" />
 
         <div className="relative max-w-5xl mx-auto px-4 py-8">
           <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -210,7 +210,7 @@ export default function PlayerDashboard() {
 
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl font-black text-ice-white arabic-text">
+                  <h1 className="text-2xl md:text-3xl font-black tracking-tightest text-ice-white arabic-text">
                     {profile?.full_name ?? playerRecord.name ?? 'اللاعب'}
                   </h1>
                   {playerRecord.is_verified && (

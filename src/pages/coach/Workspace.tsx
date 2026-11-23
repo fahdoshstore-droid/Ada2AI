@@ -15,7 +15,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Clock, Loader2, CheckCircle, XCircle,
   Play, ClipboardList, BarChart3,
-  ChevronDown, ChevronUp, ArrowLeft, Users, Swords, Upload as UploadIcon, FileText, Radar
+  ChevronDown, ChevronUp, ArrowLeft, Users, Swords, Upload as UploadIcon, FileText, Radar, Briefcase
 } from 'lucide-react'
 import {
   usePendingAnalyses,
@@ -30,6 +30,7 @@ import { SectionHeader } from '../../components/SectionHeader'
 import PitchView, { type FormationKey } from '../../components/coach/PitchView'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
+import PageHeader from '../../components/cinema/PageHeader'
 
 // ── Results Form ──────────────────────────────────────────────
 
@@ -322,25 +323,27 @@ export default function CoachWorkspace() {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-navy">
-      <div className="absolute inset-0 bg-gradient-radial opacity-30" />
-      <div className="absolute inset-0 grid-pattern opacity-10" />
+    <div dir="rtl" className="min-h-screen bg-[#000A0F]">
+      <PageHeader
+        eyebrow="لوحة المدربين"
+        icon={Briefcase}
+        titleTop="مساحة"
+        titleBottom="العمل"
+        description="تشكيل الفريق، والفيديوهات التي تنتظر تقييمك، وتحليل اللاعبين والمنافسين."
+        compact
+      >
+        <button
+          onClick={() => navigate('/coach')}
+          className="mt-5 inline-flex items-center gap-1.5 text-sm text-ice-muted transition-colors hover:text-ice-white arabic-text"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          رجوع إلى لوحة المدربين
+        </button>
+      </PageHeader>
 
-      <div className="relative max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {/* Header + Tabs */}
+      <div className="relative max-w-4xl mx-auto px-4 pb-16 space-y-6">
+        {/* Tabs */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate('/coach')}
-                className="flex items-center gap-1.5 text-ice-muted text-sm hover:text-ice-white transition-colors arabic-text"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                رجوع
-              </button>
-            </div>
-            <h1 className="text-xl font-black font-display text-ice-white arabic-text">مساحة العمل</h1>
-          </div>
           {/* Tab Buttons */}
           <div className="flex gap-2">
             <button

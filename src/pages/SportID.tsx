@@ -9,7 +9,7 @@ const features = [
   {
     icon: QrCode,
     title: 'بطاقة رقمية موحدة',
-    desc: 'بطاقة FIFA رقمية لكل لاعب تحتوي على جميع البيانات والإحصائيات',
+    desc: 'بطاقة رقمية لكل لاعب تجمع بياناته وتقييماته في مكان واحد',
   },
   {
     icon: BarChart3,
@@ -50,7 +50,7 @@ export default function SportID() {
         icon={Badge}
         titleTop="الهوية"
         titleBottom="الرياضية"
-        description="بطاقة FIFA رقمية شاملة لكل لاعب. احصل على هويتك الرياضية الموثقة مع تقييم شامل وتحليل أداء مستمر يتتبع تطورك في كل مباراة."
+        description="بطاقة رقمية لكل لاعب تجمع بياناته وتقييم مدربه وتحليل أدائه، ويمكن مشاركتها مع الأندية والكشافين."
       >
         <button onClick={() => navigate('/player/onboarding')} className="btn-primary mt-8 rounded-xl px-8 py-4 arabic-text">
           احصل على هويتك الرياضية
@@ -115,9 +115,9 @@ export default function SportID() {
               </p>
               <div className="space-y-4">
                 {[
-                  { label: 'تقييم FIFA الرسمي', value: '86/100' },
-                  { label: 'المباريات المحللة', value: '47' },
-                  { label: 'دقة التمرير', value: '92%' },
+                  { label: 'التقييم العام — مثال', value: '86/100' },
+                  { label: 'المباريات المحللة — مثال', value: '47' },
+                  { label: 'دقة التمرير — مثال', value: '92%' },
                 ].map((stat) => (
                   <div key={stat.label} className="flex items-center justify-between glass-card rounded-xl p-4">
                     <span className="text-ice-muted text-sm arabic-text">{stat.label}</span>

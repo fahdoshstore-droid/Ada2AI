@@ -103,8 +103,8 @@ export default function PlayerUpload() {
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#000A0F] relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-radial opacity-30" />
-      <div className="absolute inset-0 grid-pattern-fine opacity-[0.03]" />
+      <div className="absolute inset-0 bg-[radial-gradient(55%_60%_at_80%_0%,rgba(0,220,200,0.12),transparent_70%)]" aria-hidden="true" />
+      <div className="grain-overlay" />
 
       <div className="relative max-w-xl mx-auto px-4 pt-6 pb-12">
         {/* Back */}

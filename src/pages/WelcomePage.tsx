@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import type { UserType } from '../lib/supabase'
+import { Letterbox } from '../components/cinema/Cinema'
 
 interface RoleConfig {
   greeting: string
@@ -28,7 +29,7 @@ interface RoleConfig {
 
 const roleConfigs: Record<UserType, RoleConfig> = {
   player: {
-    greeting: 'مرحباً بك يا بطل! 🏆',
+    greeting: 'مرحباً بك يا بطل!',
     subtitle: 'الهوية الرياضية الخاصة بك جاهزة',
     icon: <Trophy className="w-12 h-12" />,
     accent: 'from-teal-prime to-emerald-400',
@@ -52,7 +53,7 @@ const roleConfigs: Record<UserType, RoleConfig> = {
     profilePrompt: 'أكمل ملفك الشخصي الرياضي لتظهر للكشافين والمدربين',
   },
   coach: {
-    greeting: 'مرحباً بك يا مدرب! 🎯',
+    greeting: 'مرحباً بك يا مدرب!',
     subtitle: 'أدوات إدارة الفريق في انتظارك',
     icon: <Target className="w-12 h-12" />,
     accent: 'from-teal-prime to-scout-blue',
@@ -76,7 +77,7 @@ const roleConfigs: Record<UserType, RoleConfig> = {
     profilePrompt: 'أضف فريقك وابدأ بإدارة اللاعبين والخطط',
   },
   scout: {
-    greeting: 'مرحباً بك يا كشاف! 🔍',
+    greeting: 'مرحباً بك يا كشاف!',
     subtitle: 'اكتشف المواهب القادمة',
     icon: <Search className="w-12 h-12" />,
     accent: 'from-scout-blue to-teal-prime',
@@ -88,8 +89,8 @@ const roleConfigs: Record<UserType, RoleConfig> = {
       },
       {
         icon: <Star className="w-6 h-6" />,
-        title: 'التقييم الذكي',
-        desc: 'تقييمات مدعومة بالذكاء الاصطناعي لكل لاعب',
+        title: 'تقييمات المدربين',
+        desc: 'اطّلع على تقييم المدرب لكل لاعب على أربعة محاور',
       },
       {
         icon: <FileCheck className="w-6 h-6" />,
@@ -139,12 +140,11 @@ export default function WelcomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-navy flex items-center justify-center relative overflow-hidden" dir="rtl">
-      {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-radial opacity-50" />
-      <div className="absolute inset-0 grid-pattern opacity-30" />
-      <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-teal-prime/10 rounded-full blur-[128px]" />
-      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-scout-blue/10 rounded-full blur-[128px]" />
+    <div className="min-h-screen bg-[#000A0F] flex items-center justify-center relative overflow-hidden py-28" dir="rtl">
+      {/* Floodlight backdrop: one radial glow, grain, letterbox */}
+      <div className="absolute inset-0 bg-[radial-gradient(60%_55%_at_50%_0%,rgba(0,220,200,0.14),transparent_70%)]" aria-hidden="true" />
+      <div className="grain-overlay" />
+      <Letterbox height="3svh" />
 
       <motion.div
         className="relative w-full max-w-2xl mx-4"
@@ -164,7 +164,7 @@ export default function WelcomePage() {
             {config.icon}
           </motion.div>
 
-          <h1 className="tracking-tightest text-4xl md:text-5xl font-black text-gradient-teal arabic-text mb-3">
+          <h1 className="tracking-tightest text-4xl md:text-6xl font-black leading-[1.25] text-teal-prime arabic-text mb-3">
             {config.greeting}
           </h1>
           <p className="text-ice-muted text-lg arabic-text">
@@ -178,7 +178,7 @@ export default function WelcomePage() {
             <motion.div
               key={idx}
               variants={itemVariants}
-              className="glass-card rounded-2xl p-6 text-center group hover:border-teal-prime/40 transition-all duration-300"
+              className="border border-white/10 bg-white/[0.03] p-6 text-center group transition-colors duration-300 hover:border-teal-prime/40"
             >
               <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${config.accent} text-ice-white mb-4 group-hover:scale-110 transition-transform duration-300`}>
                 {feature.icon}

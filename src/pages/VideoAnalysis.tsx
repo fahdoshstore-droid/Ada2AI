@@ -9,12 +9,13 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Film, Clock, Loader2, CheckCircle2, XCircle,
-  Upload, ArrowLeft, AlertCircle
+  Upload, AlertCircle
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { usePlayerAnalyses } from '../hooks/useAnalysis'
 import { toUiStatus } from '../services/analysis'
 import { AnalysisResultsView } from '../components/coach/AnalysisResultsView'
+import PageHeader from '../components/cinema/PageHeader'
 
 const STATUS_CONFIG: Record<string, { icon: typeof Clock; label: string; color: string; spin?: boolean }> = {
   queued: { icon: Clock, label: 'في الانتظار', color: 'text-amber-400 bg-amber-400/10' },
@@ -68,30 +69,24 @@ export default function VideoAnalysis() {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-navy">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-ice-muted hover:text-ice-white hover:bg-white/10 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <h1 className="tracking-tightest text-2xl font-black text-ice-white arabic-text">تحليلات الفيديو</h1>
-              <p className="text-ice-muted text-sm arabic-text">جميع تحليلات الفيديو الخاصة بك</p>
-            </div>
-          </div>
-          <button
-            onClick={() => navigate(uploadPath)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl btn-primary text-sm arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all"
-          >
-            <Upload className="w-4 h-4" />
-            رفع فيديو
-          </button>
-        </div>
+    <div dir="rtl" className="min-h-screen bg-[#000A0F]">
+      <PageHeader
+        eyebrow="تحليل الفيديو"
+        icon={Film}
+        titleTop="تحليلات"
+        titleBottom="الفيديو"
+        description="كل فيديو رفعته، وحالة تحليله، ونتائجه حين تكتمل."
+        compact
+      >
+        <button
+          onClick={() => navigate(uploadPath)}
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue px-5 py-2.5 text-sm font-bold text-navy-dark transition-all hover:shadow-lg hover:shadow-teal-prime/25 arabic-text"
+        >
+          <Upload className="w-4 h-4" />
+          رفع فيديو
+        </button>
+      </PageHeader>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
 
         {/* Loading */}
         {loading && (
