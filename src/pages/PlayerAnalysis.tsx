@@ -64,7 +64,11 @@ export default function PlayerAnalysis() {
                   placeholder="ابحث عن لاعب..."
                   className="flex-1 bg-transparent text-ice-white text-lg placeholder:text-ice-muted/60 outline-none py-2 arabic-text font-display tracking-tight"
                 />
-                <button className="btn-primary px-6 py-3 text-sm font-bold arabic-text">
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('player-analysis-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  className="btn-primary px-6 py-3 text-sm font-bold arabic-text"
+                >
                   تحليل
                 </button>
               </div>
@@ -104,7 +108,7 @@ export default function PlayerAnalysis() {
 
       {/* Player Profile */}
       {!loading && selectedPlayer && (
-        <section className="relative py-16">
+        <section id="player-analysis-result" className="relative scroll-mt-24 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Player Info Card */}

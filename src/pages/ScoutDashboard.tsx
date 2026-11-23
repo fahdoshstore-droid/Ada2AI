@@ -33,10 +33,29 @@ export default function ScoutDashboard() {
   const [compareList, setCompareList] = useState<string[]>([])
   const [reportFor, setReportFor] = useState<Player | null>(null)
 
-  const { players, loading, error, pageSize } = useScoutPlayers(
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [nameQuery, setNameQuery] = useState('')
+  const [minAge, setMinAge] = useState('')
+  const [maxAge, setMaxAge] = useState('')
+  const [verifiedOnly, setVerifiedOnly] = useState(false)
+
+  const { players: pagePlayers, loading, error, pageSize } = useScoutPlayers(
     activeFilter !== 'الكل' ? activeFilter : undefined,
     page
   )
+
+  // Advanced filters refine the current page client-side (name/club, age range, verified).
+  const q = nameQuery.trim().toLowerCase()
+  const min = minAge ? Number(minAge) : null
+  const max = maxAge ? Number(maxAge) : null
+  const advancedActive = Boolean(q) || min !== null || max !== null || verifiedOnly
+  const players = pagePlayers.filter((p) => {
+    if (q && !`${p.name ?? ''} ${p.club ?? ''}`.toLowerCase().includes(q)) return false
+    if (min !== null && (p.age == null || p.age < min)) return false
+    if (max !== null && (p.age == null || p.age > max)) return false
+    if (verifiedOnly && !p.is_verified) return false
+    return true
+  })
 
   // ── Actions ────────────────────────────────────────────────
 
@@ -147,11 +166,68 @@ export default function ScoutDashboard() {
                 {f}
               </button>
             ))}
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl glass-card text-ice-muted hover:text-ice-white transition-all mr-auto">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((v) => !v)}
+              aria-expanded={showAdvanced}
+              aria-controls="scout-advanced-filters"
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl glass-card transition-all mr-auto ${
+                showAdvanced || advancedActive ? 'text-teal-prime border-teal-prime/40' : 'text-ice-muted hover:text-ice-white'
+              }`}
+            >
               <Filter className="w-4 h-4" />
               <span className="arabic-text">تصفية متقدمة</span>
             </button>
           </div>
+
+          {showAdvanced && (
+            <div id="scout-advanced-filters" className="glass-card mb-8 grid gap-4 rounded-2xl p-5 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="flex flex-col gap-1.5 text-sm text-ice-muted arabic-text">
+                الاسم أو النادي
+                <input
+                  type="text"
+                  value={nameQuery}
+                  onChange={(e) => setNameQuery(e.target.value)}
+                  placeholder="ابحث…"
+                  className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-ice-white outline-none focus:border-teal-prime/50"
+                />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm text-ice-muted arabic-text">
+                العمر من
+                <input
+                  type="number" min={5} max={60} inputMode="numeric"
+                  value={minAge}
+                  onChange={(e) => setMinAge(e.target.value)}
+                  className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-ice-white outline-none focus:border-teal-prime/50"
+                />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm text-ice-muted arabic-text">
+                العمر إلى
+                <input
+                  type="number" min={5} max={60} inputMode="numeric"
+                  value={maxAge}
+                  onChange={(e) => setMaxAge(e.target.value)}
+                  className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-ice-white outline-none focus:border-teal-prime/50"
+                />
+              </label>
+              <div className="flex flex-col justify-end gap-3">
+                <label className="flex items-center gap-2 text-sm text-ice-muted arabic-text">
+                  <input type="checkbox" checked={verifiedOnly} onChange={(e) => setVerifiedOnly(e.target.checked)} className="accent-teal-prime" />
+                  الموثقون فقط
+                </label>
+                <button
+                  type="button"
+                  onClick={() => { setNameQuery(''); setMinAge(''); setMaxAge(''); setVerifiedOnly(false) }}
+                  className="self-start text-sm text-teal-prime hover:underline arabic-text"
+                >
+                  مسح التصفية
+                </button>
+              </div>
+              <p className="text-xs text-ice-muted/70 arabic-text sm:col-span-2 lg:col-span-4">
+                تُطبَّق على لاعبي الصفحة الحالية — {players.length} من {pagePlayers.length}
+              </p>
+            </div>
+          )}
 
           {/* Loading */}
           {loading && (
@@ -314,7 +390,7 @@ export default function ScoutDashboard() {
           )}
 
           {/* Pagination */}
-          {!loading && (players.length === pageSize || page > 0) && (
+          {!loading && (pagePlayers.length === pageSize || page > 0) && (
             <div className="flex items-center justify-center gap-3 mt-10">
               <button
                 onClick={() => setPage(p => Math.max(0, p - 1))}
@@ -327,7 +403,7 @@ export default function ScoutDashboard() {
               <span className="text-ice-muted text-sm font-medium arabic-text">صفحة {page + 1}</span>
               <button
                 onClick={() => setPage(p => p + 1)}
-                disabled={players.length < pageSize}
+                disabled={pagePlayers.length < pageSize}
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl glass-premium text-ice-muted hover:text-ice-white disabled:opacity-30 disabled:cursor-not-allowed transition-all arabic-text text-sm"
               >
                 التالي
