@@ -3,6 +3,8 @@ import OwnSportIdentity from '../components/coach/OwnSportIdentity';
 import PageHeader from '../components/cinema/PageHeader';
 import sportIdBoots from '../assets/cinema/sport-id-boots.jpg'
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useOwnPlayer } from '../hooks/useOwnPlayer';
 import { motion, useInView } from 'framer-motion';
 import { Badge, Shield, BarChart3, Eye, QrCode, TrendingUp, Share2 } from 'lucide-react';
 
@@ -43,6 +45,22 @@ export default function SportID() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const own = useOwnPlayer();
+
+  // The header button depends on who is looking: a Sport ID belongs to a
+  // player; coaches and scouts use it through their own dashboards.
+  const role = profile?.user_type;
+  const cta =
+    role === 'player'
+      ? own.data
+        ? { label: 'عرض بطاقتي الرياضية', to: `/player/${own.data.id}` }
+        : { label: 'احصل على هويتك الرياضية', to: '/player/onboarding' }
+      : role === 'coach'
+        ? { label: 'قيّم لاعبيك من لوحة المدرب', to: '/coach' }
+        : role === 'scout'
+          ? { label: 'تصفّح هويات اللاعبين', to: '/scout' }
+          : { label: 'تصفّح ترتيب المواهب', to: '/rankings' };
   
   return (
     <div>
@@ -55,8 +73,8 @@ export default function SportID() {
         titleBottom="الرياضية"
         description="بطاقة رقمية لكل لاعب تجمع بياناته وتقييم مدربه وتحليل أدائه، ويمكن مشاركتها مع الأندية والكشافين."
       >
-        <button onClick={() => navigate('/player/onboarding')} className="btn-primary mt-8 rounded-xl px-8 py-4 arabic-text">
-          احصل على هويتك الرياضية
+        <button onClick={() => navigate(cta.to)} className="btn-primary mt-8 rounded-xl px-8 py-4 arabic-text">
+          {cta.label}
         </button>
       </PageHeader>
 

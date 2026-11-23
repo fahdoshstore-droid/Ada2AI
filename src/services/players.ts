@@ -123,3 +123,16 @@ export async function updatePlayerVideoUrl(playerId: string, videoUrl: string): 
 
   trackEvent('playerVideoUrlUpdated', { playerId })
 }
+/** The signed-in account's own player record (newest if older duplicates exist), or null. */
+export async function getOwnPlayer(userId: string): Promise<Player | null> {
+  const { data, error } = await supabase
+    .from('players')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw new Error(`Failed to fetch own player: ${error.message}`)
+  return (data as Player | null) ?? null
+}

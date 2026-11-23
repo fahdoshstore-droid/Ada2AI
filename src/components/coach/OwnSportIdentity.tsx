@@ -1,31 +1,73 @@
+/**
+ * OwnSportIdentity — the signed-in player's own Sport ID on /sport-id.
+ *
+ * Read-only: never creates or enrolls a player. Shown to player accounts only;
+ * coaches and scouts get a role-specific call to action in the page header.
+ */
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { BadgeCheck, ChevronLeft, UserPlus } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
-import { getSportIdentityForProfile, resolveFootballSportIdentity } from '../../services/sportIdentity'
+import { useOwnPlayer } from '../../hooks/useOwnPlayer'
+import { getSportIdentityForProfile } from '../../services/sportIdentity'
+import { sportLabel } from '../../lib/sportLabel'
 
-/** Existing authenticated identity; never creates or enrolls a football player. */
 export default function OwnSportIdentity() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
+  const isPlayer = profile?.user_type === 'player'
+  const own = useOwnPlayer()
   const identity = useQuery({
-    queryKey: ['own-football-sport-identity', user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const existing = await getSportIdentityForProfile(user!.id)
-      if (!existing) return null
-      const resolved = await resolveFootballSportIdentity(existing.sport_id)
-      if (!resolved || resolved.identity.profile_id !== user!.id || resolved.identity.id !== existing.id) throw new Error('Identity/profile mismatch')
-      return resolved
-    },
-    staleTime: 0,
-    gcTime: 0,
+    queryKey: ['own-sport-identity', user?.id],
+    enabled: !!user && isPlayer,
+    queryFn: () => getSportIdentityForProfile(user!.id),
+    staleTime: 30_000,
   })
-  if (!user) return null
-  if (identity.isPending) return <p className="text-sm text-ice-muted arabic-text" role="status">جارٍ التحقق من Sport ID…</p>
-  if (identity.isError) return <p className="text-sm text-gold arabic-text" role="status">تعذر التحقق من ربط الهوية الرياضية. لم يُنشأ ملف لاعب.</p>
-  if (!identity.data) return <p className="text-sm text-ice-muted arabic-text">Sport ID غير متاح للحساب الحالي.</p>
-  return <div className="glass-card rounded-xl p-4 text-sm arabic-text" data-testid="own-sport-identity">
-    <p className="font-bold text-teal-prime" dir="ltr">Sport ID: {identity.data.identity.sport_id}</p>
-    {identity.data.player ? <Link className="text-teal-prime underline" to={`/player/${identity.data.player.id}`}>عرض ملف لاعب كرة القدم المرتبط</Link> :
-      <p className="text-ice-muted mt-2">الهوية مرتبطة بالحساب؛ لا يوجد ملف لاعب كرة قدم متاح لهذا الحساب.</p>}
-  </div>
+
+  if (!user || !isPlayer) return null
+  if (own.isPending) return <p className="text-sm text-ice-muted arabic-text" role="status">جارٍ تحميل هويتك الرياضية…</p>
+  if (own.isError) return <p className="text-sm text-gold arabic-text" role="alert">تعذّر تحميل هويتك الرياضية. حدّث الصفحة وحاول مرة أخرى.</p>
+
+  const player = own.data
+  const sportId = identity.data?.sport_id
+
+  if (!player) {
+    return (
+      <div className="flex flex-col items-start gap-4 border border-white/10 bg-white/[0.03] p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-lg font-black text-ice-white arabic-text">لم تُنشئ هويتك الرياضية بعد</p>
+          <p className="mt-1 text-sm text-ice-muted arabic-text">ثلاث خطوات: الرياضة والمركز، ثم بياناتك، ثم المراجعة والتأكيد. تأخذ دقيقتين.</p>
+        </div>
+        <Link to="/player/onboarding" className="btn-primary inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm arabic-text">
+          <UserPlus className="h-4 w-4" /> أنشئ هويتك الآن
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid gap-6 border border-teal-prime/30 bg-teal-prime/[0.04] p-6 sm:grid-cols-[1fr_auto] sm:items-center" data-testid="own-sport-identity">
+      <div>
+        <p className="flex items-center gap-2 text-xs font-semibold text-teal-prime arabic-text">
+          <BadgeCheck className="h-4 w-4" /> هويتك الرياضية
+        </p>
+        <p className="mt-2 text-2xl font-black text-ice-white arabic-text">{player.name || 'بدون اسم'}</p>
+        <p className="mt-1 text-sm text-ice-muted arabic-text">
+          {[player.position, player.sport ? sportLabel(player.sport) : null, player.club].filter(Boolean).join(' · ')}
+        </p>
+        {sportId && (
+          <p className="mt-3 text-xs text-ice-muted arabic-text">
+            رقم الهوية: <bdi dir="ltr" className="font-display font-bold tracking-wider text-ice-white">{sportId}</bdi>
+          </p>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-3">
+        <Link to={`/player/${player.id}`} className="btn-primary inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm arabic-text">
+          عرض بطاقتي <ChevronLeft className="h-4 w-4" />
+        </Link>
+        <Link to="/player/dashboard" className="inline-flex items-center rounded-full border border-white/15 px-6 py-3 text-sm font-bold text-ice-white transition-colors hover:border-teal-prime/50 arabic-text">
+          تحديث بياناتي
+        </Link>
+      </div>
+    </div>
+  )
 }

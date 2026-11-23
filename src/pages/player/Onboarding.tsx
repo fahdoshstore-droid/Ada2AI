@@ -148,6 +148,7 @@ export default function PlayerOnboarding() {
     // Invalidate players cache so scout dashboard refreshes
     queryClient.invalidateQueries({ queryKey: ['players'] })
     queryClient.invalidateQueries({ queryKey: ['scout-players'] })
+    queryClient.invalidateQueries({ queryKey: ['own-player'] })
 
     trackEvent('playerOnboardingComplete', { sport: step1.sport, position: step1.position })
     trackEvent('onboarding_completed', { sport: step1.sport, position: step1.position })
