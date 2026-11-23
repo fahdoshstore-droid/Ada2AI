@@ -14,10 +14,10 @@ import { supabase, type Player, type Evaluation } from '../../lib/supabase'
 import { trackEvent } from '../../lib/analytics'
 import {
   ArrowRight, Share2, CheckCircle, Star, Ruler,
-  Weight, Footprints, Shield, Video, User, Trophy,
-  Loader2, AlertCircle, ChevronLeft, BarChart3
+  Weight, Footprints, Shield, Video, User,
+  Loader2, AlertCircle, ChevronLeft
 } from 'lucide-react'
-import { GhostNumber, SideReveal, SplitReveal, Stagger, StaggerItem } from '../../components/cinema/Cinema'
+import { SideReveal, SplitReveal, Stagger, StaggerItem } from '../../components/cinema/Cinema'
 import { sportLabel } from '../../lib/sportLabel'
 import aerialPitch from '../../assets/cinema/aerial-pitch.jpg'
 
@@ -47,22 +47,11 @@ function SkillBar({ label, value, icon: Icon }: { label: string; value: number; 
   )
 }
 
-// ── Stat Cell ──────────────────────────────────────
-function StatCell({ label, value }: { label: string; value: string | number | undefined }) {
-  if (value === undefined || value === null) return null
-  return (
-    <StaggerItem y={18} className="bg-[#000A0F] px-4 py-5">
-      <div className="font-display text-2xl font-black leading-tight text-ice-white md:text-3xl">{value}</div>
-      <div className="mt-1 text-[11px] text-ice-muted arabic-text">{label}</div>
-    </StaggerItem>
-  )
-}
-
 // ── Foot Label ──────────────────────────────────────
 function footLabel(foot: string | undefined): string {
   switch (foot) {
     case 'left': return 'يسرى'
-    case 'right': return 'أيمن'
+    case 'right': return 'يمنى'
     case 'both': return 'ثنائي'
     default: return '—'
   }
@@ -85,7 +74,39 @@ function ProfileLayout({ player, evaluation, copied, onShare, onBack }: ProfileL
   const shade = useTransform(scrollYProgress, [0, 0.7], [0, 0.62])
   const zoom = useTransform(scrollYProgress, [0, 1], [1, 1.08])
   const photo = player.avatar_url || player.photo_url
-  const firstName = (player.name || 'بدون اسم').split(' ')[0]
+  const nameParts = (player.name || 'بدون اسم').trim().split(/\s+/)
+  const firstName = nameParts[0]
+  const restName = nameParts.slice(1).join(' ')
+
+  const num = (v: number | null | undefined) => (typeof v === 'number' ? v : null)
+  const rawHeadline = [
+    { label: 'أهداف', value: num(player.goals) },
+    { label: 'صناعة أهداف', value: num(player.assists) },
+    { label: 'مباريات', value: num(player.appearances) },
+  ].filter((h): h is { label: string; value: number } => h.value !== null)
+  const facts = [
+    { label: 'العمر', value: player.age ? String(player.age) : null },
+    { label: 'النادي', value: player.club || null },
+    { label: 'الطول', value: player.height_cm ? `${player.height_cm} سم` : null },
+    { label: 'الوزن', value: player.weight_kg ? `${player.weight_kg} كغ` : null },
+    { label: 'القدم', value: player.dominant_foot ? footLabel(player.dominant_foot) : null },
+  ].filter((f): f is { label: string; value: string } => !!f.value && f.value !== '—')
+  const playStats = [
+    { label: 'السرعة', value: player.speed, icon: Footprints },
+    { label: 'التمرير', value: player.passing, icon: Share2 },
+    { label: 'التسديد', value: player.shooting, icon: Star },
+    { label: 'اللياقة', value: player.fitness, icon: Ruler },
+    { label: 'المراوغة', value: player.dribbling, icon: Footprints },
+    { label: 'الدفاع', value: player.defense, icon: Shield },
+  ].filter((st): st is { label: string; value: number; icon: typeof Footprints } => typeof st.value === 'number' && st.value > 0)
+
+  // New records get column defaults (rating 60, zeros everywhere) that were
+  // never measured. Show a rating only from a coach evaluation, or from a
+  // record that carries real recorded stats; hide all-zero season totals.
+  const hasRecordedData = playStats.length > 0 || rawHeadline.some(h => h.value > 0)
+  const overall = evaluation?.overall ?? (hasRecordedData && player.rating ? player.rating : null)
+  const overallLabel = evaluation ? 'تقييم المدرب' : 'التقييم العام'
+  const headline = rawHeadline.some(h => h.value > 0) ? rawHeadline : []
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#000A0F]">
@@ -101,109 +122,100 @@ function ProfileLayout({ player, evaluation, copied, onShare, onBack }: ProfileL
               رجوع
             </button>
 
-            <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
-              {player.sport && <span className="border border-teal-prime/40 px-2.5 py-1 text-teal-prime arabic-text">{sportLabel(player.sport)}</span>}
-              {player.position && <span className="border border-white/15 px-2.5 py-1 text-ice-muted arabic-text">{player.position}</span>}
-              {player.nationality && <span className="border border-white/15 px-2.5 py-1 text-ice-muted arabic-text">{player.nationality}</span>}
+            {/* Eyebrow — as in the D2 mockup */}
+            <div className="mb-5 flex items-center gap-3 text-sm font-semibold text-teal-prime">
+              <span className="h-px w-10 bg-teal-prime" />
+              <span className="arabic-text">
+                الهوية الرياضية{player.position ? ` · ${player.position}` : ''}{player.sport ? ` · ${sportLabel(player.sport)}` : ''}
+              </span>
             </div>
 
-            <div className="flex items-center gap-4">
-              <h1 className="text-6xl font-black leading-[1.2] tracking-tightest text-ice-white md:text-8xl">
-                <SplitReveal text={firstName} immediate delay={0.2} className="arabic-text" />
+            <div className="flex items-start gap-4">
+              <h1 className="text-6xl font-black leading-[1.15] tracking-tightest md:text-8xl">
+                <SplitReveal text={firstName} immediate delay={0.2} className="block text-ice-white arabic-text" />
+                {restName && <SplitReveal text={restName} immediate delay={0.4} className="block text-teal-prime arabic-text" />}
               </h1>
-              {player.is_verified && <CheckCircle className="h-8 w-8 flex-shrink-0 text-teal-prime" aria-label="موثّق" />}
+              {player.is_verified && <CheckCircle className="mt-4 h-8 w-8 flex-shrink-0 text-teal-prime" aria-label="موثّق" />}
             </div>
-            {player.name_en && <p className="mt-1 text-sm tracking-widest text-ice-muted">{player.name_en.split(' ')[0]}</p>}
-            <SportIdentityBadge profileId={player.user_id ?? undefined} />
+            {player.name_en && <p className="mt-2 text-sm tracking-widest text-ice-muted" dir="ltr">{player.name_en}</p>}
+            <div className="mt-6 h-px w-full bg-teal-prime/40" />
 
-            <button
-              onClick={onShare}
-              className="mt-6 flex items-center gap-2 border border-teal-prime/40 px-5 py-2.5 text-sm font-medium text-teal-prime transition-colors hover:bg-teal-prime/10 arabic-text"
-            >
-              {copied ? (
-                <>
-                  <CheckCircle className="h-4 w-4" />
-                  تم النسخ!
-                </>
-              ) : (
-                <>
-                  <Share2 className="h-4 w-4" />
-                  مشاركة الملف
-                </>
-              )}
-            </button>
-
-            {/* Facts grid */}
-            <Stagger gap={0.07} className="mt-12 grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-4">
-              <StatCell label="العمر" value={player.age} />
-              <StatCell label="النادي" value={player.club} />
-              <StatCell label="الطول" value={player.height_cm ? `${player.height_cm} cm` : undefined} />
-              <StatCell label="الوزن" value={player.weight_kg ? `${player.weight_kg} kg` : undefined} />
-              <StatCell label="القدم" value={player.dominant_foot ? footLabel(player.dominant_foot) : undefined} />
-              <StatCell label="أهداف" value={player.goals} />
-              <StatCell label="تمريرات" value={player.assists} />
-              <StatCell label="مباريات" value={player.appearances} />
-            </Stagger>
-
-            {/* Overall rating — from evaluation */}
-            {evaluation && (
-              <SideReveal from="start" className="relative mt-16 overflow-hidden border-t border-white/10 pt-8">
-                <GhostNumber n={String(evaluation.overall)} className="-top-6 end-0 opacity-60" />
-                <div className="relative z-10 flex items-end gap-5">
-                  <Trophy className="mb-3 h-8 w-8 text-teal-prime" />
+            {/* Headline numbers: overall + season totals (only what exists) */}
+            {overall == null && headline.length === 0 && (
+              <p className="mt-8 text-sm text-ice-muted arabic-text">لم يُقيَّم بعد، ولا توجد مباريات مسجّلة لهذا اللاعب.</p>
+            )}
+            {(overall != null || headline.length > 0) && (
+              <div className="mt-8 flex flex-wrap items-end gap-x-10 gap-y-6">
+                {overall != null && (
                   <div>
-                    <p className="mb-1 text-xs text-ice-muted arabic-text">التقييم العام</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-display text-8xl font-black leading-none text-teal-prime md:text-9xl">{evaluation.overall}</span>
-                      <span className="text-sm text-ice-muted">/100</span>
-                    </div>
+                    <p className="mb-1 text-xs text-ice-muted arabic-text">{overallLabel}</p>
+                    <span className="font-display text-8xl font-black leading-none text-teal-prime md:text-9xl">{overall}</span>
                   </div>
-                  {evaluation.evaluation_date && (
-                    <p className="mb-3 ms-auto text-[11px] text-ice-muted arabic-text">
-                      {new Date(evaluation.evaluation_date).toLocaleDateString('ar-SA')}
-                    </p>
+                )}
+                {headline.map(h => (
+                  <div key={h.label}>
+                    <p className="mb-1 text-xs text-ice-muted arabic-text">{h.label}</p>
+                    <span className="font-display text-4xl font-bold leading-none text-ice-white md:text-5xl">{h.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Facts row */}
+            {facts.length > 0 && (
+              <Stagger gap={0.07} className="mt-10 grid grid-cols-2 gap-x-6 gap-y-5 border-y border-white/10 py-6 sm:grid-cols-5">
+                {facts.map(f => (
+                  <StaggerItem key={f.label} y={14}>
+                    <p className="text-[11px] text-ice-muted arabic-text">{f.label}</p>
+                    <p className="mt-1 text-lg font-bold text-ice-white arabic-text">{f.value}</p>
+                  </StaggerItem>
+                ))}
+              </Stagger>
+            )}
+
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <button
+                onClick={onShare}
+                className="flex items-center gap-2 rounded-full bg-gradient-to-r from-teal-prime to-scout-blue px-6 py-3 text-sm font-bold text-navy-dark transition-all hover:shadow-lg hover:shadow-teal-prime/25 arabic-text"
+              >
+                {copied ? <><CheckCircle className="h-4 w-4" /> تم نسخ الرابط</> : <><Share2 className="h-4 w-4" /> مشاركة الملف</>}
+              </button>
+              <SportIdentityBadge profileId={player.user_id ?? undefined} />
+            </div>
+
+            {/* Skills — coach evaluation (4 axes) and play stats, side by side */}
+            {(evaluation || playStats.length > 0) && (
+              <SideReveal from="start" className="mt-14">
+                <h2 className="mb-6 text-xl font-black text-ice-white arabic-text">
+                  المهارات <span className="text-ice-muted">·</span> إحصائيات اللعب
+                </h2>
+                <div className={`grid gap-x-10 gap-y-4 ${evaluation && playStats.length > 0 ? 'sm:grid-cols-2' : 'sm:grid-cols-2'}`}>
+                  {evaluation && (
+                    <div className="space-y-4">
+                      <p className="text-[11px] text-scout-blue arabic-text">تقييم المدرب{evaluation.evaluation_date ? ` · ${new Date(evaluation.evaluation_date).toLocaleDateString('ar-SA')}` : ''}</p>
+                      <SkillBar label="فني" value={evaluation.technical} icon={Footprints} />
+                      <SkillBar label="تكتيكي" value={evaluation.tactical} icon={Shield} />
+                      <SkillBar label="بدني" value={evaluation.physical} icon={Ruler} />
+                      <SkillBar label="ذهني" value={evaluation.mental} icon={Weight} />
+                    </div>
+                  )}
+                  {playStats.length > 0 && evaluation && (
+                    <div className="space-y-4">
+                      <p className="text-[11px] text-ice-muted arabic-text">إحصائيات اللاعب المسجّلة</p>
+                      {playStats.map(st => <SkillBar key={st.label} label={st.label} value={st.value} icon={st.icon} />)}
+                    </div>
+                  )}
+                  {playStats.length > 0 && !evaluation && (
+                    <>
+                      <p className="text-[11px] text-ice-muted arabic-text sm:col-span-2">إحصائيات اللاعب المسجّلة</p>
+                      {playStats.map(st => <SkillBar key={st.label} label={st.label} value={st.value} icon={st.icon} />)}
+                    </>
                   )}
                 </div>
-              </SideReveal>
-            )}
-
-            {/* Skills — from evaluation */}
-            {evaluation && (
-              <SideReveal from="start" className="mt-12 border-t border-white/10 pt-8">
-                <h2 className="mb-5 flex items-center gap-2 text-base font-black text-ice-white arabic-text">
-                  <Star className="h-4 w-4 text-teal-prime" />
-                  المهارات
-                </h2>
-                <div className="space-y-4">
-                  <SkillBar label="فني" value={evaluation.technical} icon={Footprints} />
-                  <SkillBar label="تكتيكي" value={evaluation.tactical} icon={Shield} />
-                  <SkillBar label="بدني" value={evaluation.physical} icon={Ruler} />
-                  <SkillBar label="ذهني" value={evaluation.mental} icon={Weight} />
-                </div>
-                {evaluation.notes && (
-                  <p className="mt-5 border-t border-white/5 pt-4 text-xs leading-relaxed text-ice-muted arabic-text">
-                    {evaluation.notes}
-                  </p>
+                {evaluation?.notes && (
+                  <p className="mt-6 border-t border-white/5 pt-4 text-sm leading-relaxed text-ice-muted arabic-text">{evaluation.notes}</p>
                 )}
-                <EvaluationBreakdown details={evaluation.details} />
-              </SideReveal>
-            )}
-
-            {/* Player Stats — from players table */}
-            {(player.speed || player.passing || player.shooting || player.fitness || player.dribbling || player.defense) && (
-              <SideReveal from="start" className="mt-12 border-t border-white/10 pt-8">
-                <h2 className="mb-5 flex items-center gap-2 text-base font-black text-ice-white arabic-text">
-                  <BarChart3 className="h-4 w-4 text-teal-prime" />
-                  إحصائيات اللعب
-                </h2>
-                <div className="space-y-4">
-                  {player.speed !== undefined && player.speed > 0 && <SkillBar label="السرعة" value={player.speed} icon={Footprints} />}
-                  {player.passing !== undefined && player.passing > 0 && <SkillBar label="التمرير" value={player.passing} icon={Share2} />}
-                  {player.shooting !== undefined && player.shooting > 0 && <SkillBar label="التسديد" value={player.shooting} icon={Star} />}
-                  {player.fitness !== undefined && player.fitness > 0 && <SkillBar label="اللياقة" value={player.fitness} icon={Ruler} />}
-                  {player.dribbling !== undefined && player.dribbling > 0 && <SkillBar label="المراوغة" value={player.dribbling} icon={Footprints} />}
-                  {player.defense !== undefined && player.defense > 0 && <SkillBar label="الدفاع" value={player.defense} icon={Shield} />}
-                </div>
+                {evaluation && <EvaluationBreakdown details={evaluation.details} />}
               </SideReveal>
             )}
 
@@ -234,10 +246,10 @@ function ProfileLayout({ player, evaluation, copied, onShare, onBack }: ProfileL
                 <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_45%,rgba(0,220,200,0.22),transparent_70%)]" />
                 <div className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
                   <span
-                    className="font-black leading-none text-transparent text-[min(46vw,22rem)] lg:text-[22rem]"
-                    style={{ WebkitTextStroke: '2px rgba(0,220,200,0.7)' }}
+                    className="font-display font-black leading-none text-transparent text-[min(40vw,18rem)] lg:text-[18rem]"
+                    style={{ WebkitTextStroke: '2px rgba(0,220,200,0.7)', direction: 'ltr' }}
                   >
-                    {(player.name || '؟').charAt(0)}
+                    {overall ?? player.jersey_number ?? ''}
                   </span>
                 </div>
               </>

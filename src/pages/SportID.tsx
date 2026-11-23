@@ -3,7 +3,7 @@ import OwnSportIdentity from '../components/coach/OwnSportIdentity';
 import PageHeader from '../components/cinema/PageHeader';
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
-import { Badge, Shield, BarChart3, Globe, QrCode, TrendingUp, FileText, Award } from 'lucide-react';
+import { Badge, Shield, BarChart3, Eye, QrCode, TrendingUp, Share2 } from 'lucide-react';
 
 const features = [
   {
@@ -13,28 +13,28 @@ const features = [
   },
   {
     icon: BarChart3,
-    title: 'إحصائيات شاملة',
-    desc: 'تتبع الأداء عبر المباريات مع مؤشرات دقيقة ومفصلة',
+    title: 'إحصائيات اللاعب',
+    desc: 'السرعة والتمرير والتسديد وغيرها، بجانب الأهداف والمباريات',
   },
   {
     icon: Shield,
-    title: 'توثيق آمن',
-    desc: 'بيانات مشفرة وموثقة بمعايير أمان عالمية',
+    title: 'رقم هوية ثابت',
+    desc: 'رقم هوية رياضية لكل لاعب، وعلامة توثيق حين تتحقق المنصة من بياناته',
   },
   {
-    icon: Globe,
-    title: 'رؤية عالمية',
-    desc: 'ظهور اللاعب في قاعدة بيانات عالمية للكشافين والأندية',
+    icon: Eye,
+    title: 'ظهور أمام الكشافين',
+    desc: 'يظهر ملف اللاعب في لوحة الكشافين وترتيب المواهب على المنصة',
   },
   {
     icon: TrendingUp,
     title: 'تتبع التطور',
-    desc: 'متابعة التقدم والتطور عبر الزمن مع رسوم بيانية تفاعلية',
+    desc: 'تقييمات المدرب محفوظة بتاريخها، فيُرى تطور اللاعب من تقييم إلى آخر',
   },
   {
-    icon: FileText,
-    title: 'تقارير احترافية',
-    desc: 'تقارير مفصلة يمكن مشاركتها مع الأندية والكشافين',
+    icon: Share2,
+    title: 'ملف قابل للمشاركة',
+    desc: 'رابط واحد لملف اللاعب يُرسل إلى الأندية والكشافين',
   },
 ];
 
@@ -113,18 +113,6 @@ export default function SportID() {
                 كل بطاقة تحتوي على بيانات شاملة تشمل المعلومات الشخصية، الإحصائيات، 
                 التقييمات، الإنجازات، والفيديوهات. يمكن مشاركة البطاقة بسهولة مع الأندية والكشافين.
               </p>
-              <div className="space-y-4">
-                {[
-                  { label: 'التقييم العام — مثال', value: '86/100' },
-                  { label: 'المباريات المحللة — مثال', value: '47' },
-                  { label: 'دقة التمرير — مثال', value: '92%' },
-                ].map((stat) => (
-                  <div key={stat.label} className="flex items-center justify-between glass-card rounded-xl p-4">
-                    <span className="text-ice-muted text-sm arabic-text">{stat.label}</span>
-                    <span className="text-teal-prime font-bold">{stat.value}</span>
-                  </div>
-                ))}
-              </div>
             </motion.div>
             
             <motion.div
@@ -134,34 +122,49 @@ export default function SportID() {
               transition={{ duration: 0.6 }}
               className="flex justify-center"
             >
-              <div className="relative w-full max-w-sm">
-                <div className="absolute inset-0 bg-gradient-to-br from-teal-prime/20 to-scout-blue/20 rounded-3xl blur-2xl" />
-                <div className="relative glass-card rounded-3xl p-8 glow-teal">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-prime to-scout-blue flex items-center justify-center">
-                      <Award className="w-10 h-10 text-white" />
+              <div className="relative w-full max-w-md overflow-hidden border border-white/10 bg-[#000A0F]">
+                <div className="absolute inset-0 bg-[radial-gradient(70%_50%_at_80%_0%,rgba(0,220,200,0.16),transparent_70%)]" aria-hidden="true" />
+                <div className="grain-overlay" />
+                <div className="relative p-8">
+                  <div className="mb-6 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 text-xs font-semibold text-teal-prime">
+                      <span className="h-px w-8 bg-teal-prime" />
+                      <span className="arabic-text">الهوية الرياضية · جناح</span>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-ice-white arabic-text">أحمد المحمدي</h3>
-                      <p className="text-teal-prime text-sm">وسط مهاجم</p>
-                    </div>
+                    <span className="rounded-full border border-gold/50 px-2.5 py-0.5 text-[10px] text-gold arabic-text">مثال توضيحي</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    {[
-                      { label: 'السرعة', value: '88' },
-                      { label: 'التمرير', value: '92' },
-                      { label: 'اللياقة', value: '85' },
-                      { label: 'التسديد', value: '79' },
-                    ].map((s) => (
-                      <div key={s.label} className="bg-white/5 rounded-xl p-3 text-center">
-                        <div className="text-2xl font-bold text-gradient-teal">{s.value}</div>
-                        <div className="text-xs text-ice-muted arabic-text">{s.label}</div>
+                  <h3 className="text-5xl font-black leading-[1.15] tracking-tightest">
+                    <span className="block text-ice-white arabic-text">عبدالله</span>
+                    <span className="block text-teal-prime arabic-text">ناصر</span>
+                  </h3>
+                  <div className="mt-6 h-px bg-teal-prime/40" />
+                  <div className="mt-6 flex items-end gap-8">
+                    <div>
+                      <p className="text-[11px] text-ice-muted arabic-text">التقييم العام</p>
+                      <span className="font-display text-7xl font-black leading-none text-teal-prime">78</span>
+                    </div>
+                    {[{ l: 'أهداف', v: 12 }, { l: 'صناعة', v: 9 }, { l: 'مباريات', v: 24 }].map(x => (
+                      <div key={x.l}>
+                        <p className="text-[11px] text-ice-muted arabic-text">{x.l}</p>
+                        <span className="font-display text-3xl font-bold leading-none text-ice-white">{x.v}</span>
                       </div>
                     ))}
                   </div>
-                  <div className="pt-4 border-t border-white/5">
-                    <span className="text-xs text-ice-muted arabic-text">مثال توضيحي للبطاقة</span>
+                  <div className="mt-7 grid grid-cols-2 gap-x-6 gap-y-3">
+                    {[['فني', 81], ['السرعة', 84], ['تكتيكي', 74], ['التمرير', 76], ['بدني', 79], ['التسديد', 71]].map(([l, v]) => (
+                      <div key={l as string}>
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-ice-muted arabic-text">{l}</span>
+                          <span className="font-bold text-teal-prime">{v}</span>
+                        </div>
+                        <div className="mt-1 h-1 bg-white/5">
+                          <div className="h-full bg-teal-prime" style={{ width: `${v}%`, marginInlineStart: 'auto' }} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
+                  <p className="mt-7 border-t border-white/10 pt-4 text-[11px] tracking-wide text-ice-muted" dir="ltr">ADA2AI · SPORT ID · SID-2026-00001</p>
+                  <p className="mt-1 text-[11px] text-ice-muted/80 arabic-text">لاعب وأرقام توضيحية لشكل البطاقة، وليست بيانات لاعب حقيقي.</p>
                 </div>
               </div>
             </motion.div>
