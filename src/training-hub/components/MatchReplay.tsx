@@ -7,7 +7,7 @@
  * calibration state and the replay remains paused.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Play, Pause, Activity, AlertTriangle, Link as LinkIcon } from "lucide-react";
+import { Loader2, Play, Pause, Activity, AlertTriangle } from "lucide-react";
 import ReportMotion from './ReportMotion';
 import type { MotionReport } from './motionModel';
 import { yoloEndpoint, yoloFetch } from "@/lib/yoloApi";
@@ -588,13 +588,6 @@ export default function MatchReplay({ lang, savedReport }: { lang?: "ar" | "en";
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-2 text-xs">
-            <LinkIcon size={12} />
-            <a href={`/match-intelligence?match=${encodeURIComponent(replay.match_id)}&run=${encodeURIComponent(replay.run_id)}`}
-              className="text-[#00DCC8] underline">
-              {isRTL ? "تحليل المباراة والتقارير" : "Match intelligence and reports"}
-            </a>
-          </div>
         </>
       )}
 

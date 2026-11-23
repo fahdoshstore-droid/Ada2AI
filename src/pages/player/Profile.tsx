@@ -18,6 +18,7 @@ import {
   Loader2, AlertCircle, ChevronLeft, BarChart3
 } from 'lucide-react'
 import { GhostNumber, SideReveal, SplitReveal, Stagger, StaggerItem } from '../../components/cinema/Cinema'
+import { sportLabel } from '../../lib/sportLabel'
 import aerialPitch from '../../assets/cinema/aerial-pitch.jpg'
 
 // ── Skill Bar ──────────────────────────────────────
@@ -101,7 +102,7 @@ function ProfileLayout({ player, evaluation, copied, onShare, onBack }: ProfileL
             </button>
 
             <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
-              {player.sport && <span className="border border-teal-prime/40 px-2.5 py-1 text-teal-prime arabic-text">{player.sport}</span>}
+              {player.sport && <span className="border border-teal-prime/40 px-2.5 py-1 text-teal-prime arabic-text">{sportLabel(player.sport)}</span>}
               {player.position && <span className="border border-white/15 px-2.5 py-1 text-ice-muted arabic-text">{player.position}</span>}
               {player.nationality && <span className="border border-white/15 px-2.5 py-1 text-ice-muted arabic-text">{player.nationality}</span>}
             </div>
@@ -253,6 +254,7 @@ function ProfileLayout({ player, evaluation, copied, onShare, onBack }: ProfileL
 }
 
 // ── Main Component ──────────────────────────────────────
+
 export default function PlayerProfile() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()

@@ -153,8 +153,8 @@ export default function RealMatchAnalysis() {
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center text-sm text-red-400 arabic-text">
-            تعذّر تحميل بيانات التحليل.
+          <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-ice-muted arabic-text">
+            مقطع هذه المباراة وبياناته محفوظة على جهاز التحليل، ولا تُعرض من هذا الرابط.
           </div>
         )}
 

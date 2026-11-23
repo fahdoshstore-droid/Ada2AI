@@ -68,10 +68,15 @@ export default function PlayerDashboard() {
   useEffect(() => {
     if (!user) return
 
+    // Newest record for this account. Older accounts can hold duplicates
+    // (onboarding used to insert again every time), and .maybeSingle() on
+    // several rows errors, which used to bounce the player back to onboarding.
     supabase
       .from('players')
       .select('*')
       .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle()
       .then(({ data, error }) => {
         if (error) {
@@ -100,7 +105,7 @@ export default function PlayerDashboard() {
 
   // Redirect to onboarding if no player record
   useEffect(() => {
-    if (!loadingPlayer && !playerRecord) {
+    if (!loadingPlayer && !playerRecord && !fetchError) {
       navigate('/player/onboarding', { replace: true })
     }
   }, [loadingPlayer, playerRecord, navigate])
@@ -113,6 +118,8 @@ export default function PlayerDashboard() {
         .from('players')
         .select('*')
         .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle()
         .then(({ data }) => {
           if (data) setPlayerRecord(data as Player)

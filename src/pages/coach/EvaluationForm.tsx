@@ -13,6 +13,7 @@ import { motion } from 'framer-motion'
 import { supabase, type Player } from '../../lib/supabase'
 import { trackEvent } from '../../lib/analytics'
 import EvaluationReport from '../../components/evaluation/EvaluationReport'
+import { sportLabel } from '../../lib/sportLabel'
 import { ArrowRight, Loader2, AlertCircle } from 'lucide-react'
 
 export default function EvaluationForm() {
@@ -111,7 +112,7 @@ export default function EvaluationForm() {
                 {player.name || 'لاعب'}
               </h1>
               <p className="text-xs text-ice-muted arabic-text">
-                {player.position || '—'} · {player.sport || '—'} · {player.club || '—'}
+                {player.position || '—'} · {player.sport ? sportLabel(player.sport) : '—'} · {player.club || '—'}
               </p>
             </div>
           </div>

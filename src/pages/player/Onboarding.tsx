@@ -124,9 +124,19 @@ export default function PlayerOnboarding() {
       is_verified: false,
     }
 
-    const { error: insertError } = await supabase
+    // One player record per account: update the existing one if there is one
+    // instead of inserting a duplicate every time onboarding is completed.
+    const { data: existing } = await supabase
       .from('players')
-      .insert(payload)
+      .select('id')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const { error: insertError } = existing?.id
+      ? await supabase.from('players').update(payload).eq('id', existing.id)
+      : await supabase.from('players').insert(payload)
 
     if (insertError) {
       setError('فشل حفظ البيانات. حاول مرة أخرى.')

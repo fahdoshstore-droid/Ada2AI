@@ -16,10 +16,9 @@
  * Colour carries provenance and nothing else (see the legend below).
  */
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
-import { Film, FileText, Radar, BarChart3, Users, Ruler, MapPin } from 'lucide-react'
+import { Film, FileText, Radar, Users, Ruler, MapPin } from 'lucide-react'
 import RealMatchAnalysis from '../../components/cinema/RealMatchAnalysis'
 import { EASE, GhostNumber, Letterbox, SideReveal, SplitReveal, Stagger, StaggerItem } from '../../components/cinema/Cinema'
 import MatchReports from '../../training-hub/components/MatchReports'
@@ -116,15 +115,6 @@ export default function CoachMatchAnalysis() {
               ثم فيديو المباراة مع مواقع اللاعبين.
             </p>
 
-            <Link
-              to="/coach/match-intelligence"
-              className="mt-6 inline-flex items-center gap-2 rounded-xl border border-teal-prime/30 px-4 py-2.5 text-sm font-bold text-teal-prime transition-colors hover:bg-teal-prime/10 arabic-text"
-            >
-              <BarChart3 className="h-4 w-4" />
-              التقرير التفصيلي للمباراة
-              <span className="font-normal text-ice-muted">— بالإنجليزية</span>
-            </Link>
-
             {/* Provenance legend — the page's one colour rule, stated once. */}
             <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-3" aria-label="دلالة الألوان">
               {PROVENANCE.map(item => (
@@ -163,7 +153,7 @@ export default function CoachMatchAnalysis() {
             )}
             {matches.isError && (
               <p className="glass-card rounded-2xl border-gold/30 p-6 text-sm text-gold arabic-text" role="status">
-                خدمة تحليل الفيديو لا تعمل الآن، فلا تظهر التقارير. شغّلها ثم أعد تحميل الصفحة.
+                التقارير المحفوظة تظهر هنا عند تشغيل خدمة تحليل الفيديو.
               </p>
             )}
             {matches.isSuccess && matches.data.length === 0 && (

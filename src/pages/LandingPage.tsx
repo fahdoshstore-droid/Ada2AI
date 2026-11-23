@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { EASE, GhostNumber, ImageReveal, Letterbox, SplitReveal, Stagger, StaggerItem } from '../components/cinema/Cinema';
 import heroSprint from '../assets/cinema/hero-sprint.jpg';
-import coachTouchline from '../assets/cinema/coach-touchline.jpg';
+import playerDevelopment from '../assets/cinema/player-development.jpg';
 import keeperRain from '../assets/cinema/keeper-rain.jpg';
 import aerialPitch from '../assets/cinema/aerial-pitch.jpg';
 
@@ -278,10 +278,10 @@ function ProductsSection() {
           <div className="hidden lg:col-span-5 lg:block">
             <div className="sticky top-28">
               <ImageReveal
-                src={coachTouchline}
+                src={playerDevelopment}
                 from="side"
                 className="aspect-[4/5] w-full"
-                imgClassName="object-[22%_50%]"
+                imgClassName="object-[24%_50%]"
                 caption="صورة مولّدة بالذكاء الاصطناعي"
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-[#000A0F]/35 via-transparent to-transparent" />
