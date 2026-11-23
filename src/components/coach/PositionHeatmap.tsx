@@ -86,7 +86,7 @@ export default function PositionHeatmap({ history, homography, calibrationValida
         <AlertTriangle className="me-1 inline h-3.5 w-3.5" />
         {reprojectionErrorMeters == null || !Number.isFinite(reprojectionErrorMeters)
           ? 'خطأ المعايرة المحفوظة غير معروف، فلا يمكن الوثوق بإسقاط المواضع على الملعب.'
-          : <>خطأ المعايرة المحفوظة <span className="font-display" dir="ltr">{reprojectionErrorMeters.toFixed(1)} م</span>، أكبر من الحد المقبول للعرض (<span className="font-display" dir="ltr">{MAX_HEATMAP_ERROR_METERS} م</span>) — المواضع ستظهر في مكان خاطئ من الملعب.</>}
+          : <>خطأ المعايرة المحفوظة <bdi className="font-display">{reprojectionErrorMeters.toFixed(1)}</bdi> م، أكبر من الحد المقبول للعرض (<bdi className="font-display">{MAX_HEATMAP_ERROR_METERS}</bdi> م) — المواضع ستظهر في مكان خاطئ من الملعب.</>}
         {' '}أعِد المعايرة في القسم 03 بسبع نقاط على الأقل موزّعة على الملعب.
       </div>
     )
