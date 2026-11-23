@@ -19,6 +19,8 @@ import featureAiTracking from '../assets/cinema/feature-ai-tracking.jpg';
 import featureDigitalId from '../assets/cinema/feature-digital-id.jpg';
 import featureStatsBall from '../assets/cinema/feature-stats-ball.jpg';
 import featureArabicDusk from '../assets/cinema/feature-arabic-dusk.jpg';
+import featureScoutNotebook from '../assets/cinema/feature-scout-notebook.jpg';
+import featureCoachMentoring from '../assets/cinema/feature-coach-mentoring.jpg';
 
 // ─── Product Data ───
 const mainProducts = [
@@ -89,8 +91,8 @@ const features = [
   { icon: Shield, title: 'هوية رقمية موثقة', image: featureDigitalId, imagePosition: '35% 50%', desc: 'بطاقة رقمية لكل لاعب تتضمن جميع البيانات والإحصائيات والإنجازات' },
   { icon: BarChart3, title: 'إحصائيات متقدمة', image: featureStatsBall, imagePosition: '80% 60%', desc: 'مؤشرات أداء دقيقة ومقارنات تفصيلية بين اللاعبين' },
   { icon: Languages, title: 'عربية بالكامل', image: featureArabicDusk, imagePosition: '30% 55%', desc: 'واجهة عربية من اليمين لليسار، بمصطلحات المدربين والكشافين' },
-  { icon: Eye, title: 'اكتشاف المواهب', image: scoutStands, imagePosition: '20% 40%', desc: 'تصفية ومقارنة اللاعبين حسب المركز والعمر والتقييم في مكان واحد', wide: true },
-  { icon: Award, title: 'تقييم احترافي', image: coachTouchline, imagePosition: '30% 50%', desc: 'تقييم المدرب على أربعة محاور: فني، تكتيكي، بدني، وذهني' },
+  { icon: Eye, title: 'اكتشاف المواهب', image: featureScoutNotebook, imagePosition: '60% 50%', desc: 'تصفية ومقارنة اللاعبين حسب المركز والعمر والتقييم في مكان واحد', wide: true },
+  { icon: Award, title: 'تقييم احترافي', image: featureCoachMentoring, imagePosition: '50% 45%', desc: 'تقييم المدرب على أربعة محاور: فني، تكتيكي، بدني، وذهني' },
 ];
 
 const stats = [
