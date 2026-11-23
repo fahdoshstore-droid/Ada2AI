@@ -298,7 +298,8 @@ export default function TelestratorSequence() {
               decoding="async"
               className="h-full w-full object-cover"
               style={{
-                filter: frozen ? 'saturate(0.62) brightness(1.14) contrast(1.06)' : 'saturate(0.95) brightness(1.18) contrast(1.04)',
+                // the frame asset is already shadow-lifted; this local grade only desaturates on freeze (no extra brightness multiplier)
+                filter: frozen ? 'saturate(0.62) contrast(1.06)' : 'saturate(0.95) contrast(1.04)',
                 transition: reduced ? undefined : 'filter .35s ease-out',
               }}
             />

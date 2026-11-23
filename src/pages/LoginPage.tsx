@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { useDemoMode } from '../hooks/useDemoMode'
 import type { UserType } from '../lib/supabase'
 
 export default function LoginPage() {
@@ -14,7 +13,6 @@ export default function LoginPage() {
   const [userType, setUserType] = useState<UserType>('player')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const { enableDemo } = useDemoMode()
 
   // Redirect authenticated users to their dashboard
   // Handles both: session restore on mount + post-login redirect
@@ -180,13 +178,13 @@ export default function LoginPage() {
 
           <div className="mt-4 pt-4 border-t border-white/10 text-center">
             <button
-              onClick={() => { enableDemo(); navigate('/sport-id', { replace: true }) }}
+              onClick={() => navigate('/#footage-intel')}
               className="w-full py-2.5 rounded-lg text-sm font-medium border border-teal-prime/30 text-teal-prime hover:bg-teal-prime/10 transition-colors arabic-text"
             >
               🎬 عرض تجريبي
             </button>
             <p className="text-ice-muted text-xs mt-2 arabic-text">
-              استعرض المنصة بدون تسجيل دخول
+              شاهد جولة المنصة وتجربة التحليل بدون تسجيل دخول
             </p>
           </div>
         </div>

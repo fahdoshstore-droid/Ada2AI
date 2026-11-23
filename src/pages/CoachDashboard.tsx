@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dumbbell, Users, Calendar, TrendingUp, Target, ClipboardList, PlayCircle, Star, AlertCircle, Briefcase, Settings } from 'lucide-react';
 import { useCoachPlayers } from '../hooks/useCoachPlayers';
@@ -14,6 +15,8 @@ export default function CoachDashboard() {
   const reduced = useReducedMotion();
   const { profile } = useAuth();
   const showAdmin = isAdmin(profile);
+  const [showAllMatches, setShowAllMatches] = useState(false);
+  const [showAllPlayers, setShowAllPlayers] = useState(false);
 
   const loading = playersLoading || matchesLoading;
 
@@ -151,7 +154,15 @@ export default function CoachDashboard() {
                       <ClipboardList className="h-5 w-5 text-teal-prime" />
                       <span className="arabic-text">المباريات الأخيرة</span>
                     </h3>
-                    <button className="text-sm text-teal-prime hover:underline arabic-text">عرض الكل</button>
+                    {matches.length > 5 && (
+                      <button
+                        onClick={() => setShowAllMatches((v) => !v)}
+                        aria-expanded={showAllMatches}
+                        className="text-sm text-teal-prime hover:underline arabic-text"
+                      >
+                        {showAllMatches ? 'عرض أقل' : `عرض الكل (${matches.length})`}
+                      </button>
+                    )}
                   </div>
                   {matches.length === 0 ? (
                     <div className="py-8 text-center">
@@ -159,7 +170,7 @@ export default function CoachDashboard() {
                     </div>
                   ) : (
                     <Stagger gap={0.08} delay={0.25} className="space-y-3">
-                      {matches.slice(0, 5).map((match) => {
+                      {(showAllMatches ? matches : matches.slice(0, 5)).map((match) => {
                         const isWin = (match.home_score ?? 0) > (match.away_score ?? 0);
                         const isDraw = (match.home_score ?? 0) === (match.away_score ?? 0);
                         const resultLabel = isWin ? 'فوز' : isDraw ? 'تعادل' : 'خسارة';
@@ -196,7 +207,15 @@ export default function CoachDashboard() {
                       <Users className="h-5 w-5 text-teal-prime" />
                       <span className="arabic-text">أداء اللاعبين</span>
                     </h3>
-                    <button className="text-sm text-teal-prime hover:underline arabic-text">عرض الكل</button>
+                    {players.length > 5 && (
+                      <button
+                        onClick={() => setShowAllPlayers((v) => !v)}
+                        aria-expanded={showAllPlayers}
+                        className="text-sm text-teal-prime hover:underline arabic-text"
+                      >
+                        {showAllPlayers ? 'عرض أقل' : `عرض الكل (${players.length})`}
+                      </button>
+                    )}
                   </div>
                   {players.length === 0 ? (
                     <div className="py-8 text-center">
@@ -204,7 +223,7 @@ export default function CoachDashboard() {
                     </div>
                   ) : (
                     <Stagger gap={0.08} delay={0.3} className="space-y-3">
-                      {players.slice(0, 5).map((player) => (
+                      {(showAllPlayers ? players : players.slice(0, 5)).map((player) => (
                         <StaggerItem key={player.id} x={-24} y={0} className="flex items-center justify-between rounded-xl bg-white/5 p-4">
                           <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-teal-prime to-scout-blue text-sm font-bold text-white">
@@ -254,7 +273,9 @@ export default function CoachDashboard() {
                 <p className="mx-auto mb-6 max-w-xl text-ice-muted arabic-text">
                   احصل على خطط تدريبية مخصصة لكل لاعب بناءً على تحليل أدائه ونقاط القوة والضعف
                 </p>
-                <button className="rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue px-8 py-3 font-bold text-navy-dark transition-all hover:shadow-xl hover:shadow-teal-prime/25 arabic-text">
+                <button
+                  onClick={() => navigate('/coach/workspace?tab=player-analysis')}
+                  className="rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue px-8 py-3 font-bold text-navy-dark transition-all hover:shadow-xl hover:shadow-teal-prime/25 arabic-text">
                   إنشاء خطة تدريبية
                 </button>
               </div>

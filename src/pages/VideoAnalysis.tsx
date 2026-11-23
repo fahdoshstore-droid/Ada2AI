@@ -36,8 +36,10 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function VideoAnalysis() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const navigate = useNavigate()
+  // Players upload from their own page; coaches upload from the workspace.
+  const uploadPath = profile?.user_type === 'player' ? '/player/upload' : '/coach/workspace?tab=player-analysis'
   const { analyses, loading, error } = usePlayerAnalyses(user?.id ?? '')
 
   if (!user) {
@@ -83,7 +85,7 @@ export default function VideoAnalysis() {
             </div>
           </div>
           <button
-            onClick={() => navigate('/player/upload')}
+            onClick={() => navigate(uploadPath)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all"
           >
             <Upload className="w-4 h-4" />
@@ -113,7 +115,7 @@ export default function VideoAnalysis() {
               ارفع فيديو أولاً ليتم تحليله بواسطة الذكاء الاصطناعي
             </p>
             <button
-              onClick={() => navigate('/player/upload')}
+              onClick={() => navigate(uploadPath)}
               className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark font-bold text-sm arabic-text hover:shadow-lg hover:shadow-teal-prime/25 transition-all"
             >
               <Upload className="w-4 h-4" />

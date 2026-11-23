@@ -1,5 +1,5 @@
-import { lazy, Suspense, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import {
   Badge, UserSearch, Dumbbell, Users, TrendingUp,
@@ -113,8 +113,8 @@ function HeroSection() {
       </motion.div>
 
       {/* grade: navy falloff + teal floodlight accent */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#000A0F] via-[#000A0F]/25 to-[#000A0F]/55" />
-      <div className="absolute inset-0 bg-gradient-to-l from-[#000A0F]/90 via-[#000A0F]/35 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#000A0F]/90 via-[#000A0F]/5 to-[#000A0F]/20" />
+      <div className="absolute inset-0 bg-gradient-to-l from-[#000A0F]/65 via-[#000A0F]/20 to-transparent" />
       <motion.div
         aria-hidden="true"
         className="absolute inset-0 bg-[radial-gradient(55%_50%_at_16%_30%,rgba(0,220,200,0.16),transparent_70%)]"
@@ -139,7 +139,7 @@ function HeroSection() {
             <span className="arabic-text">الجيل القادم من تحليل المواهب الرياضية</span>
           </motion.div>
 
-          <h1 className="text-[2.6rem] font-black leading-[1.22] tracking-tightest sm:text-6xl md:text-7xl lg:text-[5.75rem]">
+          <h1 className="text-[2.6rem] font-black leading-[1.22] tracking-tightest [text-shadow:0_2px_28px_rgba(0,10,15,0.65)] sm:text-6xl md:text-7xl lg:text-[5.75rem]">
             <SplitReveal text="نبني المواهب" immediate delay={0.7} className="block text-ice-white arabic-text" />
             <SplitReveal text="بالذكاء الاصطناعي" immediate delay={1.05} className="block text-teal-prime arabic-text" />
           </h1>
@@ -148,7 +148,7 @@ function HeroSection() {
             initial={reduced ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: EASE, delay: 1.6 }}
-            className="mt-6 max-w-xl text-base leading-relaxed text-ice-white/75 md:text-lg arabic-text"
+            className="mt-6 max-w-xl text-base leading-relaxed text-ice-white/90 [text-shadow:0_1px_16px_rgba(0,10,15,0.8)] md:text-lg arabic-text"
           >
             منصة Ada2AI هي المنصة السعودية الرائعة في اكتشاف وتحليل المواهب الرياضية.
             نقدم حلولاً ذكية للكشافين والمدربين والأندية لاكتشاف النجوم قبل الجميع.
@@ -284,7 +284,7 @@ function ProductsSection() {
                 imgClassName="object-[22%_50%]"
                 caption="صورة مولّدة بالذكاء الاصطناعي"
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-[#000A0F]/70 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#000A0F]/35 via-transparent to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 h-1 bg-teal-prime/80" />
               </ImageReveal>
             </div>
@@ -301,13 +301,13 @@ function FeaturesSection() {
     <section className="relative overflow-hidden bg-[#000A0F]">
       <div className="relative h-[72svh] min-h-[460px]">
         <ImageReveal src={keeperRain} className="absolute inset-0" imgClassName="object-[68%_50%]" parallax={5} />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#000A0F] via-[#000A0F]/30 to-[#000A0F]/60" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#000A0F]/90 via-[#000A0F]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#000A0F]/90 via-[#000A0F]/5 to-[#000A0F]/25" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#000A0F]/70 via-[#000A0F]/20 to-transparent" />
         <div className="absolute inset-x-0 top-0 h-[7svh] bg-[#000A0F]" aria-hidden="true" />
         <GhostNumber n="03" className="top-[8svh] end-[-2%]" />
         <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-[9svh] sm:px-6 lg:px-8">
           <span className="text-label-caps mb-4 inline-block">لماذا Ada2AI؟</span>
-          <h2 className="max-w-3xl text-4xl font-black leading-[1.25] tracking-tightest md:text-6xl lg:text-7xl">
+          <h2 className="max-w-3xl text-4xl font-black leading-[1.25] tracking-tightest [text-shadow:0_2px_26px_rgba(0,10,15,0.7)] md:text-6xl lg:text-7xl">
             <SplitReveal text="تقنية متقدمة" className="block text-teal-prime arabic-text" />
             <SplitReveal text="لعالم رياضي أفضل" delay={0.2} className="block text-ice-white arabic-text" />
           </h2>
@@ -349,8 +349,8 @@ function CTASection() {
 
   return (
     <section ref={ref} className="relative overflow-hidden bg-[#000A0F] py-36 md:py-56" aria-label="ابدأ الآن">
-      <ImageReveal src={aerialPitch} className="absolute inset-0" imgClassName="grayscale opacity-45" parallax={6} />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#000A0F] via-[#000A0F]/45 to-[#000A0F]" />
+      <ImageReveal src={aerialPitch} className="absolute inset-0" imgClassName="grayscale opacity-80" parallax={6} />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#000A0F]/90 via-[#000A0F]/30 to-[#000A0F]/85" />
       {/* teal lighting accent */}
       <motion.div
         aria-hidden="true"
@@ -397,13 +397,24 @@ function CTASection() {
 
 // ─── Main Landing Page ───
 export default function LandingPage() {
+  const { hash } = useLocation();
+  // Deep links such as "/#footage-intel" (login page demo button) scroll to their section.
+  useEffect(() => {
+    if (!hash) return;
+    const id = hash.slice(1);
+    const t = window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+    return () => window.clearTimeout(t);
+  }, [hash]);
+
   return (
     <div className="bg-[#000A0F]">
       <HeroSection />
       <ProductsSection />
-      <Suspense fallback={<div className="min-h-[1100px] bg-[#000A0F]" aria-hidden="true" />}>
-        <FootageIntel />
-      </Suspense>
+      <div id="footage-intel" className="scroll-mt-16">
+        <Suspense fallback={<div className="min-h-[1100px] bg-[#000A0F]" aria-hidden="true" />}>
+          <FootageIntel />
+        </Suspense>
+      </div>
       <FeaturesSection />
       <CTASection />
     </div>

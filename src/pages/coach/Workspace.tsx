@@ -11,7 +11,7 @@
  */
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Clock, Loader2, CheckCircle, XCircle,
   Play, ClipboardList, BarChart3,
@@ -221,7 +221,11 @@ export default function CoachWorkspace() {
   const [activeFormId, setActiveFormId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [formation, setFormation] = useState<'4-3-3' | '4-4-2' | '3-5-2'>('4-3-3')
-  const [activeTab, setActiveTab] = useState<'workspace' | 'opponent' | 'player-analysis'>('workspace')
+  const [searchParams] = useSearchParams()
+  const initialTab = searchParams.get('tab')
+  const [activeTab, setActiveTab] = useState<'workspace' | 'opponent' | 'player-analysis'>(
+    initialTab === 'opponent' || initialTab === 'player-analysis' ? initialTab : 'workspace'
+  )
   const [opponentTeam, setOpponentTeam] = useState('')
   const [matchDate, setMatchDate] = useState('')
   const [opponentVideo, setOpponentVideo] = useState<File | null>(null)
@@ -535,15 +539,17 @@ export default function CoachWorkspace() {
                       </div>
                       <div className="flex items-center gap-2">
                         <StatusBadge status={toUiStatus(analysis.status)} />
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            navigate(`/player/${analysis.uploaded_by}`)
-                          }}
-                          className="text-xs text-teal-prime hover:underline arabic-text"
-                        >
-                          عرض اللاعب
-                        </button>
+                        {analysis.uploaded_by && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              navigate(`/player/${analysis.uploaded_by}`)
+                            }}
+                            className="text-xs text-teal-prime hover:underline arabic-text"
+                          >
+                            عرض اللاعب
+                          </button>
+                        )}
                         {isExpanded ? (
                           <ChevronUp className="w-4 h-4 text-ice-muted" />
                         ) : (
