@@ -91,7 +91,7 @@ export default function ScoutDashboard() {
           onClick={() => navigate('/match-report')}
           className="flex w-full items-center justify-between gap-3 rounded-xl border border-teal-prime/25 bg-teal-prime/5 px-4 py-3 text-sm font-medium text-teal-prime transition-colors hover:border-teal-prime/50 hover:bg-teal-prime/10 arabic-text"
         >
-          <span>تقرير المباراة — اللاعبون وبطاقات Sport ID</span>
+          <span>تقرير المباراة — اللاعبون وبطاقات الهوية الرياضية</span>
           <span aria-hidden="true">←</span>
         </button>
       </div>

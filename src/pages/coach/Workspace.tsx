@@ -27,7 +27,7 @@ import { useCoachPlayers } from '../../hooks/useCoachPlayers'
 import { type AnalysisResults, createAnalysisRecord, toUiStatus } from '../../services/analysis'
 import { StatusBadge } from '../../components/StatusBadge'
 import { SectionHeader } from '../../components/SectionHeader'
-import PitchView from '../../components/coach/PitchView'
+import PitchView, { type FormationKey } from '../../components/coach/PitchView'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 
@@ -220,7 +220,7 @@ export default function CoachWorkspace() {
 
   const [activeFormId, setActiveFormId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [formation, setFormation] = useState<'4-3-3' | '4-4-2' | '3-5-2'>('4-3-3')
+  const [formation, setFormation] = useState<FormationKey>('4-3-3')
   const [activeTab, setActiveTab] = useState<'workspace' | 'opponent' | 'player-analysis'>('workspace')
   const [opponentTeam, setOpponentTeam] = useState('')
   const [matchDate, setMatchDate] = useState('')
@@ -387,7 +387,7 @@ export default function CoachWorkspace() {
           >
             <span className="flex items-center gap-2 font-medium text-teal-prime arabic-text">
               <ClipboardList className="h-4 w-4" />
-              تقرير المباراة — الفريق، اللاعبون، Sport ID
+              تقرير المباراة — الفريق، اللاعبون، والهوية الرياضية
             </span>
             <ArrowLeft className="h-4 w-4 rotate-180 text-teal-prime/70" />
           </button>
@@ -397,7 +397,7 @@ export default function CoachWorkspace() {
           >
             <span className="flex items-center gap-2 font-medium text-teal-prime arabic-text">
               <Radar className="h-4 w-4" />
-              تحليل المباراة بالفيديو — ربط المسارات، معايرة الملعب، وخريطة التمركز
+              تحليل المباراة بالفيديو — هوية اللاعبين، ضبط الملعب، وخريطة التمركز
             </span>
             <ArrowLeft className="h-4 w-4 rotate-180 text-teal-prime/70" />
           </button>
@@ -416,7 +416,7 @@ export default function CoachWorkspace() {
           <PitchView
             players={players ?? []}
             formation={formation}
-            onFormationChange={(f: string) => setFormation(f as '4-3-3' | '4-4-2' | '3-5-2')}
+            onFormationChange={setFormation}
           />
         </motion.div>
 
