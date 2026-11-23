@@ -56,6 +56,16 @@ type State =
   | 'auth_failed'
   | 'backend_failed';
 
+/** Server event-source keys in plain Arabic; unknown keys fall back to a generic label. */
+function eventSourceLabel(key: string): string {
+  const k = key.toLowerCase();
+  if (k.includes('coach') || k.includes('manual')) return 'سجّلها المدرب';
+  if (k.includes('confirm') || k.includes('verified')) return 'مؤكدة';
+  if (k.includes('heuristic') || k.includes('inferred') || k.includes('estimat')) return 'تقدير تلقائي';
+  if (k.includes('detect') || k.includes('cv') || k.includes('vision')) return 'رصد تلقائي';
+  return 'مصدر آخر';
+}
+
 export default function MatchReports({ matches, lang = 'ar' }: Props) {
   const isRTL = lang !== 'en';
   const requestRef = useRef(0);
@@ -63,7 +73,7 @@ export default function MatchReports({ matches, lang = 'ar' }: Props) {
   const [selectedMatchId, setSelectedMatchId] = useState('');
   const [report, setReport] = useState<MatchReport | null>(null);
   const [state, setState] = useState<State>('not_loaded');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [, setErrorMessage] = useState<string | null>(null);
 
   const loadReport = useCallback(async (matchId: string) => {
     setSelectedMatchId(matchId);
@@ -114,6 +124,10 @@ export default function MatchReports({ matches, lang = 'ar' }: Props) {
   const identityConfirmed = !!report?.data_quality?.player_identity_confirmed;
   const eventCounts = Object.entries(report?.event_provenance?.provenance_counts || {});
   const tracking = report?.data_quality?.tracking_quality;
+  const rawConfidence = tracking?.mean_detection_confidence;
+  const confidencePct = typeof rawConfidence === 'number'
+    ? `${Math.round(rawConfidence <= 1 ? rawConfidence * 100 : rawConfidence)}٪`
+    : null;
 
   return (
     <section dir={isRTL ? 'rtl' : 'ltr'} className="glass-card rounded-2xl p-6 mt-6">
@@ -131,7 +145,7 @@ export default function MatchReports({ matches, lang = 'ar' }: Props) {
           <option value="">— اختر مباراة محللة —</option>
           {matches.map(match => (
             <option key={match.id} value={match.id}>
-              {match.home_team || 'Unknown'} vs {match.away_team || 'Unknown'}
+              {match.home_team || '؟'} × {match.away_team || '؟'}
               {match.competition ? ` · ${match.competition}` : ''}
               {match.match_date ? ` · ${match.match_date}` : ''}
             </option>
@@ -160,19 +174,19 @@ export default function MatchReports({ matches, lang = 'ar' }: Props) {
 
       {state === 'identity_mismatch' && (
         <div className="rounded-xl bg-red-500/10 border border-red-400/20 p-4 text-sm text-red-400 arabic-text">
-          خطأ في ربط التقرير بالمباراة. تم إبطال العرض.
+          التقرير المحفوظ لا يخص هذه المباراة، فلم نعرضه.
         </div>
       )}
 
       {state === 'auth_failed' && (
         <div className="rounded-xl bg-red-500/10 border border-red-400/20 p-4 text-sm text-red-400 arabic-text">
-          فشل المصادقة. لا يمكن عرض التقرير.
+          انتهت صلاحية الدخول. سجّل الدخول من جديد.
         </div>
       )}
 
       {state === 'backend_failed' && (
         <div className="rounded-xl bg-red-500/10 border border-red-400/20 p-4 text-sm text-red-400 arabic-text">
-          تعذّر جلب التقرير. {errorMessage}
+          تعذّر تحميل التقرير. تأكد أن خدمة تحليل الفيديو تعمل ثم حاول مرة أخرى.
         </div>
       )}
 
@@ -187,83 +201,81 @@ export default function MatchReports({ matches, lang = 'ar' }: Props) {
           <div className="rounded-xl bg-white/5 p-4">
             <div className="flex items-center gap-2 text-sm text-teal-prime arabic-text">
               <Activity className="w-4 h-4" />
-              التقرير المرتبط بالمباراة الصحيحة
-            </div>
-            <div className="mt-2 text-xs text-ice-muted arabic-text">
-              Match ID: {report.match_id || '-'} {report.run_id ? ` · Run ID: ${report.run_id}` : ''}
+              تقرير محفوظ لهذه المباراة
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white/5 rounded-xl p-4">
-              <div className="text-xs text-ice-muted arabic-text">حالة المعايرة</div>
+              <div className="text-xs text-ice-muted arabic-text">ضبط الملعب</div>
               <div className={`font-display font-bold text-lg ${calibrated ? 'text-teal-prime' : 'text-gold'}`}>
-                {calibrated ? 'معايرة صالحة' : 'معايرة غير مصرح بها'}
+                {calibrated ? 'مضبوط' : 'غير مضبوط بعد'}
               </div>
-              <div className="text-xs text-ice-muted mt-1">
-                {report.calibration?.label || report.calibration?.status || 'not_validated'}
+              <div className="text-xs text-ice-muted mt-1 arabic-text">
+                {calibrated ? 'المسافات والسرعات محسوبة بالمتر.' : 'لا تُحسب المسافات والسرعات قبل ضبط الملعب.'}
               </div>
             </div>
             <div className="bg-white/5 rounded-xl p-4">
-              <div className="text-xs text-ice-muted arabic-text">هوية اللاعب</div>
+              <div className="text-xs text-ice-muted arabic-text">أسماء اللاعبين</div>
               <div className={`font-display font-bold text-lg ${identityConfirmed ? 'text-teal-prime' : 'text-gold'}`}>
-                {identityConfirmed ? 'مؤكدة' : 'غير مؤكدة'}
+                {identityConfirmed ? 'محدَّدة' : 'غير محدَّدة'}
               </div>
-              <div className="text-xs text-ice-muted mt-1">
-                {report.data_quality?.track_id_note || 'track_id ≠ player_id'}
+              <div className="text-xs text-ice-muted mt-1 arabic-text">
+                الأرقام مؤقتة حتى يحدد المدرب من هو كل لاعب.
               </div>
             </div>
             <div className="bg-white/5 rounded-xl p-4">
-              <div className="text-xs text-ice-muted arabic-text">مصدر التتبع</div>
-              <div className="font-display font-bold text-lg text-teal-prime">
-                {report.data_quality?.positioning_evidence?.status || 'غير متاح'}
+              <div className="text-xs text-ice-muted arabic-text">مواقع اللاعبين</div>
+              <div className={`font-bold text-lg arabic-text ${calibrated ? 'text-teal-prime' : 'text-gold'}`}>
+                {calibrated ? 'على الملعب' : 'على الصورة فقط'}
               </div>
-              <div className="text-xs text-ice-muted mt-1">
-                {report.data_quality?.positioning_evidence?.note || 'بيانات تحليل محفوظة'}
+              <div className="text-xs text-ice-muted mt-1 arabic-text">
+                مأخوذة من فيديو المباراة.
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white/5 rounded-xl p-4">
-              <div className="text-xs text-ice-muted arabic-text">عدد المسارات</div>
+              <div className="text-xs text-ice-muted arabic-text">لاعبون ظهروا في الفيديو</div>
               <div className="font-display font-bold text-xl text-ice-white">{tracking?.person_tracks ?? 0}</div>
             </div>
             <div className="bg-white/5 rounded-xl p-4">
-              <div className="text-xs text-ice-muted arabic-text">متوسط ثقة التتبع</div>
-              <div className="font-display font-bold text-xl text-ice-white">{tracking?.mean_detection_confidence ?? 0}</div>
+              <div className="text-xs text-ice-muted arabic-text">وضوح الرصد</div>
+              <div className="font-display font-bold text-xl text-ice-white">{confidencePct ?? '—'}</div>
             </div>
             <div className="bg-white/5 rounded-xl p-4">
-              <div className="text-xs text-ice-muted arabic-text">عدد الأحداث</div>
+              <div className="text-xs text-ice-muted arabic-text">لقطات مسجّلة</div>
               <div className="font-display font-bold text-xl text-ice-white">{report.event_provenance?.total_events ?? 0}</div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white/5 rounded-xl p-4">
-              <h3 className="text-sm font-bold text-ice-white mb-3 arabic-text">توزيع الأحداث</h3>
+              <h3 className="text-sm font-bold text-ice-white mb-3 arabic-text">مصدر اللقطات المسجّلة</h3>
               {eventCounts.length ? (
                 eventCounts.map(([level, count]) => (
                   <div key={`${level}-${count}`} className="flex justify-between text-sm text-ice-muted">
-                    <span>{level}</span>
+                    <span className="arabic-text">{eventSourceLabel(level)}</span>
                     <span>{count}</span>
                   </div>
                 ))
               ) : (
-                <p className="text-ice-muted text-xs arabic-text">لا توجد أحداث محفوظة.</p>
+                <p className="text-ice-muted text-xs arabic-text">لا توجد لقطات مسجّلة.</p>
               )}
             </div>
             <div className="bg-white/5 rounded-xl p-4">
-              <h3 className="text-sm font-bold text-ice-white mb-3 arabic-text">بيانات جودة التتبع</h3>
+              <h3 className="text-sm font-bold text-ice-white mb-3 arabic-text">ظهور اللاعبين</h3>
               <div className="text-sm text-ice-muted arabic-text">
-                مسار التتبع: {tracking?.mean_frames_visible ?? '-'}
-                {tracking?.provenance ? ` · ${tracking.provenance}` : ''}
+                {tracking?.mean_frames_visible != null
+                  ? `يظهر اللاعب في المتوسط في ${Math.round(tracking.mean_frames_visible)} لقطة.`
+                  : 'غير متاح.'}
               </div>
             </div>
           </div>
 
           <div className="rounded-xl bg-white/5 p-4 text-sm text-ice-muted arabic-text">
-            {report.data_quality?.positioning_evidence?.note || 'هذا التقرير مستخرج من تحليل محفوظ. لا يعني ذلك توفر بيانات إعادة العرض.'}
+            هذا التقرير من تحليل محفوظ للفيديو. الأرقام تقريبية، ولا تُعرض المسافات والسرعات قبل ضبط الملعب.
           </div>
         </div>
       )}

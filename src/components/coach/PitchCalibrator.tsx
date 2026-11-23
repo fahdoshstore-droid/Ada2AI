@@ -144,11 +144,11 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
               ? <Check className="h-4 w-4 shrink-0 text-teal-prime" />
               : <AlertTriangle className="h-4 w-4 shrink-0 text-gold" />}
             <span className={`arabic-text ${calibration.validated ? 'text-teal-prime' : 'text-gold'}`}>
-              {calibration.validated ? 'هذه المباراة معايَرة ومتحقَّق منها' : 'معايَرة لكن غير متحقَّق منها'}
+              {calibration.validated ? 'الملعب مضبوط لهذه المباراة بدقة جيدة' : 'الملعب مضبوط لكن الدقة غير كافية'}
             </span>
             {calibration.reprojection_error_meters !== null && (
               <span className="font-display text-xs text-ice-muted">
-                خطأ {calibration.reprojection_error_meters.toFixed(2)} م · {calibration.correspondences.length} نقاط
+                هامش الخطأ {calibration.reprojection_error_meters.toFixed(1)} م · {calibration.correspondences.length} نقاط
               </span>
             )}
           </div>
@@ -162,7 +162,7 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
             {uploading ? 'جارٍ رفع الفيديو…' : 'ارفع فيديو المباراة'}
           </span>
           <span className="max-w-md text-xs leading-relaxed text-ice-muted arabic-text">
-            لم يُرفع أي فيديو عبر المنصة من قبل — لهذا لا يوجد إطار لمعايرته. الفيديو يُحفظ ويُربط بهذا التحليل، فتبقى المعايرة قابلة للمراجعة على نفس اللحظة لاحقاً.
+            لا يوجد فيديو لهذه المباراة بعد. ارفعه لتحدد عليه معالم الملعب، ويبقى محفوظاً للرجوع إليه.
           </span>
           <input type="file" accept="video/*" className="hidden" onChange={onPickFile} disabled={uploading} />
           {uploadError && <span className="text-xs text-gold arabic-text">{uploadError}</span>}
@@ -174,7 +174,7 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
             tabIndex={0}
             onKeyDown={nudge}
             role="application"
-            aria-label="إطار المباراة — انقر لتحديد المعالم"
+            aria-label="لقطة من المباراة — انقر لتحديد معالم الملعب"
           >
             <video
               ref={videoRef}
@@ -214,7 +214,7 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
 
             {!paused && (
               <div className="pointer-events-none absolute inset-x-0 bottom-14 bg-gold/15 p-2 text-center text-xs text-gold arabic-text">
-                أوقف الفيديو قبل النقر — المعالم تُحدَّد على إطار ثابت
+                أوقف الفيديو أولاً، ثم انقر على المعلم في الصورة
               </div>
             )}
 
@@ -227,10 +227,10 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
               >
                 <Pause className="h-3.5 w-3.5" />
               </button>
-              <button type="button" onClick={() => seekBy(-FRAME_STEP)} className="rounded-lg border border-white/10 p-1.5 text-ice-white transition-colors hover:border-teal-prime/50" aria-label="إطار للخلف">
+              <button type="button" onClick={() => seekBy(-FRAME_STEP)} className="rounded-lg border border-white/10 p-1.5 text-ice-white transition-colors hover:border-teal-prime/50" aria-label="لقطة للخلف">
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
-              <button type="button" onClick={() => seekBy(FRAME_STEP)} className="rounded-lg border border-white/10 p-1.5 text-ice-white transition-colors hover:border-teal-prime/50" aria-label="إطار للأمام">
+              <button type="button" onClick={() => seekBy(FRAME_STEP)} className="rounded-lg border border-white/10 p-1.5 text-ice-white transition-colors hover:border-teal-prime/50" aria-label="لقطة للأمام">
                 <ChevronLeft className="h-3.5 w-3.5" />
               </button>
               <input
@@ -268,8 +268,8 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
                 ))}
               </select>
               <p className="mt-1 text-[11px] leading-relaxed text-ice-muted arabic-text">
-                المعالم المعلَّمة بنجمة غير موجودة في قائمة الخادم، أضفتها هنا لأن كاميرا واحدة نادراً ما تُظهر الزوايا الأربع ونقطتي الجزاء معاً.
-                بعد وضع نقطة: الأسهم تحركها بكسل واحد — وهذا وحده يرفع نسبة التحقق من 59٪ إلى 99٪.
+                المعالم المعلَّمة بنجمة إضافية، لأن الكاميرا نادراً ما تُظهر كل زوايا الملعب معاً.
+                بعد وضع النقطة، حرّكها بأسهم لوحة المفاتيح لتطابق المعلم بدقة.
               </p>
             </div>
 
@@ -294,7 +294,7 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
 
             {points.length >= 4 && !solved && (
               <p className="rounded-xl border border-gold/30 bg-gold/5 p-3 text-xs text-gold arabic-text">
-                لا يمكن حساب مصفوفة من هذه النقاط — على الأرجح أنها على استقامة واحدة. وزّعها على عرض الملعب وطوله.
+                لا يمكن ضبط الملعب بهذه النقاط لأنها على خط واحد تقريباً. وزّعها على عرض الملعب وطوله.
               </p>
             )}
 
@@ -302,11 +302,11 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
               <div className={`rounded-xl border p-3 ${solved.validated ? 'border-teal-prime/30 bg-teal-prime/5' : 'border-gold/30 bg-gold/5'}`}>
                 <div className={`mb-1 flex items-center gap-2 text-xs font-bold ${solved.validated ? 'text-teal-prime' : 'text-gold'}`}>
                   {solved.validated ? <Check className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
-                  <span className="arabic-text">{solved.validated ? 'متحقَّق منها' : 'غير متحقَّق منها'}</span>
+                  <span className="arabic-text">{solved.validated ? 'دقة جيدة' : 'دقة غير كافية'}</span>
                 </div>
                 <p className="text-[11px] leading-relaxed text-ice-muted arabic-text">{solved.note}</p>
                 <p className="mt-1 text-[11px] text-ice-muted arabic-text">
-                  الحد المقبول {HOLDOUT_TOLERANCE_METERS} م، والتحقق يحتاج {MIN_POINTS_FOR_HOLDOUT} نقاط على الأقل.
+                  الدقة الجيدة: هامش خطأ أقل من {HOLDOUT_TOLERANCE_METERS} م، وتحتاج {MIN_POINTS_FOR_HOLDOUT} نقاط على الأقل.
                 </p>
               </div>
             )}
@@ -317,7 +317,7 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
               disabled={!solved || saving}
               className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {saving ? 'جارٍ الحفظ…' : 'احفظ المعايرة'}
+              {saving ? 'جارٍ الحفظ…' : 'احفظ ضبط الملعب'}
             </button>
             {saveError && <p className="text-xs text-gold arabic-text">{saveError}</p>}
           </div>
@@ -328,22 +328,22 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
         <div className="glass-card rounded-2xl p-4">
           <h4 className="mb-3 flex items-center gap-2 text-sm font-bold text-ice-white">
             <Ruler className="h-4 w-4 text-teal-prime" />
-            <span className="arabic-text">ما تغيّره هذه المعايرة على مسارات هذه المباراة</span>
+            <span className="arabic-text">المسافات قبل ضبط الملعب وبعده</span>
           </h4>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-ice-muted">
-                  <th className="p-2 text-start arabic-text">المسار</th>
-                  <th className="p-2 text-start arabic-text">المحفوظ الآن</th>
-                  <th className="p-2 text-start arabic-text">بعد المعايرة</th>
+                  <th className="p-2 text-start arabic-text">اللاعب</th>
+                  <th className="p-2 text-start arabic-text">قبل الضبط</th>
+                  <th className="p-2 text-start arabic-text">بعد الضبط</th>
                   <th className="p-2 text-start arabic-text">أعلى سرعة</th>
                 </tr>
               </thead>
               <tbody>
                 {comparison.map(row => (
                   <tr key={row.trackId} className="border-t border-white/5">
-                    <td className="p-2 font-display text-ice-white">T-{row.trackId}</td>
+                    <td className="p-2 font-display text-ice-white">#{row.trackId}</td>
                     <td className="p-2 font-display text-gold">{row.stored.toFixed(2)} م</td>
                     <td className="p-2 font-display text-teal-prime">
                       {row.recomputed ? `${row.recomputed.distanceMeters.toFixed(1)} م` : '—'}
@@ -351,7 +351,7 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
                     <td className="p-2 font-display text-ice-muted">
                       {row.recomputed?.topSpeedMps != null ? `${row.recomputed.topSpeedMps.toFixed(1)} م/ث` : '—'}
                       {row.recomputed && row.recomputed.implausibleSteps > 0 && (
-                        <span className="ms-1 text-gold">({row.recomputed.implausibleSteps} خطوة مستبعدة)</span>
+                        <span className="ms-1 text-gold">({row.recomputed.implausibleSteps} قفزة غير منطقية استُبعدت)</span>
                       )}
                     </td>
                   </tr>
@@ -360,8 +360,8 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
             </table>
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-ice-muted arabic-text">
-            العمود الذهبي هو ما تقوله قاعدة البيانات اليوم: مسافة بالبكسل مقسومة على 100 ثابت.
-            العمود التيل محسوب من المصفوفة. المسافة تغطي آخر {POSITIONAL_HISTORY_CAP} عيّنة لكل مسار فقط — هذا سقف يضعه الخادم، فهي ليست مسافة المباراة كاملة.
+            «قبل الضبط» هو الرقم المحفوظ حالياً، وهو غير صحيح لأنه محسوب من الصورة لا من الملعب.
+            «بعد الضبط» محسوب على الملعب الحقيقي، ويغطي آخر {POSITIONAL_HISTORY_CAP} موضعاً لكل لاعب فقط، فليس مسافة المباراة كاملة.
           </p>
         </div>
       )}
@@ -369,7 +369,7 @@ export default function PitchCalibrator({ analysisId, matchId }: Props) {
       {!videoUrl && tracks.length === 0 && (
         <p className="text-xs text-ice-muted arabic-text">
           <Crosshair className="me-1 inline h-3 w-3" />
-          لا توجد مواضع مخزّنة لهذا التحليل، فلا شيء يمكن إعادة حسابه بعد المعايرة.
+          لا توجد مواقع لاعبين محفوظة لهذا التحليل.
         </p>
       )}
     </div>

@@ -52,9 +52,9 @@ async function fetchAnalysedMatches(): Promise<AnalysedMatch[]> {
 /** Colour is provenance. Teal = measured by the vision pipeline, blue = entered
  *  by the coach, gold = present but unconfirmed, grey = not available at all. */
 const PROVENANCE = [
-  { dot: 'bg-teal-prime', label: 'قياس آلي', note: 'من تتبّع الفيديو' },
+  { dot: 'bg-teal-prime', label: 'رصد تلقائي', note: 'من الفيديو' },
   { dot: 'bg-scout-blue', label: 'إدخال المدرب', note: 'أحداث وتقييم' },
-  { dot: 'bg-gold', label: 'غير مؤكد', note: 'مسار بلا هوية' },
+  { dot: 'bg-gold', label: 'غير مؤكد', note: 'لاعب لم يُحدَّد اسمه' },
   { dot: 'bg-ice-muted', label: 'غير متاح', note: 'لا يُعرض رقم' },
 ] as const
 
@@ -112,8 +112,8 @@ export default function CoachMatchAnalysis() {
             transition={{ duration: 0.9, ease: EASE, delay: 0.85 }}
           >
             <p className="mt-7 max-w-xl text-lg leading-relaxed text-ice-white/75 arabic-text">
-              التقارير المحفوظة مع التشكيلات وخط الأحداث الموثّق وربط المسارات بالهوية الرياضية،
-              ثم فيديو المباراة مع علامات تتبّع اللاعبين.
+              تقارير المباريات المحفوظة، وتحديد من هو كل لاعب ظهر في الفيديو،
+              ثم فيديو المباراة مع مواقع اللاعبين.
             </p>
 
             <Link
@@ -121,8 +121,8 @@ export default function CoachMatchAnalysis() {
               className="mt-6 inline-flex items-center gap-2 rounded-xl border border-teal-prime/30 px-4 py-2.5 text-sm font-bold text-teal-prime transition-colors hover:bg-teal-prime/10 arabic-text"
             >
               <BarChart3 className="h-4 w-4" />
-              لوحة ذكاء المباراة التفصيلية
-              <span className="font-normal text-ice-muted">— عرض تقني بالإنجليزية</span>
+              التقرير التفصيلي للمباراة
+              <span className="font-normal text-ice-muted">— بالإنجليزية</span>
             </Link>
 
             {/* Provenance legend — the page's one colour rule, stated once. */}
@@ -163,7 +163,7 @@ export default function CoachMatchAnalysis() {
             )}
             {matches.isError && (
               <p className="glass-card rounded-2xl border-gold/30 p-6 text-sm text-gold arabic-text" role="status">
-                تعذّر الوصول إلى خدمة التحليل، فلا تُعرض تقارير الآن. لم تُستبدل ببيانات تجريبية.
+                خدمة تحليل الفيديو لا تعمل الآن، فلا تظهر التقارير. شغّلها ثم أعد تحميل الصفحة.
               </p>
             )}
             {matches.isSuccess && matches.data.length === 0 && (
@@ -177,7 +177,7 @@ export default function CoachMatchAnalysis() {
       </section>
 
       {/* 02 — the hinge: which track is which player */}
-      <section className="relative overflow-hidden py-12 md:py-16" aria-label="ربط المسارات باللاعبين">
+      <section className="relative overflow-hidden py-12 md:py-16" aria-label="هوية اللاعبين">
         <GhostNumber n="02" className="-top-6 end-[-2%]" />
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Stagger gap={0.1} className="mb-8 flex items-center gap-3">
@@ -187,7 +187,7 @@ export default function CoachMatchAnalysis() {
             <StaggerItem y={16}>
               <h2 className="flex items-center gap-3 text-xl font-bold text-ice-white md:text-2xl">
                 <Users className="h-5 w-5 text-teal-prime" />
-                <span className="arabic-text">هوية المسارات</span>
+                <span className="arabic-text">هوية اللاعبين</span>
               </h2>
             </StaggerItem>
           </Stagger>
@@ -213,7 +213,7 @@ export default function CoachMatchAnalysis() {
 
             {linkable.length === 0 && (
               <p className="glass-card rounded-2xl p-6 text-sm text-gold arabic-text">
-                لا توجد مباراة محلَّلة بعد. المسارات تظهر هنا بعد أن يرفع التحليل المرئي مباراة.
+                لا توجد مباراة محلَّلة بعد. يظهر اللاعبون هنا بعد تحليل فيديو مباراة.
               </p>
             )}
 
@@ -221,7 +221,7 @@ export default function CoachMatchAnalysis() {
               ? <TrackIdentityLinker matchId={linkMatchId} players={roster} />
               : linkable.length > 0 && (
                 <p className="glass-card rounded-2xl p-6 text-sm text-ice-muted arabic-text">
-                  اختر مباراة لعرض مساراتها وربط كل مسار بلاعب من كشفك. بدون هذا الربط تبقى الأرقام مجهولة الهوية.
+                  اختر مباراة لترى اللاعبين الذين ظهروا فيها، وحدّد من هو كل واحد منهم من قائمة لاعبيك. بدون ذلك تبقى أرقامهم بلا اسم.
                 </p>
               )}
           </SideReveal>
@@ -229,7 +229,7 @@ export default function CoachMatchAnalysis() {
       </section>
 
       {/* 03 — the units: pixels into metres */}
-      <section className="relative overflow-hidden py-12 md:py-16" aria-label="معايرة الملعب">
+      <section className="relative overflow-hidden py-12 md:py-16" aria-label="ضبط الملعب">
         <GhostNumber n="03" className="-top-6 start-[-2%]" />
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Stagger gap={0.1} className="mb-8 flex items-center gap-3">
@@ -239,7 +239,7 @@ export default function CoachMatchAnalysis() {
             <StaggerItem y={16}>
               <h2 className="flex items-center gap-3 text-xl font-bold text-ice-white md:text-2xl">
                 <Ruler className="h-5 w-5 text-teal-prime" />
-                <span className="arabic-text">معايرة الملعب</span>
+                <span className="arabic-text">ضبط الملعب</span>
               </h2>
             </StaggerItem>
           </Stagger>
@@ -248,14 +248,14 @@ export default function CoachMatchAnalysis() {
             {!linkMatchId
               ? (
                 <p className="glass-card rounded-2xl p-6 text-sm text-ice-muted arabic-text">
-                  اختر المباراة في القسم 02 أولاً — المعايرة تُحفظ على تحليل مباراة بعينها، لا على الموقع.
+                  اختر المباراة في القسم 02 أولاً. ضبط الملعب يُحفظ لكل مباراة على حدة.
                 </p>
               )
               : analysisId
                 ? <PitchCalibrator analysisId={analysisId} matchId={linkMatchId} />
                 : (
                   <p className="glass-card rounded-2xl p-6 text-sm text-gold arabic-text">
-                    لا يوجد تحليل محفوظ لهذه المباراة، ولا شيء لمعايرته.
+                    لا يوجد تحليل محفوظ لهذه المباراة.
                   </p>
                 )}
           </SideReveal>
@@ -285,7 +285,7 @@ export default function CoachMatchAnalysis() {
               </p>
             ) : linkedTracks.length === 0 ? (
               <p className="glass-card rounded-2xl p-6 text-sm text-ice-muted arabic-text">
-                لا يوجد لاعب مربوط بمسار بعد. اربط لاعباً بمسار في القسم 02 — الخريطة هنا تُعرض على Sport ID اللاعب، لا على رقم مسار مجهول.
+                لم تحدّد أي لاعب بعد. حدّد اللاعبين في القسم 02، ثم تظهر خريطة كل لاعب هنا.
               </p>
             ) : (
               <div className="space-y-4">
@@ -297,10 +297,10 @@ export default function CoachMatchAnalysis() {
                     onChange={event => setHeatmapTrackId(event.target.value)}
                     className="w-full max-w-md rounded-xl border border-white/10 bg-[#05080f] px-4 py-3 text-sm text-ice-white outline-none focus:border-teal-prime/50 arabic-text"
                   >
-                    <option value="">— اختر لاعباً مربوطاً —</option>
+                    <option value="">— اختر لاعباً —</option>
                     {linkedTracks.map(({ link, player }) => (
                       <option key={link.id} value={link.track_id}>
-                        {player.name || 'بدون اسم'} · T-{link.track_id}
+                        {player.name || 'بدون اسم'} · رقم {link.track_id}
                       </option>
                     ))}
                   </select>
@@ -327,7 +327,7 @@ export default function CoachMatchAnalysis() {
       </section>
 
       {/* 05 — the clip itself */}
-      <section className="relative overflow-hidden pb-20 pt-6 md:pb-28" aria-label="الفيديو وعلامات التتبّع">
+      <section className="relative overflow-hidden pb-20 pt-6 md:pb-28" aria-label="الفيديو ومواقع اللاعبين">
         <GhostNumber n="05" className="-top-6 start-[-2%]" />
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Stagger gap={0.1} className="mb-8 flex items-center gap-3">
@@ -337,7 +337,7 @@ export default function CoachMatchAnalysis() {
             <StaggerItem y={16}>
               <h2 className="flex items-center gap-3 text-xl font-bold text-ice-white md:text-2xl">
                 <Film className="h-5 w-5 text-teal-prime" />
-                <span className="arabic-text">الفيديو وعلامات التتبّع</span>
+                <span className="arabic-text">الفيديو ومواقع اللاعبين</span>
               </h2>
             </StaggerItem>
           </Stagger>

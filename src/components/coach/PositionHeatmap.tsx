@@ -69,8 +69,8 @@ export default function PositionHeatmap({ history, homography, calibrationValida
     return (
       <div className="rounded-xl border border-gold/30 bg-gold/5 p-4 text-xs text-gold arabic-text">
         <AlertTriangle className="me-1 inline h-3.5 w-3.5" />
-        لا توجد معايرة محفوظة لهذه المباراة. المواضع المخزَّنة إحداثيات داخل إطار الكاميرا، لا موضعاً على الملعب —
-        عرضها بلا معايرة يُظهر تأطير الكاميرا لا تمركز اللاعب. عايِر الملعب في القسم 03 أولاً.
+        لم يُضبط الملعب لهذه المباراة بعد. المواقع المحفوظة مأخوذة من الصورة لا من الملعب، فرسمها الآن يضلّل.
+        اضبط الملعب في القسم 03 أولاً.
       </div>
     )
   }
@@ -85,9 +85,9 @@ export default function PositionHeatmap({ history, homography, calibrationValida
       <div role="alert" className="rounded-xl border border-gold/30 bg-gold/5 p-4 text-xs leading-relaxed text-gold arabic-text">
         <AlertTriangle className="me-1 inline h-3.5 w-3.5" />
         {reprojectionErrorMeters == null || !Number.isFinite(reprojectionErrorMeters)
-          ? 'خطأ المعايرة المحفوظة غير معروف، فلا يمكن الوثوق بإسقاط المواضع على الملعب.'
-          : <>خطأ المعايرة المحفوظة <bdi className="font-display">{reprojectionErrorMeters.toFixed(1)}</bdi> م، أكبر من الحد المقبول للعرض (<bdi className="font-display">{MAX_HEATMAP_ERROR_METERS}</bdi> م) — المواضع ستظهر في مكان خاطئ من الملعب.</>}
-        {' '}أعِد المعايرة في القسم 03 بسبع نقاط على الأقل موزّعة على الملعب.
+          ? 'دقة ضبط الملعب غير معروفة، فلا يمكن رسم الخريطة بثقة.'
+          : <>هامش خطأ ضبط الملعب <bdi className="font-display">{reprojectionErrorMeters.toFixed(1)}</bdi> م، أكثر من الحد المسموح للرسم (<bdi className="font-display">{MAX_HEATMAP_ERROR_METERS}</bdi> م)، فستظهر المواقع في غير مكانها.</>}
+        {' '}أعد ضبط الملعب في القسم 03 بسبع نقاط على الأقل موزّعة عليه.
       </div>
     )
   }
@@ -104,7 +104,7 @@ export default function PositionHeatmap({ history, homography, calibrationValida
           <span className="arabic-text">خريطة التمركز — {label}</span>
         </h4>
         {!calibrationValidated && (
-          <span className="rounded-full border border-gold/40 px-2 py-0.5 text-[10px] text-gold arabic-text">معايرة غير متحقَّقة</span>
+          <span className="rounded-full border border-gold/40 px-2 py-0.5 text-[10px] text-gold arabic-text">دقة الضبط غير كافية</span>
         )}
       </div>
 
@@ -145,9 +145,9 @@ export default function PositionHeatmap({ history, homography, calibrationValida
 
       <p className="text-[11px] leading-relaxed text-ice-muted arabic-text">
         {sparse
-          ? `${points.length} عيّنة فقط — أقل من النقاط اللازمة لخريطة كثافة (${SPARSE_POINTS_THRESHOLD})، فتُعرض كنقاط فعلية لا كتقدير. هذا بسبب frame_stride=30 في التحليل الحالي: عيّنة واحدة كل 30 إطاراً.`
-          : `${points.length} عيّنة موزّعة على شبكة ${grid!.cols}×${grid!.rows}.`}
-        {dropped > 0 && ` استُبعدت ${dropped} عيّنة سقطت خارج حدود الملعب بعد المعايرة.`}
+          ? `${points.length} مواقع فقط، وخريطة الكثافة تحتاج ${SPARSE_POINTS_THRESHOLD} على الأقل، فتظهر كنقاط كما رُصدت. السبب أن التحليل الحالي يرصد لقطة واحدة من كل 30.`
+          : `${points.length} موقعاً على الملعب.`}
+        {dropped > 0 && ` استُبعدت ${dropped} مواقع وقعت خارج الملعب.`}
       </p>
     </div>
   )

@@ -53,7 +53,7 @@ export default function TrackIdentityLinker({ matchId, players }: Props) {
   if (loading) {
     return (
       <p className="glass-card flex items-center gap-2 rounded-2xl p-6 text-sm text-ice-muted arabic-text" role="status">
-        <Loader2 className="h-4 w-4 animate-spin" /> جارٍ تحميل مسارات المباراة…
+        <Loader2 className="h-4 w-4 animate-spin" /> جارٍ تحميل لاعبي المباراة…
       </p>
     )
   }
@@ -61,7 +61,7 @@ export default function TrackIdentityLinker({ matchId, players }: Props) {
   if (error) {
     return (
       <p className="glass-card rounded-2xl p-6 text-sm text-gold arabic-text" role="status">
-        تعذّر قراءة المسارات: {error}
+        تعذّر تحميل اللاعبين. حاول مرة أخرى.
       </p>
     )
   }
@@ -69,7 +69,7 @@ export default function TrackIdentityLinker({ matchId, players }: Props) {
   if (!tracks.length) {
     return (
       <p className="glass-card rounded-2xl p-6 text-sm text-ice-muted arabic-text">
-        لا توجد مسارات محفوظة لهذه المباراة. ارفع فيديو وشغّل التحليل أولاً.
+        لم يُرصد لاعبون في هذه المباراة بعد. ارفع فيديو المباراة وحلّله أولاً.
       </p>
     )
   }
@@ -78,19 +78,19 @@ export default function TrackIdentityLinker({ matchId, players }: Props) {
     <div className="glass-card rounded-2xl p-5 md:p-6" dir="rtl">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h3 className="text-lg font-black tracking-tightest text-ice-white arabic-text">ربط المسارات باللاعبين</h3>
+          <h3 className="text-lg font-black tracking-tightest text-ice-white arabic-text">من هو كل لاعب؟</h3>
           <p className="mt-1 max-w-xl text-sm text-ice-muted arabic-text">
-            رقم المسار مؤقت وليس هوية لاعب. حتى تربطه، تبقى الأرقام بلا صاحب ولا تدخل بطاقة أحد.
+            كل رقم هنا لاعب ظهر في الفيديو، والرقم مؤقت وليس رقم القميص. اختر اسم اللاعب لكل رقم ليدخل في بطاقته.
           </p>
         </div>
         <span className="rounded-full border border-teal-prime/30 px-3 py-1 text-xs font-bold text-teal-prime">
-          <span className="num">{linkedCount}</span> / <span className="num">{tracks.length}</span> مربوط
+          <span className="num">{linkedCount}</span> / <span className="num">{tracks.length}</span> محدَّد
         </span>
       </div>
 
       {!players.length && (
         <p className="mb-4 rounded-xl border border-gold/30 bg-gold/5 p-3 text-sm text-gold arabic-text">
-          لا يوجد لاعبون في كشفك، فلا يمكن الربط. أضف لاعبيك أولاً.
+          لا يوجد لاعبون في قائمتك. أضف لاعبيك أولاً لتحدد أسماءهم هنا.
         </p>
       )}
 
@@ -112,16 +112,16 @@ export default function TrackIdentityLinker({ matchId, players }: Props) {
                 }}
                 title={t.team ? `الفريق ${t.team}` : 'فريق غير محدد'}
               >
-                <span className="num">T-{t.trackId}</span>
+                <span className="num">#{t.trackId}</span>
               </span>
 
               <span className="flex-1 min-w-[140px] text-xs text-ice-muted arabic-text">
-                ظهر <span className="num text-ice-white">{t.framesVisible ?? 0}</span> إطاراً
+                مرات الظهور: <span className="num text-ice-white">{t.framesVisible ?? 0}</span>
                 <span className="mx-2 opacity-40">·</span>
                 {/* totalDistanceMeters comes from the backend's fixed 100 px/m
                     (graph.py), not from the pitch — it is not a distance, so it
                     is not shown until the match is calibrated. */}
-                <span className="text-ice-muted/70">المسافة غير متاحة قبل معايرة الملعب</span>
+                <span className="text-ice-muted/70">المسافة تظهر بعد ضبط الملعب</span>
               </span>
 
               {isLinked ? (
@@ -136,12 +136,12 @@ export default function TrackIdentityLinker({ matchId, players }: Props) {
                     onClick={() => existing && unlink.mutate(existing.id)}
                     className="flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs font-bold text-ice-muted transition-colors hover:border-gold/40 hover:text-gold disabled:opacity-50 arabic-text"
                   >
-                    <Link2Off className="h-3.5 w-3.5" /> فك الربط
+                    <Link2Off className="h-3.5 w-3.5" /> إلغاء
                   </button>
                 </>
               ) : (
                 <>
-                  <label className="sr-only" htmlFor={`sel-${key}`}>اختر لاعباً للمسار {t.trackId}</label>
+                  <label className="sr-only" htmlFor={`sel-${key}`}>اختر اسم اللاعب رقم {t.trackId}</label>
                   <select
                     id={`sel-${key}`}
                     value={choice[key] ?? ''}
@@ -175,7 +175,7 @@ export default function TrackIdentityLinker({ matchId, players }: Props) {
                     className="flex items-center gap-1.5 rounded-lg bg-teal-prime px-4 py-2 text-xs font-bold text-navy-dark transition-opacity disabled:opacity-40 arabic-text"
                   >
                     {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
-                    اربط
+                    حفظ
                   </button>
                 </>
               )}

@@ -105,15 +105,15 @@ export default function MatchReplay({ lang, savedReport }: { lang?: "ar" | "en";
   const labels = {
     title: isRTL ? "إعادة المباراة" : "Match Replay",
     noMatches: isRTL ? "لا توجد مباريات محللة" : "No analyzed matches",
-    noArtifact: isRTL ? "لا توجد بيانات تتبع محفوظة" : "No persisted tracking artifact",
-    calibrationRequired: isRTL ? "المعايرة مطلوبة" : "Calibration required",
-    malformed: isRTL ? "بيانات الإعادة غير صالحة" : "Replay artifact malformed",
-    insufficient: isRTL ? "المشاهدات غير كافية لإعادة المباراة" : "Insufficient observations for replay",
-    unconfirmed: isRTL ? "هوية اللاعب غير مؤكدة" : "Player identity unconfirmed",
+    noArtifact: isRTL ? "لا توجد حركة لاعبين محفوظة لهذه المباراة" : "No persisted tracking artifact",
+    calibrationRequired: isRTL ? "يلزم ضبط الملعب أولاً" : "Calibration required",
+    malformed: isRTL ? "بيانات الإعادة تالفة" : "Replay artifact malformed",
+    insufficient: isRTL ? "اللقطات المرصودة قليلة ولا تكفي لإعادة المباراة" : "Insufficient observations for replay",
+    unconfirmed: isRTL ? "لم تُحدَّد أسماء اللاعبين بعد" : "Player identity unconfirmed",
     play: isRTL ? "تشغيل" : "Play",
     pause: isRTL ? "إيقاف" : "Pause",
     ball: isRTL ? "الكرة" : "Ball",
-    trails: isRTL ? "المسارات" : "Trails",
+    trails: isRTL ? "خط الحركة" : "Trails",
   };
 
   useEffect(() => {
@@ -151,7 +151,7 @@ export default function MatchReplay({ lang, savedReport }: { lang?: "ar" | "en";
       if (!response.ok || !Array.isArray(payload.observations)) {
         throw new Error(payload?.error || `Replay fetch failed (${response.status})`);
       }
-      if (payload.match_id !== match.id || (savedReport?.run_id && payload.run_id !== savedReport.run_id)) throw new Error("هوية بيانات التتبع لا تطابق التقرير");
+      if (payload.match_id !== match.id || (savedReport?.run_id && payload.run_id !== savedReport.run_id)) throw new Error("البيانات المحفوظة لا تخص هذه المباراة");
       const timestamps = payload.observations?.map((o: ReplayObservation) => Number(o.timestamp_sec)) || [];
       const maxTime = timestamps.length ? Math.max(...timestamps) : 0;
       const minTime = timestamps.length ? Math.min(...timestamps) : 0;
@@ -266,6 +266,12 @@ export default function MatchReplay({ lang, savedReport }: { lang?: "ar" | "en";
 
   // ── Video overlay mode (image-space, uncalibrated) ──────────────
   const videoUrl = replay?.video_url ? yoloEndpoint(replay.video_url) : null;
+  // Figures shown over the video come from THIS match's replay, never from a
+  // specific clip (the old chips hard-coded the Ettifaq clip's numbers).
+  const replayStats = useMemo(() => ({
+    players: new Set((replay?.observations ?? []).map(o => o.track_id).filter(id => id != null)).size,
+    ball: replay?.ball_observations?.length ?? 0,
+  }), [replay]);
 
   const imageObservations = useMemo(
     () => (replay?.observations || []).filter((o) => o.image?.x != null && o.image?.y != null),
@@ -325,8 +331,8 @@ export default function MatchReplay({ lang, savedReport }: { lang?: "ar" | "en";
                 : "ready";
 
   if (savedReport) {
-    if (replayLoading || selectedMatch?.id !== savedReport.match_id) return <p role="status" className="text-ice-muted">جارٍ فحص بيانات التتبع المحفوظة…</p>;
-    if (replayError && !['no_replay_data', 'insufficient_observations'].includes(replayError)) return <p role="alert" className="text-red-400">تعذر التحقق من بيانات التتبع: {replayError}</p>;
+    if (replayLoading || selectedMatch?.id !== savedReport.match_id) return <p role="status" className="text-ice-muted">جارٍ تحميل حركة اللاعبين…</p>;
+    if (replayError && !['no_replay_data', 'insufficient_observations'].includes(replayError)) return <p role="alert" className="text-red-400">تعذّر تحميل حركة اللاعبين. حاول مرة أخرى.</p>;
     if (!savedReport.run_id || !calibrationValid || usableObservations.length < 2) return <ReportMotion report={savedReport} />;
   }
 
@@ -336,7 +342,7 @@ export default function MatchReplay({ lang, savedReport }: { lang?: "ar" | "en";
         <Activity size={18} style={{ color: "#00DCC8" }} />
         <h2 className="text-lg font-bold text-white" style={{ fontFamily: font }}>{labels.title}</h2>
         <span className="text-xs px-2 py-1 rounded-full" style={{ color: "#A3A3A3", background: "rgba(255,255,255,0.05)" }}>
-          {replay?.run_id ? `Run ${replay.run_id.slice(0, 8)}` : isRTL ? "بدون تشغيل" : "No run"}
+          {replay?.run_id ? (isRTL ? "تحليل محفوظ" : "Saved analysis") : isRTL ? "بلا تحليل محفوظ" : "No saved analysis"}
         </span>
       </div>
 
@@ -385,7 +391,7 @@ export default function MatchReplay({ lang, savedReport }: { lang?: "ar" | "en";
           <AlertTriangle size={14} className="inline me-2" />{labels.calibrationRequired}
           <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
             {isRTL
-              ? "لا تُعرض الإحداثيات التكتيكية بدون معايرة صالحة. الإحصاءات والتقارير الأخرى لا تتغير."
+              ? "لا تُعرض مواقع اللاعبين على الملعب قبل ضبطه. بقية التقرير لا تتأثر."
               : "No tactical coordinates are shown without valid calibration. Existing stats and reports are unchanged."}
           </p>
         </div>
@@ -423,14 +429,14 @@ export default function MatchReplay({ lang, savedReport }: { lang?: "ar" | "en";
                 if (!b || b.x == null || b.y == null) return null;
                 return (
                   <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${(b.x * 100).toFixed(3)}%`, top: `${(b.y * 100).toFixed(3)}%` }}
-                    title="كشف كرة — غير مؤكد المسار">
+                    title="رُصدت الكرة هنا">
                     <div className="rounded-full" style={{ width: 14, height: 14, background: "#FFF", border: "1.5px solid #FF6B6B", boxShadow: "0 0 6px rgba(255,107,107,0.8)" }} />
                   </div>
                 );
               })()}
             </div>
             <div className="absolute top-2 start-2 text-xs px-2 py-1 rounded-lg" style={{ background: "rgba(0,0,0,0.65)", color: "#FFB800" }}>
-              غير مُعاير — إحداثيات الصورة فقط (بدون ملعب/سرعة/مسافة)
+              مواقع تقريبية على الصورة — بدون سرعات أو مسافات
             </div>
             <div className="absolute bottom-2 start-2 text-xs" style={{ color: "rgba(255,255,255,0.7)", fontFamily: font }}>
               {formatTime(currentTime)}
@@ -439,29 +445,16 @@ export default function MatchReplay({ lang, savedReport }: { lang?: "ar" | "en";
 
           <div className="mt-3 flex items-center gap-2 flex-wrap text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
             <span className="px-2 py-1 rounded-lg" style={{ background: "rgba(0,220,200,0.12)", color: "#00DCC8" }}>
-              YOLO11n + ByteTrack · device=mps · 1980 إطار · 36.55s
+              {replayStats.players} لاعباً ظهروا في الفيديو
             </span>
             <span className="px-2 py-1 rounded-lg" style={{ background: "rgba(255,184,0,0.12)", color: "#FFB800" }}>
-              تعيين الفريق غير مؤكد (13 مقابل 1) — لا ألوان مؤكدة
+              لم يُحدَّد فريق كل لاعب بدقة
             </span>
             <span className="px-2 py-1 rounded-lg" style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)" }}>
-              الكرة: كشف فقط (34 كشفاً، تغطية 1.7%) — ليس مساراً مؤكداً
+              {replayStats.ball > 0 ? `ظهرت الكرة في ${replayStats.ball} لقطة فقط، فلا يُتتبَّع مسارها` : "لم تُرصد الكرة في هذا المقطع"}
             </span>
           </div>
 
-          <div className="mt-4 p-4 rounded-xl" style={{ background: "rgba(255,184,0,0.06)", border: "1px dashed rgba(255,184,0,0.35)" }}>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(255,184,0,0.2)", color: "#FFB800" }}>
-                سيناريو افتراضي — ليس حدثاً واقعاً
-              </span>
-            </div>
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.85)", fontFamily: font }}>
-              الاقتراح التكتيكي: إنزال أحد لاعبي الهجوم إلى المنطقة المركزية ليكون خيار تمرير أثناء بناء الهجمة، ويساعد في تعطيل المرتدة عند فقدان الكرة.
-            </p>
-            <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.45)" }}>
-              هذا الاقتراح مستمد من تحليل الاستوديو (التوقيت المرجعي 50:03 ≈ 35:38 ساعة المباراة) وليس من كشف المحرك على الفيديو.
-            </p>
-          </div>
         </>
       )}
 
@@ -499,7 +492,7 @@ export default function MatchReplay({ lang, savedReport }: { lang?: "ar" | "en";
               const track = trackEntries.find(t => t.track_id === obs.track_id);
               const confirmedPlayerId = obs.track_id != null ? replay.confirmed_identities?.[String(obs.track_id)] ?? null : null;
               const color = TEAM_COLORS[obs.team ?? -1] || track && TEAM_COLORS[track.team ?? -1] || UNKNOWN_TEAM_COLOR;
-              const label = confirmedPlayerId != null ? `P${confirmedPlayerId}` : `Track #${obs.track_id}`;
+              const label = confirmedPlayerId != null ? `P${confirmedPlayerId}` : `#${obs.track_id}`;
               const isSelected = selectedTrack === obs.track_id;
               return (
                 <button
@@ -584,14 +577,14 @@ export default function MatchReplay({ lang, savedReport }: { lang?: "ar" | "en";
 
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div className="p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>
-              <div className="font-bold text-white mb-1">{isRTL ? "المشاهدات" : "Observations"}</div>
+              <div className="font-bold text-white mb-1">{isRTL ? "اللقطات المرصودة" : "Observations"}</div>
               <div style={{ color: "rgba(255,255,255,0.55)" }}>{usableObservations.length} / {replay?.observations?.length || 0}</div>
-              <div style={{ color: "rgba(255,255,255,0.35)" }}>{labels.insufficient}</div>
+              <div style={{ color: "rgba(255,255,255,0.35)" }}>{isRTL ? "المستخدَم في الإعادة من إجمالي المرصود" : "Used in replay / total"}</div>
             </div>
             <div className="p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.04)" }}>
-              <div className="font-bold text-white mb-1">{isRTL ? "الهوية" : "Identity"}</div>
+              <div className="font-bold text-white mb-1">{isRTL ? "أسماء اللاعبين" : "Identity"}</div>
               <div style={{ color: "rgba(255,255,255,0.55)" }}>{labels.unconfirmed}</div>
-              <div style={{ color: "rgba(255,255,255,0.35)" }}>track_id ≠ player_id</div>
+              <div style={{ color: "rgba(255,255,255,0.35)" }}>{isRTL ? "الأرقام مؤقتة وليست أرقام القمصان" : "track_id ≠ player_id"}</div>
             </div>
           </div>
 
