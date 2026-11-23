@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PageHeader from '../components/cinema/PageHeader';
+import talentSilhouettes from '../assets/cinema/talent-silhouettes.jpg'
 import { motion } from 'framer-motion';
 import { Trophy, Star, Medal, Award, Crown } from 'lucide-react';
 import { usePlayers } from '../hooks/usePlayers';
@@ -99,10 +100,11 @@ export default function Rankings() {
     <div>
       <PageHeader
         eyebrow="ترتيب المواهب"
+        image={talentSilhouettes}
+        imagePosition="22% 60%"
         icon={Trophy}
         titleTop="ترتيب أفضل المواهب"
         description="تصنيف شامل للاعبين بناءً على تحليل الأداء والإحصائيات المحدثة باستمرار"
-        align="center"
       />
 
       {/* Rankings */}

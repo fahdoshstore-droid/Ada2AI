@@ -11,6 +11,7 @@
  */
 import { useState } from 'react'
 import PageHeader from '../components/cinema/PageHeader';
+import scoutStands from '../assets/cinema/scout-stands.jpg'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
@@ -109,6 +110,8 @@ export default function ScoutDashboard() {
     <div className="min-h-screen bg-[#000A0F]">
       <PageHeader
         eyebrow="لوحة الكشافين"
+        image={scoutStands}
+        imagePosition="20% 40%"
         icon={UserSearch}
         titleTop="اكتشف المواهب"
         titleBottom="بذكاء اصطناعي متقدم"

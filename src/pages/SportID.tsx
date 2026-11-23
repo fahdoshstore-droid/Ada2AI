@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import OwnSportIdentity from '../components/coach/OwnSportIdentity';
 import PageHeader from '../components/cinema/PageHeader';
+import sportIdBoots from '../assets/cinema/sport-id-boots.jpg'
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { Badge, Shield, BarChart3, Eye, QrCode, TrendingUp, Share2 } from 'lucide-react';
@@ -47,6 +48,8 @@ export default function SportID() {
     <div>
       <PageHeader
         eyebrow="المنتج الرئيسي"
+        image={sportIdBoots}
+        imagePosition="20% 78%"
         icon={Badge}
         titleTop="الهوية"
         titleBottom="الرياضية"

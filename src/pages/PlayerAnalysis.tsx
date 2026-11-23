@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PageHeader from '../components/cinema/PageHeader';
+import playerSprint from '../assets/cinema/player-sprint.jpg'
 import { motion } from 'framer-motion';
 import { Search, BarChart3, Activity, Zap, Target, TrendingUp, User } from 'lucide-react';
 import { usePlayers } from '../hooks/usePlayers';
@@ -45,14 +46,15 @@ export default function PlayerAnalysis() {
     <div className="min-h-screen bg-[#000A0F]">
       <PageHeader
         eyebrow="تحليل اللاعب"
+        image={playerSprint}
+        imagePosition="18% 45%"
         icon={Activity}
         titleTop="تحليل شامل للاعب"
         description="أدخل اسم اللاعب أو رقم الهوية للحصول على تحليل مفصل وشامل لأدائه"
-        align="center"
       >
         <div className="mt-10">
             {/* Search Bar — HUGE and prominent */}
-            <div className="max-w-xl mx-auto relative">
+            <div className="max-w-xl relative">
               <div className="glass-premium rounded-2xl p-3 flex items-center gap-3 depth-lg">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-prime to-scout-blue flex items-center justify-center flex-shrink-0">
                   <Search className="w-5 h-5 text-white" />

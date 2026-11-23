@@ -16,6 +16,7 @@ import { usePlayerAnalyses } from '../hooks/useAnalysis'
 import { toUiStatus } from '../services/analysis'
 import { AnalysisResultsView } from '../components/coach/AnalysisResultsView'
 import PageHeader from '../components/cinema/PageHeader'
+import matchAerial from '../assets/cinema/match-aerial.jpg'
 
 const STATUS_CONFIG: Record<string, { icon: typeof Clock; label: string; color: string; spin?: boolean }> = {
   queued: { icon: Clock, label: 'في الانتظار', color: 'text-amber-400 bg-amber-400/10' },
@@ -72,11 +73,12 @@ export default function VideoAnalysis() {
     <div dir="rtl" className="min-h-screen bg-[#000A0F]">
       <PageHeader
         eyebrow="تحليل الفيديو"
+        image={matchAerial}
+        imagePosition="30% 50%"
         icon={Film}
         titleTop="تحليلات"
         titleBottom="الفيديو"
         description="كل فيديو رفعته، وحالة تحليله، ونتائجه حين تكتمل."
-        compact
       >
         <button
           onClick={() => navigate(uploadPath)}

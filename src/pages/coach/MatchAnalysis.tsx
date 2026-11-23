@@ -27,6 +27,7 @@ import TrackIdentityLinker from '../../components/coach/TrackIdentityLinker'
 import PitchCalibrator from '../../components/coach/PitchCalibrator'
 import PositionHeatmap from '../../components/coach/PositionHeatmap'
 import SavedMatchAnalysis from '../../components/coach/SavedMatchAnalysis'
+import matchAerial from '../../assets/cinema/match-aerial.jpg'
 import { usePrimaryAnalysisId, useCalibration, useTrackHistories } from '../../hooks/useCalibration'
 import { useMatchTracks } from '../../hooks/useTrackLinks'
 import { useAnalysedMatchIds } from '../../hooks/useTrackLinks'
@@ -89,8 +90,10 @@ export default function CoachMatchAnalysis() {
   return (
     <div className="bg-[#000A0F]">
       {/* Header — working register: no hero photograph, type does the work. */}
-      <section className="relative overflow-hidden pb-10 pt-32 md:pb-14 md:pt-40" aria-label="تحليل المباراة">
-        <div className="absolute inset-0 bg-[radial-gradient(55%_55%_at_80%_0%,rgba(0,220,200,0.12),transparent_70%)]" aria-hidden="true" />
+      <section className="relative flex min-h-[62svh] items-end overflow-hidden pb-12 pt-36 md:min-h-[68svh] md:pb-16" aria-label="تحليل المباراة">
+        <img src={matchAerial} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: '30% 50%' }} />
+        <div className="absolute inset-0 bg-gradient-to-l from-[#000A0F] via-[#000A0F]/60 to-[#000A0F]/5" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#000A0F] via-transparent to-[#000A0F]/50" aria-hidden="true" />
         <div className="grain-overlay" />
         <Letterbox height="3svh" />
 
