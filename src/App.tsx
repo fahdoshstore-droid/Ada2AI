@@ -9,7 +9,7 @@
  * 5. Added /player/dashboard route (Phase 2)
  */
 import React, { Suspense } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -41,7 +41,6 @@ const EvaluationForm = React.lazy(() => import('./pages/coach/EvaluationForm'))
 const CoachWorkspace = React.lazy(() => import('./pages/coach/Workspace'))
 const CoachMatchAnalysis = React.lazy(() => import('./pages/coach/MatchAnalysis'))
 const MatchReportPage = React.lazy(() => import('./pages/MatchReportPage'))
-const MatchIntelligence = React.lazy(() => import('./pages/MatchIntelligence'))
 const RawdhaDashboard = React.lazy(() => import('./pages/club/RawdhaDashboard'))
 
 // Admin
@@ -219,13 +218,10 @@ export default function App() {
               </ProtectedRoute>
             } />
 
-            <Route path="/coach/match-intelligence" element={
-              <ProtectedRoute allowedRoles={['coach']}>
-                <ErrorBoundary fallback={<RouteErrorFallback />}>
-                  <MatchIntelligence />
-                </ErrorBoundary>
-              </ProtectedRoute>
-            } />
+            {/* The English technical dashboard is retired from the product;
+                old links land on the Arabic match-analysis page. The page file
+                (src/pages/MatchIntelligence.tsx) is kept for reference. */}
+            <Route path="/coach/match-intelligence" element={<Navigate to="/coach/match-analysis" replace />} />
 
             {/* Club Dashboard */}
             <Route path="/club/rawdha" element={

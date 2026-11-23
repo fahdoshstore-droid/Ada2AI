@@ -40,37 +40,35 @@ export default function RawdhaDashboard() {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-navy">
-      {/* Header */}
-      <div className="relative bg-navy-light/50 border-b border-white/5 overflow-hidden">
-        <div className="absolute inset-0 grid-pattern opacity-10" />
-        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-prime/5 rounded-full blur-[80px]" />
+    <div dir="rtl" className="min-h-screen bg-[#000A0F]">
+      {/* Header — Floodlight working register */}
+      <div className="relative overflow-hidden border-b border-white/10">
+        <div className="absolute inset-0 bg-[radial-gradient(55%_60%_at_80%_0%,rgba(0,220,200,0.12),transparent_70%)]" aria-hidden="true" />
+        <div className="grain-overlay" />
 
-        <div className="relative max-w-5xl mx-auto px-4 py-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-prime to-scout-blue flex items-center justify-center text-white font-black text-xl flex-shrink-0">
-              رو
+        <div className="relative max-w-5xl mx-auto px-4 pb-10 pt-28">
+          <div className="mb-8">
+            <div className="mb-4 flex items-center gap-3 text-sm font-semibold text-teal-prime">
+              <span className="h-px w-10 bg-teal-prime" />
+              <span className="arabic-text">لوحة النادي</span>
             </div>
-            <div>
-              <h1 className="tracking-tightest text-2xl font-black text-ice-white arabic-text">نادي الروضة</h1>
-              <p className="text-ice-muted text-sm arabic-text">لوحة التحكم الرسمية</p>
-            </div>
+            <h1 className="text-4xl font-black leading-[1.2] tracking-tightest text-teal-prime md:text-6xl arabic-text">نادي الروضة</h1>
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-4">
             {[
               { label: 'اللاعبون', value: stats.playersCount, icon: <Users className="w-4 h-4" />, color: 'text-teal-prime' },
               { label: 'التحليلات', value: stats.videosCount, icon: <Video className="w-4 h-4" />, color: 'text-scout-blue' },
               { label: 'المكتملة', value: stats.completedCount, icon: <CheckCircle className="w-4 h-4" />, color: 'text-emerald-400' },
               { label: 'التقييمات', value: stats.ratingsCount, icon: <Star className="w-4 h-4" />, color: 'text-teal-prime' },
             ].map(({ label, value, icon, color }) => (
-              <div key={label} className="bg-white/5 rounded-xl p-4 text-center">
-                <div className={`mx-auto mb-2 w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center ${color}`}>
-                  {icon}
+              <div key={label} className="bg-[#000A0F] p-5">
+                <div className={`mb-3 flex items-center gap-2 text-xs text-ice-muted arabic-text`}>
+                  <span className={color}>{icon}</span>
+                  {label}
                 </div>
-                <div className="text-2xl font-black font-display text-ice-white">{value}</div>
-                <div className="text-xs text-ice-muted arabic-text mt-0.5">{label}</div>
+                <div className="font-display text-4xl font-black text-ice-white">{value}</div>
               </div>
             ))}
           </div>

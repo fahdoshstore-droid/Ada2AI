@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { ShieldCheck } from 'lucide-react'
+import PageHeader from '../components/cinema/PageHeader'
 
 const sections = [
   {
@@ -29,28 +30,27 @@ const sections = [
 
 export default function PrivacyPolicy() {
   return (
-    <div dir="rtl" className="min-h-screen bg-navy flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-2xl glass-card rounded-2xl p-8">
-        <Link to="/" className="text-ice-muted text-sm arabic-text hover:text-teal-prime transition-colors mb-6 inline-block">
-          → العودة
-        </Link>
-
-        <h1 className="tracking-tightest text-2xl font-black text-ice-white arabic-text mb-8">
-          سياسة الخصوصية
-        </h1>
-
-        <div className="space-y-6">
-          {sections.map((s) => (
-            <div key={s.title}>
-              <h2 className="text-base font-semibold text-teal-prime arabic-text mb-2">
-                {s.title}
-              </h2>
-              <p className="text-sm text-ice-muted arabic-text leading-relaxed">
-                {s.body}
-              </p>
-            </div>
+    <div dir="rtl" className="min-h-screen bg-[#000A0F]">
+      <PageHeader
+        eyebrow="الخصوصية"
+        icon={ShieldCheck}
+        titleTop="سياسة"
+        titleBottom="الخصوصية"
+        description="ما نجمعه من بيانات، ومن يراها، وكيف تطلب حذفها."
+        compact
+      />
+      <div className="mx-auto max-w-3xl px-4 pb-24 sm:px-6 lg:px-8">
+        <ol className="border-t border-white/10">
+          {sections.map((s, i) => (
+            <li key={s.title} className="grid grid-cols-[3rem_1fr] gap-4 border-b border-white/10 py-6">
+              <span className="font-display text-2xl font-black text-teal-prime/80" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h2 className="mb-1 text-lg font-bold text-ice-white arabic-text">{s.title}</h2>
+                <p className="leading-relaxed text-ice-muted arabic-text">{s.body}</p>
+              </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </div>
   )

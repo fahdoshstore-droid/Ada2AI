@@ -118,25 +118,25 @@ export default function PlayerAnalysis() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
               >
-                <div className="glass-premium rounded-2xl p-6 text-center glow-teal border border-white/[0.06]">
-                  <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-teal-prime to-scout-blue flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4 shadow-lg shadow-teal-prime/20">
-                    <User className="w-14 h-14" />
+                <div className="glass-premium rounded-2xl p-6">
+                  <div className="mb-4 flex items-center gap-3 text-xs font-semibold text-teal-prime">
+                    <span className="h-px w-8 bg-teal-prime" />
+                    <span className="arabic-text">الهوية الرياضية{selectedPlayer.position ? ` · ${selectedPlayer.position}` : ''}</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-ice-white mb-1 arabic-text font-display tracking-tight">{selectedPlayer.name || 'غير معروف'}</h2>
-                  <p className="text-teal-prime mb-4 font-medium">{selectedPlayer.position || '-'}</p>
+                  <h2 className="mb-5 text-4xl font-black leading-[1.15] tracking-tightest text-ice-white arabic-text">{selectedPlayer.name || 'غير معروف'}</h2>
                   
                   {selectedEval && (
-                    <div className="flex items-center justify-center gap-2 mb-6">
-                      <span className="text-4xl font-bold font-display text-gradient-hero tracking-tight">{selectedEval.overall}</span>
-                      <span className="text-sm text-ice-muted arabic-text">تقييم عام</span>
+                    <div className="mb-6">
+                      <p className="text-xs text-ice-muted arabic-text">تقييم المدرب</p>
+                      <span className="font-display text-7xl font-black leading-none text-teal-prime">{selectedEval.overall}</span>
                     </div>
                   )}
                   
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { label: 'العمر', value: selectedPlayer.age || '-' },
-                      { label: 'الطول', value: selectedPlayer.height_cm ? `${selectedPlayer.height_cm}cm` : '-' },
-                      { label: 'الوزن', value: selectedPlayer.weight_kg ? `${selectedPlayer.weight_kg}kg` : '-' },
+                      { label: 'الطول', value: selectedPlayer.height_cm ? `${selectedPlayer.height_cm} سم` : '-' },
+                      { label: 'الوزن', value: selectedPlayer.weight_kg ? `${selectedPlayer.weight_kg} كغ` : '-' },
                       { label: 'القدم', value: selectedPlayer.dominant_foot === 'right' ? 'يمنى' : selectedPlayer.dominant_foot === 'left' ? 'يسرى' : '-' },
                     ].map((stat) => (
                       <div key={stat.label} className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.04]">
