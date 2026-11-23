@@ -3,6 +3,7 @@ import PageHeader from '../components/cinema/PageHeader';
 import { motion } from 'framer-motion';
 import { Trophy, Star, Medal, Award, Crown } from 'lucide-react';
 import { usePlayers } from '../hooks/usePlayers';
+import { useEvaluations } from '../hooks/useEvaluations';
 
 const categories = [
   { label: 'الأفضل', key: 'all' },
@@ -13,7 +14,9 @@ const categories = [
 ];
 
 export default function Rankings() {
-  const { players, loading } = usePlayers();
+  const { players, loading: loadingPlayers } = usePlayers();
+  const { evaluations, loading: loadingEvaluations } = useEvaluations();
+  const loading = loadingPlayers || loadingEvaluations;
   const [activeCategory, setActiveCategory] = useState('all');
 
   const getRankIcon = (rank: number) => {
@@ -30,15 +33,24 @@ export default function Rankings() {
     return 'border-white/5';
   };
 
-  // Map Supabase players to ranking data — sort by real rating from DB
+  // The ranking uses what users enter: each player's latest coach evaluation
+  // (evaluations are newest-first). The stored players.rating is a column
+  // default (60) or hand-typed with nothing behind it, so it is not used.
+  const latestOverall = new Map<string, number>();
+  for (const e of evaluations) {
+    if (!latestOverall.has(e.player_id) && typeof e.overall === 'number') latestOverall.set(e.player_id, e.overall);
+  }
+  const unratedCount = players.filter(p => !latestOverall.has(p.id)).length;
+
   const rankedPlayers = players
+    .filter((p) => latestOverall.has(p.id))
     .map((p) => ({
       id: p.id,
       rank: 0,
       name: p.name || 'لاعب',
       club: p.club || '—',
       position: p.position || '—',
-      rating: p.rating || 0,
+      rating: latestOverall.get(p.id) ?? 0,
       goals: p.goals || 0,
       assists: p.assists || 0,
     }))
@@ -113,11 +125,22 @@ export default function Rankings() {
             ))}
           </div>
 
+          {unratedCount > 0 && topPlayers.length > 0 && (
+            <p className="mb-6 text-center text-xs text-ice-muted arabic-text">
+              {unratedCount} لاعبين لم يُقيَّموا بعد ولا يظهرون في الترتيب.
+            </p>
+          )}
           {topPlayers.length === 0 ? (
             <div className="text-center py-16">
               <Trophy className="w-16 h-16 text-ice-muted mx-auto mb-4" />
-              <p className="text-ice-muted arabic-text text-lg">لا يوجد لاعبين بعد</p>
-              <p className="text-ice-muted/60 arabic-text text-sm">سيظهر الترتيب عند تسجيل اللاعبين</p>
+              <p className="text-ice-muted arabic-text text-lg">
+                {activeCategory === 'all' ? 'لا يوجد لاعبون مُقيَّمون بعد' : 'لا يوجد لاعبون في هذه الفئة بعد'}
+              </p>
+              <p className="text-ice-muted/60 arabic-text text-sm">
+                {activeCategory === 'all'
+                  ? 'يُبنى الترتيب من تقييمات المدربين. يظهر اللاعب هنا بعد أول تقييم له.'
+                  : 'تظهر الفئة حين تُسجَّل أهداف أو صناعة أهداف أو مراكز للاعبين المُقيَّمين.'}
+              </p>
             </div>
           ) : (
             <>

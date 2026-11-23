@@ -23,6 +23,7 @@ import { useScoutPlayers } from '../hooks/useScoutPlayers'
 import type { Player } from '../lib/supabase'
 import EvaluationReport from '../components/evaluation/EvaluationReport'
 import { trackEvent } from '../lib/analytics'
+import { useEvaluations } from '../hooks/useEvaluations'
 
 const filters = ['الكل', 'مهاجم', 'وسط', 'مدافع', 'حارس', 'جناح']
 
@@ -38,6 +39,14 @@ export default function ScoutDashboard() {
   const [minAge, setMinAge] = useState('')
   const [maxAge, setMaxAge] = useState('')
   const [verifiedOnly, setVerifiedOnly] = useState(false)
+
+  // Rating shown on each card = the coach's latest evaluation (newest first).
+  // players.rating is a column default or hand-typed, so it is not shown.
+  const { evaluations } = useEvaluations()
+  const latestOverall = new Map<string, number>()
+  for (const e of evaluations) {
+    if (!latestOverall.has(e.player_id) && typeof e.overall === 'number') latestOverall.set(e.player_id, e.overall)
+  }
 
   const { players: pagePlayers, loading, error, pageSize } = useScoutPlayers(
     activeFilter !== 'الكل' ? activeFilter : undefined,
@@ -315,8 +324,8 @@ export default function ScoutDashboard() {
                           <div className="text-[11px] text-ice-muted/60 arabic-text uppercase tracking-wider">القميص</div>
                         </div>
                         <div className="text-center bg-white/[0.03] rounded-xl p-3 border border-white/[0.04]">
-                          <div className="text-lg font-bold font-display text-gradient-hero">{player.rating || '-'}</div>
-                          <div className="text-[11px] text-ice-muted/60 arabic-text uppercase tracking-wider">التقييم</div>
+                          <div className="text-lg font-bold font-display text-gradient-hero">{latestOverall.get(player.id) ?? '—'}</div>
+                          <div className="text-[11px] text-ice-muted/60 arabic-text uppercase tracking-wider">{latestOverall.has(player.id) ? 'تقييم المدرب' : 'لم يُقيَّم'}</div>
                         </div>
                       </div>
 
