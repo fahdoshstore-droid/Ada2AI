@@ -8,13 +8,14 @@
 import { useEffect, useRef, useState } from 'react'
 import EvaluationBreakdown from '../../components/evaluation/EvaluationBreakdown'
 import SportIdentityBadge from '../../components/coach/SportIdentityBadge'
+import RadarCard from '../../components/player/RadarCard'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { supabase, type Player, type Evaluation } from '../../lib/supabase'
 import { trackEvent } from '../../lib/analytics'
 import {
   ArrowRight, Share2, CheckCircle, Star, Ruler,
-  Weight, Footprints, Shield, Video, User,
+  Footprints, Shield, Video, User,
   Loader2, AlertCircle, ChevronLeft
 } from 'lucide-react'
 import { SideReveal, SplitReveal, Stagger, StaggerItem } from '../../components/cinema/Cinema'
@@ -61,12 +62,14 @@ function footLabel(foot: string | undefined): string {
 interface ProfileLayoutProps {
   player: Player
   evaluation: Evaluation | null
+  /** The evaluation before the latest one, drawn dashed on the radar for progress. */
+  previousEvaluation: Evaluation | null
   copied: boolean
   onShare: () => void
   onBack: () => void
 }
 
-function ProfileLayout({ player, evaluation, copied, onShare, onBack }: ProfileLayoutProps) {
+function ProfileLayout({ player, evaluation, previousEvaluation, copied, onShare, onBack }: ProfileLayoutProps) {
   const reduced = useReducedMotion()
   const infoRef = useRef<HTMLDivElement>(null)
   // progress of the info column through the viewport drives the image → profile transition
@@ -189,27 +192,44 @@ function ProfileLayout({ player, evaluation, copied, onShare, onBack }: ProfileL
                 <h2 className="mb-6 text-xl font-black text-ice-white arabic-text">
                   المهارات <span className="text-ice-muted">·</span> إحصائيات اللعب
                 </h2>
-                <div className={`grid gap-x-10 gap-y-4 ${evaluation && playStats.length > 0 ? 'sm:grid-cols-2' : 'sm:grid-cols-2'}`}>
-                  {evaluation && (
-                    <div className="space-y-4">
-                      <p className="text-[11px] text-scout-blue arabic-text">تقييم المدرب{evaluation.evaluation_date ? ` · ${new Date(evaluation.evaluation_date).toLocaleDateString('ar-SA')}` : ''}</p>
-                      <SkillBar label="فني" value={evaluation.technical} icon={Footprints} />
-                      <SkillBar label="تكتيكي" value={evaluation.tactical} icon={Shield} />
-                      <SkillBar label="بدني" value={evaluation.physical} icon={Ruler} />
-                      <SkillBar label="ذهني" value={evaluation.mental} icon={Weight} />
-                    </div>
+                <div className={`grid gap-5 ${evaluation && playStats.length >= 3 ? 'md:grid-cols-2' : 'md:max-w-sm'}`}>
+                  {evaluation && (() => {
+                    const evalAxes = [
+                      { label: 'فني', value: evaluation.technical },
+                      { label: 'تكتيكي', value: evaluation.tactical },
+                      { label: 'بدني', value: evaluation.physical },
+                      { label: 'ذهني', value: evaluation.mental },
+                    ]
+                    const delta = previousEvaluation ? evaluation.overall - previousEvaluation.overall : null
+                    return (
+                      <RadarCard
+                        eyebrow="تقييم المدرب"
+                        headline={String(evaluation.overall)}
+                        headlineCaption={delta == null ? 'من 100' : delta === 0 ? 'دون تغيير عن التقييم السابق' : <><bdi dir="ltr">{`${delta > 0 ? '+' : ''}${delta}`}</bdi> عن التقييم السابق</>}
+                        color="#00DCC8"
+                        axes={evalAxes}
+                        compare={previousEvaluation ? {
+                          label: 'التقييم السابق',
+                          values: [previousEvaluation.technical, previousEvaluation.tactical, previousEvaluation.physical, previousEvaluation.mental],
+                        } : undefined}
+                        footnote={evaluation.evaluation_date ? `آخر تقييم ${new Date(evaluation.evaluation_date).toLocaleDateString('ar-SA')}` : undefined}
+                      />
+                    )
+                  })()}
+                  {playStats.length >= 3 && (
+                    <RadarCard
+                      eyebrow="إحصائيات اللعب"
+                      headline={String(Math.round(playStats.reduce((t, st) => t + st.value, 0) / playStats.length))}
+                      headlineCaption="المتوسط"
+                      color="#F59E0B"
+                      axes={playStats.map(st => ({ label: st.label, value: st.value }))}
+                    />
                   )}
-                  {playStats.length > 0 && evaluation && (
+                  {playStats.length > 0 && playStats.length < 3 && (
                     <div className="space-y-4">
                       <p className="text-[11px] text-ice-muted arabic-text">إحصائيات اللاعب المسجّلة</p>
                       {playStats.map(st => <SkillBar key={st.label} label={st.label} value={st.value} icon={st.icon} />)}
                     </div>
-                  )}
-                  {playStats.length > 0 && !evaluation && (
-                    <>
-                      <p className="text-[11px] text-ice-muted arabic-text sm:col-span-2">إحصائيات اللاعب المسجّلة</p>
-                      {playStats.map(st => <SkillBar key={st.label} label={st.label} value={st.value} icon={st.icon} />)}
-                    </>
                   )}
                 </div>
                 {evaluation?.notes && (
@@ -273,6 +293,7 @@ export default function PlayerProfile() {
 
   const [player, setPlayer] = useState<Player | null>(null)
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null)
+  const [previousEvaluation, setPreviousEvaluation] = useState<Evaluation | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -318,12 +339,14 @@ export default function PlayerProfile() {
           .select('*')
           .eq('player_id', playerData.id)
           .order('evaluation_date', { ascending: false, nullsFirst: false })
-          .limit(1)
-          .maybeSingle()
+          .order('created_at', { ascending: false })
+          .limit(2)
 
         if (!cancelled) {
-          setEvaluation(evalData as Evaluation | null)
-          trackEvent('playerProfileView', { playerId: id as string, hasEval: !!evalData })
+          const evals = (evalData ?? []) as Evaluation[]
+          setEvaluation(evals[0] ?? null)
+          setPreviousEvaluation(evals[1] ?? null)
+          trackEvent('playerProfileView', { playerId: id as string, hasEval: !!evalData?.length })
         }
       } catch {
         if (!cancelled) setError('تعذّر تحميل الملف')
@@ -414,6 +437,7 @@ export default function PlayerProfile() {
     <ProfileLayout
       player={player}
       evaluation={evaluation}
+      previousEvaluation={previousEvaluation}
       copied={copied}
       onShare={handleShare}
       onBack={() => navigate(-1)}
