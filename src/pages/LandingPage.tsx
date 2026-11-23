@@ -11,11 +11,21 @@ import heroSprint from '../assets/cinema/hero-sprint.jpg';
 import playerDevelopment from '../assets/cinema/player-development.jpg';
 import keeperRain from '../assets/cinema/keeper-rain.jpg';
 import aerialPitch from '../assets/cinema/aerial-pitch.jpg';
+import sportIdBoots from '../assets/cinema/sport-id-boots.jpg';
+import scoutStands from '../assets/cinema/scout-stands.jpg';
+import coachTouchline from '../assets/cinema/coach-touchline.jpg';
+import stadiumBlueHour from '../assets/cinema/stadium-blue-hour.jpg';
+import featureAiTracking from '../assets/cinema/feature-ai-tracking.jpg';
+import featureDigitalId from '../assets/cinema/feature-digital-id.jpg';
+import featureStatsBall from '../assets/cinema/feature-stats-ball.jpg';
+import featureArabicDusk from '../assets/cinema/feature-arabic-dusk.jpg';
 
 // ─── Product Data ───
 const mainProducts = [
   {
     id: 'sport-identity',
+    image: sportIdBoots,
+    imagePosition: '20% 78%',
     icon: Badge,
     title: 'الهوية الرياضية',
     desc: 'بطاقة رقمية لكل لاعب بأسلوب بطاقات اللاعبين، مع تقييم مدربه وتحليل أدائه',
@@ -30,6 +40,8 @@ const mainProducts = [
   },
   {
     id: 'scout-dashboard',
+    image: scoutStands,
+    imagePosition: '20% 40%',
     icon: UserSearch,
     title: 'لوحة الكشافين',
     desc: 'اكتشاف ومقارنة المواهب مع تقارير احترافية وتتبع الأداء',
@@ -44,6 +56,8 @@ const mainProducts = [
   },
   {
     id: 'coach-dashboard',
+    image: coachTouchline,
+    imagePosition: '30% 50%',
     icon: Dumbbell,
     title: 'لوحة المدربين',
     desc: 'تشكيل الفريق وتقييم اللاعبين، مع تحليل المباريات بالفيديو ورصد اللاعبين تلقائياً',
@@ -58,6 +72,8 @@ const mainProducts = [
   },
   {
     id: 'organizations-dashboard',
+    image: stadiumBlueHour,
+    imagePosition: '50% 50%',
     icon: Users,
     title: 'لوحة المنشآت',
     desc: 'إدارة شاملة للاعبين والمؤسسات الرياضية مع تقارير مفصلة',
@@ -69,12 +85,12 @@ const mainProducts = [
 ];
 
 const features = [
-  { icon: Zap, title: 'تحليل بالذكاء الاصطناعي', desc: 'تحليل مباريات فيديو متقدم عبر الرؤية الحاسوبية ونماذج التعلم العميق', wide: true },
-  { icon: Shield, title: 'هوية رقمية موثقة', desc: 'بطاقة رقمية لكل لاعب تتضمن جميع البيانات والإحصائيات والإنجازات' },
-  { icon: BarChart3, title: 'إحصائيات متقدمة', desc: 'مؤشرات أداء دقيقة ومقارنات تفصيلية بين اللاعبين' },
-  { icon: Languages, title: 'عربية بالكامل', desc: 'واجهة عربية من اليمين لليسار، بمصطلحات المدربين والكشافين' },
-  { icon: Eye, title: 'اكتشاف المواهب', desc: 'تصفية ومقارنة اللاعبين حسب المركز والعمر والتقييم في مكان واحد', wide: true },
-  { icon: Award, title: 'تقييم احترافي', desc: 'تقييم المدرب على أربعة محاور: فني، تكتيكي، بدني، وذهني' },
+  { icon: Zap, title: 'تحليل بالذكاء الاصطناعي', image: featureAiTracking, imagePosition: '50% 50%', desc: 'تحليل مباريات فيديو متقدم عبر الرؤية الحاسوبية ونماذج التعلم العميق', wide: true },
+  { icon: Shield, title: 'هوية رقمية موثقة', image: featureDigitalId, imagePosition: '35% 50%', desc: 'بطاقة رقمية لكل لاعب تتضمن جميع البيانات والإحصائيات والإنجازات' },
+  { icon: BarChart3, title: 'إحصائيات متقدمة', image: featureStatsBall, imagePosition: '80% 60%', desc: 'مؤشرات أداء دقيقة ومقارنات تفصيلية بين اللاعبين' },
+  { icon: Languages, title: 'عربية بالكامل', image: featureArabicDusk, imagePosition: '30% 55%', desc: 'واجهة عربية من اليمين لليسار، بمصطلحات المدربين والكشافين' },
+  { icon: Eye, title: 'اكتشاف المواهب', image: scoutStands, imagePosition: '20% 40%', desc: 'تصفية ومقارنة اللاعبين حسب المركز والعمر والتقييم في مكان واحد', wide: true },
+  { icon: Award, title: 'تقييم احترافي', image: coachTouchline, imagePosition: '30% 50%', desc: 'تقييم المدرب على أربعة محاور: فني، تكتيكي، بدني، وذهني' },
 ];
 
 const stats = [
@@ -236,16 +252,29 @@ function ProductsSection() {
                     to={product.path}
                     onMouseEnter={() => setHovered(product.id)}
                     onMouseLeave={() => setHovered(null)}
-                    className="group grid grid-cols-[auto_1fr_auto] items-start gap-5 border-t border-white/10 py-8 transition-colors hover:bg-white/[0.025] md:gap-8 md:py-10"
+                    onFocus={() => setHovered(product.id)}
+                    onBlur={() => setHovered(null)}
+                    className="group relative grid grid-cols-[auto_1fr_auto] items-start gap-5 overflow-hidden border-t border-white/10 px-3 py-8 transition-colors hover:bg-white/[0.025] md:gap-8 md:py-10"
                   >
+                    {/* Row background: always faint on small screens (no side image there), on hover on large screens */}
+                    <img
+                      src={product.image}
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      decoding="async"
+                      style={{ objectPosition: product.imagePosition }}
+                      className="pointer-events-none absolute inset-0 -z-0 h-full w-full object-cover opacity-25 transition-opacity duration-500 lg:opacity-0 lg:group-hover:opacity-20"
+                    />
+                    <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-l from-[#000A0F] via-[#000A0F]/85 to-[#000A0F]/50" />
                     <span
-                      className={`font-display text-5xl font-black leading-none md:text-7xl ${isHovered ? 'text-teal-prime' : 'text-transparent'}`}
+                      className={`relative font-display text-5xl font-black leading-none md:text-7xl ${isHovered ? 'text-teal-prime' : 'text-transparent'}`}
                       style={{ WebkitTextStroke: isHovered ? '0px' : '1.5px rgba(238,239,238,0.35)', transition: 'color .4s' }}
                       aria-hidden="true"
                     >
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <div>
+                    <div className="relative">
                       <div className="mb-2 flex items-center gap-3">
                         <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${product.color}`}>
                           <Icon className="h-5 w-5 text-white" />
@@ -267,7 +296,7 @@ function ProductsSection() {
                         </div>
                       )}
                     </div>
-                    <ChevronLeft className={`mt-2 h-6 w-6 text-teal-prime transition-transform duration-300 ${isHovered ? '-translate-x-2' : ''}`} />
+                    <ChevronLeft className={`relative mt-2 h-6 w-6 text-teal-prime transition-transform duration-300 ${isHovered ? '-translate-x-2' : ''}`} />
                   </Link>
                 </StaggerItem>
               );
@@ -284,6 +313,18 @@ function ProductsSection() {
                 imgClassName="object-[24%_50%]"
                 caption="صورة مولّدة بالذكاء الاصطناعي"
               >
+                {mainProducts.map((product) => (
+                  <img
+                    key={product.id}
+                    src={product.image}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    decoding="async"
+                    style={{ objectPosition: product.imagePosition }}
+                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${hovered === product.id ? 'opacity-100' : 'opacity-0'}`}
+                  />
+                ))}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#000A0F]/35 via-transparent to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 h-1 bg-teal-prime/80" />
               </ImageReveal>
@@ -323,7 +364,17 @@ function FeaturesSection() {
           {features.map((feature, i) => {
             const Icon = feature.icon;
             return (
-              <StaggerItem key={feature.title} y={36} className={`border-t border-white/10 pt-6 ${i % 3 === 1 ? 'lg:mt-12' : i % 3 === 2 ? 'lg:mt-24' : ''}`}>
+              <StaggerItem key={feature.title} y={36} className={`group relative isolate flex min-h-[260px] flex-col justify-end overflow-hidden border-t border-white/10 p-6 ${i % 3 === 1 ? 'lg:mt-12' : i % 3 === 2 ? 'lg:mt-24' : ''}`}>
+                <img
+                  src={feature.image}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
+                  style={{ objectPosition: feature.imagePosition }}
+                  className="absolute inset-0 -z-10 h-full w-full object-cover opacity-60 transition-[opacity,transform] duration-700 group-hover:scale-[1.04] group-hover:opacity-85"
+                />
+                <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#000A0F] via-[#000A0F]/65 to-[#000A0F]/5" />
                 <div className="mb-5 flex items-center justify-between">
                   <span className="font-display text-4xl font-black text-transparent" style={{ WebkitTextStroke: '1.5px rgba(0,220,200,0.45)' }} aria-hidden="true">
                     {String(i + 1).padStart(2, '0')}
