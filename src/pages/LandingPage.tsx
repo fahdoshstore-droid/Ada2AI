@@ -205,10 +205,6 @@ function HeroSection() {
         ))}
       </motion.dl>
 
-      <span className="absolute bottom-[1.6svh] start-4 z-30 text-[10px] tracking-wide text-ice-muted/70 arabic-text sm:start-6 lg:start-8">
-        صورة مولّدة بالذكاء الاصطناعي
-      </span>
-
       {/* scroll cue */}
       <div aria-hidden="true" className="absolute bottom-[1.2svh] left-1/2 z-30 h-[5svh] w-px -translate-x-1/2 overflow-hidden bg-white/15">
         <motion.div
@@ -311,7 +307,6 @@ function ProductsSection() {
                 from="side"
                 className="aspect-[4/5] w-full"
                 imgClassName="object-[24%_50%]"
-                caption="صورة مولّدة بالذكاء الاصطناعي"
               >
                 {mainProducts.map((product) => (
                   <img
@@ -357,7 +352,6 @@ function FeaturesSection() {
           </p>
         </div>
       </div>
-      <span className="absolute end-4 top-[calc(72svh-1.5rem)] z-20 hidden text-[10px] text-ice-muted/70 arabic-text md:block lg:end-8">صورة مولّدة بالذكاء الاصطناعي</span>
 
       <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-32 lg:px-8">
         <Stagger gap={0.1} className="grid gap-x-12 gap-y-14 md:grid-cols-2 lg:grid-cols-3">

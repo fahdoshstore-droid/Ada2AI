@@ -71,7 +71,6 @@ export default function PageHeader({
           />
           <div className="absolute inset-0 bg-gradient-to-l from-[#000A0F] via-[#000A0F]/60 to-[#000A0F]/5" aria-hidden="true" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#000A0F] via-transparent to-[#000A0F]/50" aria-hidden="true" />
-          <span className="absolute bottom-3 start-4 z-20 text-[10px] text-ice-muted/60 arabic-text sm:start-6 lg:start-8">صورة مولّدة بالذكاء الاصطناعي</span>
         </>
       )}
       <div

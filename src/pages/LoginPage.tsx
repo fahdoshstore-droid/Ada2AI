@@ -209,7 +209,6 @@ export default function LoginPage() {
             كل لاعب له قصة.
             <span className="block text-teal-prime">نحن نقيسها.</span>
           </p>
-          <span className="mt-6 block text-[10px] text-ice-muted/70 arabic-text">صورة مولّدة بالذكاء الاصطناعي</span>
         </div>
       </aside>
     </div>

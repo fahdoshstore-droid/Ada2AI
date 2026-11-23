@@ -435,7 +435,6 @@ export default function TelestratorSequence() {
             {isPlaying ? '❚❚ إيقاف' : step >= 5 ? '↻ إعادة' : '▶ تشغيل'}
           </button>
         </div>
-        <p className="mt-3 text-[11px] text-ice-muted/70 arabic-text">لقطة مولّدة بالذكاء الاصطناعي لأغراض العرض.</p>
       </div>
 
       {/* ── Reading panel ── */}

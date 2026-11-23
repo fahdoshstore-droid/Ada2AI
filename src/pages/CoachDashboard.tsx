@@ -99,7 +99,6 @@ export default function CoachDashboard() {
             </p>
           </motion.div>
         </div>
-        <span className="absolute bottom-[1.2svh] start-4 z-30 text-[10px] text-ice-muted/70 arabic-text sm:start-6 lg:start-8">صورة مولّدة بالذكاء الاصطناعي</span>
       </section>
 
       {/* Loading State */}

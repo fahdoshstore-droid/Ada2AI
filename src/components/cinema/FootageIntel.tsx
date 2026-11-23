@@ -124,7 +124,6 @@ export default function FootageIntel() {
                 توضيحي — التراكبات ليست نتيجة رصد آلي
               </div>
             </div>
-            <p className="mt-3 text-[11px] text-ice-muted/70 arabic-text">لقطة مولّدة بالذكاء الاصطناعي لأغراض العرض.</p>
           </div>
 
           {/* ── Results panel ── */}
