@@ -420,22 +420,39 @@ export default function CoachWorkspace() {
           />
         </motion.div>
 
-        {/* ── SECTION A: Pending Analyses ── */}
+        {/* ── SECTION A: Pending Analyses ──
+            With nothing waiting, an empty "no pending analyses" box only says the
+            platform is idle; show the one useful action (upload) instead. */}
+        {!loadingPending && pending.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card flex flex-wrap items-center justify-between gap-4 rounded-2xl p-5"
+          >
+            <div>
+              <p className="text-sm font-bold text-ice-white arabic-text">لا توجد فيديوهات بانتظار تقييمك</p>
+              <p className="mt-1 text-xs text-ice-muted arabic-text">ارفع فيديو لاعب لتسجّل عليه اللمسات والسرعة ومناطق تحرّكه.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setActiveTab('player-analysis'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-teal-prime to-scout-blue px-5 py-2.5 text-sm font-bold text-navy-dark transition-all hover:shadow-lg hover:shadow-teal-prime/25 arabic-text"
+            >
+              <UploadIcon className="h-4 w-4" />
+              ارفع فيديو لاعب
+            </button>
+          </motion.div>
+        ) : (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           className="glass-card rounded-2xl p-5"
         >
-          <SectionHeader title="تحليلات قيد الانتظار" icon={<Clock className="w-4 h-4" />} />
+          <SectionHeader title="فيديوهات بانتظار تقييمك" icon={<Clock className="w-4 h-4" />} />
 
           {loadingPending ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-8 h-8 text-teal-prime animate-spin" />
-            </div>
-          ) : pending.length === 0 ? (
-            <div className="text-center py-8">
-              <CheckCircle className="w-10 h-10 text-teal-prime mx-auto mb-2" />
-              <p className="text-ice-muted text-sm arabic-text">لا توجد تحليلات معلقة حالياً</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -517,6 +534,7 @@ export default function CoachWorkspace() {
             </div>
           )}
         </motion.div>
+        )}
 
         {/* ── SECTION C: Completed Analyses ── */}
         <motion.div
