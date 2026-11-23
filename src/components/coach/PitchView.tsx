@@ -13,9 +13,11 @@
  */
 import { useState, useRef, useCallback, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDown, X, MapPin, Footprints } from 'lucide-react'
+import { ChevronDown, X, MapPin, Footprints, Save, Trash2 } from 'lucide-react'
 import type { Player } from '../../lib/supabase'
 import { getPlayerMovement, type PlayerMovement } from '../../services/playerMovement'
+import { useFormations } from '../../hooks/useFormations'
+import type { SavedFormation } from '../../services/formations'
 import { PITCH_LENGTH, PITCH_WIDTH, SPARSE_POINTS_THRESHOLD, buildDensityGrid, MAX_HEATMAP_ERROR_METERS } from '../../services/calibration'
 
 // ── Formations ──────────────────────────────────────────────
@@ -128,6 +130,64 @@ export default function PitchView({ players, formation, onFormationChange }: Pit
   const [dragInfo, setDragInfo] = useState<{ slot: number; startX: number; startY: number; moved: boolean } | null>(null)
   const pitchRef = useRef<HTMLDivElement>(null)
 
+  // ── Saved formations ──
+  const { formations: saved, save, saving, saveError, remove, removing } = useFormations()
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [nameDraft, setNameDraft] = useState('')
+  const [notice, setNotice] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  const currentInput = () => {
+    const positions: Record<string, PlayerPos> = {}
+    slots.forEach((_, i) => {
+      const o = offsets[`${formation}:${i}`]
+      if (o) positions[String(i)] = { x: Math.round(o.x * 10) / 10, y: Math.round(o.y * 10) / 10 }
+    })
+    return { name: nameDraft.trim(), formation, assignment, positions }
+  }
+
+  const doSave = async (asNew: boolean) => {
+    if (!nameDraft.trim()) { setNotice('اكتب اسماً للتشكيل أولاً.'); return }
+    try {
+      const row = await save({ id: asNew ? null : activeId, input: currentInput() })
+      setActiveId(row.id)
+      setNotice(asNew || !activeId ? `حُفظ «${row.name}».` : `حُدّث «${row.name}».`)
+    } catch {
+      setNotice(null)
+    }
+  }
+
+  const loadSaved = (row: SavedFormation | null) => {
+    setSelected(null)
+    setConfirmDelete(false)
+    if (!row) { setActiveId(null); setNameDraft(''); setManual(null); setOffsets({}); setNotice(null); return }
+    if (!(row.formation in FORMATIONS)) { setNotice('هذا التشكيل محفوظ بخطة غير معروفة.'); return }
+    const key = row.formation as FormationKey
+    const count = FORMATIONS[key].length
+    let missing = 0
+    const ids = Array.from({ length: count }, (_, i) => {
+      const id = row.assignment[i] ?? null
+      if (id && !playerById.has(id)) { missing++; return null }
+      return id
+    })
+    const nextOffsets: Record<string, PlayerPos> = {}
+    for (const [i, pos] of Object.entries(row.positions ?? {})) nextOffsets[`${key}:${i}`] = pos
+    onFormationChange(key)
+    setManual({ key, ids })
+    setOffsets(nextOffsets)
+    setActiveId(row.id)
+    setNameDraft(row.name)
+    setNotice(missing > 0 ? `${missing} من لاعبي هذا التشكيل لم يعودوا في قائمتك، فصارت مراكزهم شاغرة.` : null)
+  }
+
+  const doDelete = async () => {
+    if (!activeId) return
+    const name = nameDraft
+    await remove(activeId)
+    loadSaved(null)
+    setNotice(`حُذف «${name}».`)
+  }
+
   const selectedPlayerId = selected != null ? assignment[selected] : null
   const movement = useQuery({
     queryKey: ['player-movement', selectedPlayerId],
@@ -189,6 +249,69 @@ export default function PitchView({ players, formation, onFormationChange }: Pit
 
   return (
     <div dir="rtl" className="space-y-3">
+      {/* Saved formations */}
+      <div className="flex flex-wrap items-end gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+        <div className="min-w-[160px] flex-1">
+          <label htmlFor="saved-formation" className="mb-1 block text-xs text-ice-muted arabic-text">التشكيلات المحفوظة</label>
+          <select
+            id="saved-formation"
+            value={activeId ?? ''}
+            onChange={e => loadSaved(saved.find(r => r.id === e.target.value) ?? null)}
+            className="w-full rounded-lg border border-white/10 bg-[#05080f] px-3 py-2 text-sm text-ice-white outline-none focus:border-teal-prime/50 arabic-text"
+          >
+            <option value="">— تشكيل جديد —</option>
+            {saved.map(r => (
+              <option key={r.id} value={r.id}>{r.name} · {r.formation}</option>
+            ))}
+          </select>
+        </div>
+        <div className="min-w-[160px] flex-1">
+          <label htmlFor="formation-name" className="mb-1 block text-xs text-ice-muted arabic-text">اسم التشكيل</label>
+          <input
+            id="formation-name"
+            type="text"
+            maxLength={80}
+            value={nameDraft}
+            onChange={e => { setNameDraft(e.target.value); setNotice(null) }}
+            placeholder="مثال: تشكيل مباراة الرفاع"
+            className="w-full rounded-lg border border-white/10 bg-[#05080f] px-3 py-2 text-sm text-ice-white outline-none placeholder:text-ice-muted/50 focus:border-teal-prime/50 arabic-text"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => doSave(false)}
+          disabled={saving}
+          className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-teal-prime to-scout-blue px-4 py-2 text-sm font-bold text-navy-dark disabled:opacity-60 arabic-text"
+        >
+          <Save className="h-4 w-4" />
+          {saving ? 'جارٍ الحفظ…' : activeId ? 'حفظ التعديلات' : 'احفظ التشكيل'}
+        </button>
+        {activeId && (
+          <button type="button" onClick={() => doSave(true)} disabled={saving}
+            className="rounded-lg border border-teal-prime/40 px-3 py-2 text-sm text-teal-prime disabled:opacity-60 arabic-text">
+            احفظ كتشكيل جديد
+          </button>
+        )}
+        {activeId && !confirmDelete && (
+          <button type="button" onClick={() => setConfirmDelete(true)} aria-label="حذف التشكيل"
+            className="rounded-lg border border-white/10 p-2 text-ice-muted hover:border-red-400/50 hover:text-red-400">
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
+        {activeId && confirmDelete && (
+          <span className="flex items-center gap-2 text-xs text-red-400 arabic-text">
+            حذف «{nameDraft}»؟
+            <button type="button" onClick={doDelete} disabled={removing} className="rounded-lg bg-red-500/15 px-2.5 py-1.5 font-bold text-red-400">حذف</button>
+            <button type="button" onClick={() => setConfirmDelete(false)} className="rounded-lg px-2 py-1.5 text-ice-muted">إلغاء</button>
+          </span>
+        )}
+        {(notice || saveError) && (
+          <p role="status" className={`w-full text-xs arabic-text ${saveError ? 'text-red-400' : 'text-teal-prime'}`}>
+            {saveError ? 'تعذّر الحفظ. حاول مرة أخرى.' : notice}
+          </p>
+        )}
+      </div>
+
       {/* Formation selector */}
       <div className="flex flex-wrap items-center justify-end gap-2">
         <div className="relative">
