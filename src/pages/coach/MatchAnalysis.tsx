@@ -26,6 +26,7 @@ import { yoloEndpoint, yoloFetch } from '../../lib/yoloApi'
 import TrackIdentityLinker from '../../components/coach/TrackIdentityLinker'
 import PitchCalibrator from '../../components/coach/PitchCalibrator'
 import PositionHeatmap from '../../components/coach/PositionHeatmap'
+import SavedMatchAnalysis from '../../components/coach/SavedMatchAnalysis'
 import { usePrimaryAnalysisId, useCalibration, useTrackHistories } from '../../hooks/useCalibration'
 import { useMatchTracks } from '../../hooks/useTrackLinks'
 import { useAnalysedMatchIds } from '../../hooks/useTrackLinks'
@@ -145,6 +146,11 @@ export default function CoachMatchAnalysis() {
             </StaggerItem>
           </Stagger>
 
+          {/* Analyses saved in the database — visible on any link */}
+          <div className="mb-8">
+            <SavedMatchAnalysis />
+          </div>
+
           <SideReveal from="start">
             {matches.isPending && (
               <p className="glass-card rounded-2xl p-6 text-sm text-ice-muted arabic-text" role="status">
@@ -152,8 +158,8 @@ export default function CoachMatchAnalysis() {
               </p>
             )}
             {matches.isError && (
-              <p className="glass-card rounded-2xl border-gold/30 p-6 text-sm text-gold arabic-text" role="status">
-                التقارير المحفوظة تظهر هنا عند تشغيل خدمة تحليل الفيديو.
+              <p className="text-xs text-ice-muted/70 arabic-text" role="status">
+                تقارير الإعادة الكاملة تظهر هنا أيضاً عند تشغيل خدمة تحليل الفيديو على جهاز التحليل.
               </p>
             )}
             {matches.isSuccess && matches.data.length === 0 && (
