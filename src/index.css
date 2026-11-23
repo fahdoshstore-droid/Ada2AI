@@ -286,12 +286,16 @@
     transition: all 0.3s var(--ease-spring);
     position: relative;
     overflow: hidden;
+    /* own stacking context so the hover layer (::before, z-index -1) sits
+       above the background but under the label — it used to hide the text */
+    isolation: isolate;
   }
 
   .btn-primary::before {
     content: '';
     position: absolute;
     inset: 0;
+    z-index: -1;
     background: linear-gradient(135deg, #00DCC8, #0095E0);
     opacity: 0;
     transition: opacity 0.3s ease;

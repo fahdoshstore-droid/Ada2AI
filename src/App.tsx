@@ -97,12 +97,11 @@ export default function App() {
               </ProtectedRoute>
             } />
 
+            {/* Public: visitors read about the Sport ID and start a player sign-up from here. */}
             <Route path="/sport-id" element={
-              <ProtectedRoute>
-                <ErrorBoundary fallback={<RouteErrorFallback />}>
-                  <SportID />
-                </ErrorBoundary>
-              </ProtectedRoute>
+              <ErrorBoundary fallback={<RouteErrorFallback />}>
+                <SportID />
+              </ErrorBoundary>
             } />
 
             <Route path="/scout" element={

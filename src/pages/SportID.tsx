@@ -45,14 +45,16 @@ export default function SportID() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const own = useOwnPlayer();
 
   // The header button depends on who is looking: a Sport ID belongs to a
   // player; coaches and scouts use it through their own dashboards.
   const role = profile?.user_type;
   const cta =
-    role === 'player'
+    !user
+      ? { label: 'أنشئ حساب لاعب واحصل على هويتك', to: '/login?signup=player' }
+      : role === 'player'
       ? own.data
         ? { label: 'عرض بطاقتي الرياضية', to: `/player/${own.data.id}` }
         : { label: 'احصل على هويتك الرياضية', to: '/player/onboarding' }

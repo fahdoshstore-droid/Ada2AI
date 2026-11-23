@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react'
 import EvaluationBreakdown from '../../components/evaluation/EvaluationBreakdown'
 import SportIdentityBadge from '../../components/coach/SportIdentityBadge'
 import RadarCard from '../../components/player/RadarCard'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { supabase, type Player, type Evaluation } from '../../lib/supabase'
 import { trackEvent } from '../../lib/analytics'
@@ -64,12 +64,14 @@ interface ProfileLayoutProps {
   evaluation: Evaluation | null
   /** The evaluation before the latest one, drawn dashed on the radar for progress. */
   previousEvaluation: Evaluation | null
+  /** Arrived here straight from finishing Sport ID onboarding. */
+  justCreated: boolean
   copied: boolean
   onShare: () => void
   onBack: () => void
 }
 
-function ProfileLayout({ player, evaluation, previousEvaluation, copied, onShare, onBack }: ProfileLayoutProps) {
+function ProfileLayout({ player, evaluation, previousEvaluation, justCreated, copied, onShare, onBack }: ProfileLayoutProps) {
   const reduced = useReducedMotion()
   const infoRef = useRef<HTMLDivElement>(null)
   // progress of the info column through the viewport drives the image → profile transition
@@ -124,6 +126,21 @@ function ProfileLayout({ player, evaluation, previousEvaluation, copied, onShare
               <ArrowRight className="h-4 w-4" />
               رجوع
             </button>
+
+            {justCreated && (
+              <div role="status" className="mb-8 border border-teal-prime/40 bg-teal-prime/[0.07] p-5">
+                <p className="flex items-center gap-2 text-base font-black text-teal-prime arabic-text">
+                  <CheckCircle className="h-5 w-5" /> تم إنشاء هويتك الرياضية
+                </p>
+                <p className="mt-1 text-sm text-ice-muted arabic-text">
+                  هذه بطاقتك كما يراها المدربون والكشافون. أضف فيديو لك لتكتمل، وسيظهر تقييم مدربك هنا حين يقيّمك.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link to="/player/upload" className="btn-primary rounded-full px-5 py-2.5 text-sm arabic-text">أضف فيديو</Link>
+                  <Link to="/player/dashboard" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-bold text-ice-white transition-colors hover:border-teal-prime/50 arabic-text">لوحتي</Link>
+                </div>
+              </div>
+            )}
 
             {/* Eyebrow — as in the D2 mockup */}
             <div className="mb-5 flex items-center gap-3 text-sm font-semibold text-teal-prime">
@@ -289,6 +306,8 @@ function ProfileLayout({ player, evaluation, previousEvaluation, copied, onShare
 
 export default function PlayerProfile() {
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
+  const justCreated = searchParams.get('created') === '1'
   const navigate = useNavigate()
 
   const [player, setPlayer] = useState<Player | null>(null)
@@ -438,6 +457,7 @@ export default function PlayerProfile() {
       player={player}
       evaluation={evaluation}
       previousEvaluation={previousEvaluation}
+      justCreated={justCreated}
       copied={copied}
       onShare={handleShare}
       onBack={() => navigate(-1)}

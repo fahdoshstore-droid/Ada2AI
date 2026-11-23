@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { getOwnPlayer } from '../services/players'
 import { useAuth } from '../contexts/AuthContext'
 import type { UserType } from '../lib/supabase'
 import { Letterbox } from '../components/cinema/Cinema'
@@ -8,11 +9,16 @@ import keeperRain from '../assets/cinema/keeper-rain.jpg'
 export default function LoginPage() {
   const { signIn, signUp, user, profile, profileError, loading: authLoading } = useAuth()
   const navigate = useNavigate()
+  // /login?signup=player (from the Sport ID page) opens the sign-up form with «لاعب» chosen.
+  const [searchParams] = useSearchParams()
+  const signupRole = searchParams.get('signup')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isSignUp, setIsSignUp] = useState(false)
+  const [isSignUp, setIsSignUp] = useState(signupRole !== null)
   const [name, setName] = useState('')
-  const [userType, setUserType] = useState<UserType>('player')
+  const [userType, setUserType] = useState<UserType>(
+    signupRole === 'coach' || signupRole === 'scout' ? signupRole : 'player'
+  )
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -20,9 +26,16 @@ export default function LoginPage() {
   // Handles both: session restore on mount + post-login redirect
   useEffect(() => {
     if (!authLoading && user) {
-      if (profile?.user_type) {
-        const target = '/welcome'
-        navigate(target, { replace: true })
+      if (profile?.user_type === 'player') {
+        // A player without a record goes straight to creating the Sport ID;
+        // one who already has it gets the usual welcome.
+        let cancelled = false
+        getOwnPlayer(user.id)
+          .then(own => { if (!cancelled) navigate(own ? '/welcome' : '/player/onboarding', { replace: true }) })
+          .catch(() => { if (!cancelled) navigate('/welcome', { replace: true }) })
+        return () => { cancelled = true }
+      } else if (profile?.user_type) {
+        navigate('/welcome', { replace: true })
       } else if (profileError) {
         // Profile fetch failed — still redirect, ProtectedRoute will show error
         // Fallback: use user_metadata if available
@@ -156,7 +169,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark hover:shadow-lg hover:shadow-teal-prime/25 transition-all duration-300 disabled:opacity-50 arabic-text"
+              className="w-full text-center py-3 rounded-lg text-sm font-semibold bg-gradient-to-r from-teal-prime to-scout-blue text-navy-dark hover:shadow-lg hover:shadow-teal-prime/25 transition-all duration-300 disabled:opacity-50 arabic-text"
             >
               {loading ? 'جاري التحميل...' : isSignUp ? 'إنشاء حساب' : 'تسجيل الدخول'}
             </button>

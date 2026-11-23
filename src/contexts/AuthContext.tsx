@@ -137,7 +137,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signUp = useCallback(async (email: string, password: string, metadata?: { full_name?: string; user_type?: UserType }) => {
-    const { error } = await supabase.auth.signUp({ email, password, options: { data: metadata } })
+    // The confirmation link returns to /login, which routes the new account on
+    // (a new player straight to Sport ID onboarding). Falls back to the project's
+    // Site URL when this origin is not in Supabase's allowed redirect list.
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: metadata, emailRedirectTo: `${window.location.origin}/login` },
+    })
     return { error: error?.message ?? null }
   }, [])
 

@@ -134,9 +134,9 @@ export default function PlayerOnboarding() {
       .limit(1)
       .maybeSingle()
 
-    const { error: insertError } = existing?.id
-      ? await supabase.from('players').update(payload).eq('id', existing.id)
-      : await supabase.from('players').insert(payload)
+    const { data: saved, error: insertError } = existing?.id
+      ? await supabase.from('players').update(payload).eq('id', existing.id).select('id').single()
+      : await supabase.from('players').insert(payload).select('id').single()
 
     if (insertError) {
       setError('فشل حفظ البيانات. حاول مرة أخرى.')
@@ -153,7 +153,8 @@ export default function PlayerOnboarding() {
     trackEvent('playerOnboardingComplete', { sport: step1.sport, position: step1.position })
     trackEvent('onboarding_completed', { sport: step1.sport, position: step1.position })
     completedRef.current = true
-    navigate('/player/dashboard', { replace: true })
+    // Show the finished card straight away; the profile page greets a new identity.
+    navigate(saved?.id ? `/player/${saved.id}?created=1` : '/player/dashboard', { replace: true })
   }
 
   // ── UI ────────────────────────────────────────────────────
