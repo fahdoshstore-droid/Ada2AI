@@ -7,8 +7,9 @@ interface ProtectedRouteProps {
   allowedRoles?: string[]
 }
 
-/** Maximum time to wait for profile before showing error — prevents infinite spinner */
-const PROFILE_TIMEOUT_MS = 5000
+/** Last-resort cap on the profile spinner. Normally AuthContext reports a
+ *  result (profile or profileError) well before this, after its own retry. */
+const PROFILE_TIMEOUT_MS = 20000
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { user, profile, loading, profileError, refreshProfile, signOut } = useAuth()
@@ -37,8 +38,8 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     return <Navigate to="/login" replace />
   }
 
-  // 3. Profile fetch failed or timed out — show error with retry
-  if (profileTimedOut && !profile) {
+  // 3. Profile fetch failed (AuthContext gave up after retrying) — show error with retry
+  if (!profile && (profileError || profileTimedOut)) {
     return (
       <div className="min-h-screen bg-navy flex items-center justify-center">
         <div className="glass-card rounded-2xl p-8 max-w-md text-center">

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, User } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, User, Badge, UserSearch, Dumbbell, Users, type LucideIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { AdaLogo } from './AdaLogo';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,10 +11,10 @@ const navLinks = [
     name: 'المنتجات', 
     path: '/sport-id',
     dropdown: [
-      { name: 'الهوية الرياضية', path: '/sport-id', icon: 'badge', desc: 'بطاقة رقمية لكل لاعب' },
-      { name: 'لوحة الكشافين', path: '/scout', icon: 'person_search', desc: 'اكتشاف المواهب' },
-      { name: 'لوحة المدربين', path: '/coach', icon: 'sports', desc: 'إدارة الفريق' },
-      { name: 'لوحة المنشآت', path: '/organizations', icon: 'groups', desc: 'إدارة اللاعبين' },
+      { name: 'الهوية الرياضية', path: '/sport-id', icon: Badge as LucideIcon, desc: 'بطاقة رقمية لكل لاعب' },
+      { name: 'لوحة الكشافين', path: '/scout', icon: UserSearch as LucideIcon, desc: 'اكتشاف المواهب' },
+      { name: 'لوحة المدربين', path: '/coach', icon: Dumbbell as LucideIcon, desc: 'إدارة الفريق' },
+      { name: 'لوحة المنشآت', path: '/organizations', icon: Users as LucideIcon, desc: 'إدارة اللاعبين' },
     ]
   },
   { name: 'الترتيب', path: '/rankings' },
@@ -27,6 +27,25 @@ export default function Layout() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  // Products menu: a short close delay lets the pointer travel from the
+  // button to the panel; the last pointer type tells a mouse from a tap.
+  const closeTimer = useRef<number | null>(null);
+  const pointerType = useRef<string>('mouse');
+  const openMenu = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    setDropdownOpen(true);
+  };
+  const closeMenuSoon = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setDropdownOpen(false), 180);
+  };
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDropdownOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [dropdownOpen]);
+  useEffect(() => () => { if (closeTimer.current) window.clearTimeout(closeTimer.current); }, []);
   const location = useLocation();
 
   const handleLogout = async () => {
@@ -70,13 +89,17 @@ export default function Layout() {
                 <div 
                   key={link.name}
                   className="relative"
-                  onMouseEnter={() => link.dropdown && setDropdownOpen(true)}
-                  onMouseLeave={() => link.dropdown && setDropdownOpen(false)}
+                  onPointerEnter={(e) => { if (link.dropdown && e.pointerType === 'mouse') openMenu(); }}
+                  onPointerLeave={(e) => { if (link.dropdown && e.pointerType === 'mouse') closeMenuSoon(); }}
                 >
                   {link.dropdown ? (
                     <button
                       type="button"
-                      onClick={() => setDropdownOpen((v) => !v)}
+                      onPointerDown={(e) => { pointerType.current = e.pointerType; }}
+                      // With a mouse the menu is already open from hovering, so a
+                      // click keeps it open; taps and the keyboard toggle it.
+                      onClick={() => (pointerType.current === 'mouse' ? openMenu() : setDropdownOpen((v) => !v))}
+                      onKeyDown={() => { pointerType.current = 'keyboard'; }}
                       aria-haspopup="true"
                       aria-expanded={dropdownOpen}
                       className={`relative flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
@@ -110,12 +133,15 @@ export default function Layout() {
                   )}
                   
                   {link.dropdown && dropdownOpen && (
+                    // pt-2 (not mt-2): the gap belongs to the hover area, so moving
+                    // the mouse from the button down to the panel keeps it open.
+                    <div className="absolute top-full right-0 z-50 pt-2">
                     <motion.div
                       initial={{ opacity: 0, y: 8, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.96 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full right-0 mt-2 w-72 glass-premium rounded-xl p-2 shadow-xl border border-white/[0.06]"
+                      className="w-72 glass-premium rounded-xl p-2 shadow-xl border border-white/[0.06] bg-[#000A0F]/95"
                     >
                       {link.dropdown.map((item) => (
                         <Link
@@ -124,13 +150,7 @@ export default function Layout() {
                           className="flex items-start gap-3 p-3 rounded-lg hover:bg-teal-prime/8 transition-colors group/item"
                         >
                           <div className="w-10 h-10 rounded-lg bg-teal-prime/8 flex items-center justify-center flex-shrink-0 group-hover/item:bg-teal-prime/15 transition-colors border border-teal-prime/10">
-                            <span className="text-teal-prime text-lg">
-                              {item.icon === 'badge' && '\uEF3B'}
-                              {item.icon === 'person_search' && '\uEF3C'}
-                              {item.icon === 'sports' && '\uEA43'}
-                              {item.icon === 'groups' && '\uEF3D'}
-                              {item.icon === 'stadium' && '\uEA66'}
-                            </span>
+                            <item.icon className="h-5 w-5 text-teal-prime" aria-hidden="true" />
                           </div>
                           <div>
                             <div className="font-semibold text-ice-white text-sm group-hover/item:text-teal-prime transition-colors">
@@ -141,6 +161,7 @@ export default function Layout() {
                         </Link>
                       ))}
                     </motion.div>
+                    </div>
                   )}
                 </div>
               ))}
