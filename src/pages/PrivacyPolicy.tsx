@@ -24,7 +24,7 @@ const sections = [
   },
   {
     title: 'تواصل',
-    body: 'privacy@ada2ai.com',
+    body: 'info@ada2ai.com',
   },
 ]
 

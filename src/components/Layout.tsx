@@ -353,9 +353,8 @@ export default function Layout() {
             <div>
               <h4 className="font-semibold text-ice-white mb-4 arabic-text">تواصل معنا</h4>
               <ul className="space-y-3 text-sm text-ice-muted/60">
-                <li className="arabic-text">الرياض، المملكة العربية السعودية</li>
-                <li className="arabic-text">البريد: <a href="mailto:info@ada2ai.sa" className="hover:text-teal-prime transition-colors">info@ada2ai.sa</a></li>
-                <li className="arabic-text">الدعم: <a href="mailto:support@ada2ai.sa" className="hover:text-teal-prime transition-colors">support@ada2ai.sa</a></li>
+                <li className="arabic-text">الخبر، المملكة العربية السعودية</li>
+                <li className="arabic-text">البريد: <a href="mailto:info@ada2ai.com" className="hover:text-teal-prime transition-colors" dir="ltr">info@ada2ai.com</a></li>
               </ul>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth, roleDashboard } from '../contexts/AuthContext'
 
@@ -91,10 +91,39 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     )
   }
 
-  // 5. Authenticated with profile — check role authorization // verified
+  // 5. Signed in with another role. Say so instead of silently redirecting:
+  //    a coach clicking «لوحة الكشافين» used to land on the coach dashboard
+  //    with no explanation.
   if (allowedRoles && !allowedRoles.includes(profile.user_type)) {
-    return <Navigate to={roleDashboard(profile.user_type)} replace />
+    return <RoleMismatch required={allowedRoles} current={profile.user_type} onSwitch={async () => { await signOut(); window.location.href = '/login' }} />
   }
 
   return <>{children}</>
+}
+
+const ROLE_LABEL: Record<string, string> = { player: 'لاعب', coach: 'مدرب', scout: 'كشاف', admin: 'مدير' }
+const AREA_LABEL: Record<string, string> = { player: 'صفحات اللاعبين', coach: 'لوحة المدربين', scout: 'لوحة الكشافين', admin: 'لوحة الإدارة' }
+
+function RoleMismatch({ required, current, onSwitch }: { required: string[]; current: string; onSwitch: () => void }) {
+  const area = AREA_LABEL[required[0]] ?? 'هذه الصفحة'
+  const needed = required.map(r => ROLE_LABEL[r] ?? r).join(' أو ')
+  return (
+    <div dir="rtl" className="flex min-h-screen items-center justify-center bg-[#000A0F] px-4 pt-20">
+      <div className="w-full max-w-md border border-white/10 bg-white/[0.03] p-8 text-center">
+        <p className="text-xs font-semibold text-teal-prime arabic-text">{area}</p>
+        <h1 className="mt-3 text-2xl font-black text-ice-white arabic-text">هذه الصفحة لحسابات {needed}</h1>
+        <p className="mt-3 text-sm leading-relaxed text-ice-muted arabic-text">
+          أنت مسجّل الدخول بحساب {ROLE_LABEL[current] ?? current}. افتح لوحتك، أو سجّل الدخول بحساب {needed} لعرض {area}.
+        </p>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <Link to={roleDashboard(current as Parameters<typeof roleDashboard>[0])} className="btn-primary justify-center whitespace-nowrap rounded-full px-6 py-3 text-sm arabic-text">
+            اذهب إلى لوحتك
+          </Link>
+          <button type="button" onClick={onSwitch} className="whitespace-nowrap rounded-full border border-white/15 px-6 py-3 text-sm font-bold text-ice-white transition-colors hover:border-teal-prime/50 arabic-text">
+            سجّل الدخول بحساب آخر
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }

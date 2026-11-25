@@ -4,7 +4,7 @@ import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'fr
 import {
   Badge, UserSearch, Dumbbell, Users, Star, Share2, Filter, LayoutGrid, Film,
   Play, ArrowLeft, BarChart3,
-  Shield, Zap, Languages, Award, ChevronLeft, Eye
+  Award, ChevronLeft
 } from 'lucide-react';
 import { EASE, GhostNumber, ImageReveal, Letterbox, SplitReveal, Stagger, StaggerItem } from '../components/cinema/Cinema';
 import heroSprint from '../assets/cinema/hero-sprint.jpg';
@@ -87,12 +87,12 @@ const mainProducts = [
 ];
 
 const features = [
-  { icon: Zap, title: 'تحليل بالذكاء الاصطناعي', image: featureAiTracking, imagePosition: '50% 50%', desc: 'تحليل مباريات فيديو متقدم عبر الرؤية الحاسوبية ونماذج التعلم العميق', wide: true },
-  { icon: Shield, title: 'هوية رقمية موثقة', image: featureDigitalId, imagePosition: '35% 50%', desc: 'بطاقة رقمية لكل لاعب تتضمن جميع البيانات والإحصائيات والإنجازات' },
-  { icon: BarChart3, title: 'إحصائيات متقدمة', image: featureStatsBall, imagePosition: '80% 60%', desc: 'مؤشرات أداء دقيقة ومقارنات تفصيلية بين اللاعبين' },
-  { icon: Languages, title: 'عربية بالكامل', image: featureArabicDusk, imagePosition: '30% 55%', desc: 'واجهة عربية من اليمين لليسار، بمصطلحات المدربين والكشافين' },
-  { icon: Eye, title: 'اكتشاف المواهب', image: featureScoutNotebook, imagePosition: '60% 50%', desc: 'تصفية ومقارنة اللاعبين حسب المركز والعمر والتقييم في مكان واحد', wide: true },
-  { icon: Award, title: 'تقييم احترافي', image: featureCoachMentoring, imagePosition: '50% 45%', desc: 'تقييم المدرب على أربعة محاور: فني، تكتيكي، بدني، وذهني' },
+  { title: 'تحليل بالذكاء الاصطناعي', image: featureAiTracking, imagePosition: '50% 50%', desc: 'تحليل مباريات فيديو متقدم عبر الرؤية الحاسوبية ونماذج التعلم العميق', wide: true },
+  { title: 'هوية رقمية موثقة', image: featureDigitalId, imagePosition: '35% 50%', desc: 'بطاقة رقمية لكل لاعب تتضمن جميع البيانات والإحصائيات والإنجازات' },
+  { title: 'إحصائيات متقدمة', image: featureStatsBall, imagePosition: '80% 60%', desc: 'مؤشرات أداء دقيقة ومقارنات تفصيلية بين اللاعبين' },
+  { title: 'عربية بالكامل', image: featureArabicDusk, imagePosition: '30% 55%', desc: 'واجهة عربية من اليمين لليسار، بمصطلحات المدربين والكشافين' },
+  { title: 'اكتشاف المواهب', image: featureScoutNotebook, imagePosition: '60% 50%', desc: 'تصفية ومقارنة اللاعبين حسب المركز والعمر والتقييم في مكان واحد', wide: true },
+  { title: 'تقييم احترافي', image: featureCoachMentoring, imagePosition: '50% 45%', desc: 'تقييم المدرب على أربعة محاور: فني، تكتيكي، بدني، وذهني' },
 ];
 
 const stats = [
@@ -358,7 +358,6 @@ function FeaturesSection() {
       <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-32 lg:px-8">
         <Stagger gap={0.1} className="grid gap-x-12 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, i) => {
-            const Icon = feature.icon;
             return (
               <StaggerItem key={feature.title} y={36} className={`group relative isolate flex min-h-[260px] flex-col justify-end overflow-hidden border-t border-white/10 p-6 ${i % 3 === 1 ? 'lg:mt-12' : i % 3 === 2 ? 'lg:mt-24' : ''}`}>
                 <img
@@ -371,11 +370,10 @@ function FeaturesSection() {
                   className="absolute inset-0 -z-10 h-full w-full object-cover opacity-60 transition-[opacity,transform] duration-700 group-hover:scale-[1.04] group-hover:opacity-85"
                 />
                 <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#000A0F] via-[#000A0F]/65 to-[#000A0F]/5" />
-                <div className="mb-5 flex items-center justify-between">
+                <div className="mb-5">
                   <span className="font-display text-4xl font-black text-transparent" style={{ WebkitTextStroke: '1.5px rgba(0,220,200,0.45)' }} aria-hidden="true">
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <Icon className="h-6 w-6 text-teal-prime" />
                 </div>
                 <h3 className="mb-3 text-xl font-bold text-ice-white arabic-text">{feature.title}</h3>
                 <p className="leading-relaxed text-ice-muted arabic-text">{feature.desc}</p>
