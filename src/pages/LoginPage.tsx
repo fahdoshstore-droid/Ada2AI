@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { getOwnPlayer } from '../services/players'
+import { PHYSIQUE_URL } from '../lib/products'
 import { useAuth } from '../contexts/AuthContext'
 import type { UserType } from '../lib/supabase'
 import { Letterbox } from '../components/cinema/Cinema'
@@ -26,7 +27,9 @@ export default function LoginPage() {
   // Handles both: session restore on mount + post-login redirect
   useEffect(() => {
     if (!authLoading && user) {
-      if (profile?.user_type === 'player') {
+      // The DB holds roles beyond the football UserType (أدائي فيزيك 'athlete', 'admin').
+      const role = profile?.user_type as string | undefined
+      if (role === 'player') {
         // A player without a record goes straight to creating the Sport ID;
         // one who already has it gets the usual welcome.
         let cancelled = false
@@ -34,11 +37,13 @@ export default function LoginPage() {
           .then(own => { if (!cancelled) navigate(own ? '/welcome' : '/player/onboarding', { replace: true }) })
           .catch(() => { if (!cancelled) navigate('/welcome', { replace: true }) })
         return () => { cancelled = true }
-      } else if (profile?.user_type === 'coach' || profile?.user_type === 'scout') {
+      } else if (role === 'coach' || role === 'scout') {
         navigate('/welcome', { replace: true })
-      } else if (profile?.user_type) {
-        // Accounts from other Ada2AI products (e.g. أدائي فيزيك 'athlete') have
-        // no football dashboard: send them home rather than into football flows.
+      } else if (role === 'athlete') {
+        // أدائي فيزيك accounts: same account, the app lives at its own address.
+        window.location.assign(`${PHYSIQUE_URL}/auth`)
+      } else if (role) {
+        // Any other role without a football dashboard: home, not football flows.
         navigate('/', { replace: true })
       } else if (profileError) {
         // Profile fetch failed — still redirect, ProtectedRoute will show error

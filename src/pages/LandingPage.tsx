@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import {
   Badge, UserSearch, Dumbbell, Users, Star, Share2, Filter, LayoutGrid, Film,
-  Play, ArrowLeft, BarChart3,
+  Play, ArrowLeft, BarChart3, Activity, Salad, ClipboardCheck,
   Award, ChevronLeft
 } from 'lucide-react';
 import { EASE, GhostNumber, ImageReveal, Letterbox, SplitReveal, Stagger, StaggerItem } from '../components/cinema/Cinema';
@@ -12,6 +12,9 @@ import playerDevelopment from '../assets/cinema/player-development.jpg';
 import keeperRain from '../assets/cinema/keeper-rain.jpg';
 import aerialPitch from '../assets/cinema/aerial-pitch.jpg';
 import sportIdBoots from '../assets/cinema/sport-id-boots.jpg';
+import physiqueCoaching from '../assets/cinema/physique-coaching.jpg';
+import SmartLink from '../components/SmartLink';
+import { PHYSIQUE_URL } from '../lib/products';
 import scoutStands from '../assets/cinema/scout-stands.jpg';
 import coachTouchline from '../assets/cinema/coach-touchline.jpg';
 import stadiumBlueHour from '../assets/cinema/stadium-blue-hour.jpg';
@@ -83,6 +86,22 @@ const mainProducts = [
     color: 'from-scout-blue to-teal-prime',
     accent: 'scout-blue',
     addons: []
+  },
+  {
+    id: 'physique',
+    image: physiqueCoaching,
+    imagePosition: '62% 45%',
+    icon: Activity,
+    title: 'أدائي فيزيك',
+    desc: 'الإعداد البدني مع مدربك: برامج تدريب وخطط تغذية ومتابعة أسبوعية لقياساتك وتقدّمك',
+    path: PHYSIQUE_URL,
+    color: 'from-teal-prime to-scout-blue',
+    accent: 'teal-prime',
+    addons: [
+      { title: 'برامج التدريب', icon: Dumbbell, desc: 'من مدربك' },
+      { title: 'خطط التغذية', icon: Salad, desc: 'سعرات ومغذيات' },
+      { title: 'المتابعة الأسبوعية', icon: ClipboardCheck, desc: 'قياسات وصور' },
+    ]
   },
 ];
 
@@ -223,8 +242,9 @@ function HeroSection() {
 function ProductsSection() {
   const [hovered, setHovered] = useState<string | null>(null);
 
+  // overflow-clip, not overflow-hidden: hidden makes a scroll container and breaks the sticky image
   return (
-    <section className="relative overflow-hidden bg-[#000A0F] py-24 md:py-40">
+    <section className="relative overflow-clip bg-[#000A0F] py-24 md:py-40">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[#000A0F] to-transparent" />
       <GhostNumber n="01" className="-top-6 start-[-3%]" />
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -235,7 +255,7 @@ function ProductsSection() {
             <SplitReveal text="للعالم الرياضي" delay={0.2} className="block text-ice-white arabic-text" />
           </h2>
           <p className="mt-5 max-w-2xl text-lg text-ice-muted arabic-text">
-            أربع منتجات رئيسية مصممة خصيصاً لتلبية احتياجات جميع الأطراف في النظام الرياضي
+            خمس منتجات رئيسية مصممة خصيصاً لتلبية احتياجات جميع الأطراف في النظام الرياضي
           </p>
         </div>
 
@@ -246,7 +266,7 @@ function ProductsSection() {
               const isHovered = hovered === product.id;
               return (
                 <StaggerItem as="li" key={product.id} x={48} y={0} className={i % 2 ? 'lg:ms-10' : ''}>
-                  <Link
+                  <SmartLink
                     to={product.path}
                     onMouseEnter={() => setHovered(product.id)}
                     onMouseLeave={() => setHovered(null)}
@@ -295,7 +315,7 @@ function ProductsSection() {
                       )}
                     </div>
                     <ChevronLeft className={`relative mt-2 h-6 w-6 text-teal-prime transition-transform duration-300 ${isHovered ? '-translate-x-2' : ''}`} />
-                  </Link>
+                  </SmartLink>
                 </StaggerItem>
               );
             })}

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, LogOut, User, Badge, UserSearch, Dumbbell, Users, type LucideIcon } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, User, Badge, UserSearch, Dumbbell, Users, Activity, type LucideIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { AdaLogo } from './AdaLogo';
+import SmartLink from './SmartLink';
+import { PHYSIQUE_URL } from '../lib/products';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const navLinks = [
@@ -15,6 +17,7 @@ const navLinks = [
       { name: 'لوحة الكشافين', path: '/scout', icon: UserSearch as LucideIcon, desc: 'اكتشاف المواهب' },
       { name: 'لوحة المدربين', path: '/coach', icon: Dumbbell as LucideIcon, desc: 'إدارة الفريق' },
       { name: 'لوحة المنشآت', path: '/organizations', icon: Users as LucideIcon, desc: 'إدارة اللاعبين' },
+      { name: 'أدائي فيزيك', path: PHYSIQUE_URL, icon: Activity as LucideIcon, desc: 'الإعداد البدني والتغذية' },
     ]
   },
   { name: 'الترتيب', path: '/rankings' },
@@ -141,10 +144,12 @@ export default function Layout() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.96 }}
                       transition={{ duration: 0.2 }}
-                      className="w-72 glass-premium rounded-xl p-2 shadow-xl border border-white/[0.06] bg-[#000A0F]/95"
+                      className="w-72 glass-premium rounded-xl p-2 shadow-xl border border-white/[0.06]"
+                      // glass-premium is translucent; the menu must hide the page under it
+                      style={{ background: 'rgba(0, 10, 15, 0.97)' }}
                     >
                       {link.dropdown.map((item) => (
-                        <Link
+                        <SmartLink
                           key={item.path}
                           to={item.path}
                           className="flex items-start gap-3 p-3 rounded-lg hover:bg-teal-prime/8 transition-colors group/item"
@@ -158,7 +163,7 @@ export default function Layout() {
                             </div>
                             <div className="text-xs text-ice-muted/60 mt-0.5">{item.desc}</div>
                           </div>
-                        </Link>
+                        </SmartLink>
                       ))}
                     </motion.div>
                     </div>
@@ -231,13 +236,13 @@ export default function Layout() {
                       <div className="space-y-1">
                         <div className="px-4 py-2 text-sm font-semibold text-ice-muted/60 arabic-text">{link.name}</div>
                         {link.dropdown.map((item) => (
-                          <Link
+                          <SmartLink
                             key={item.path}
                             to={item.path}
                             className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm hover:bg-teal-prime/8 transition-colors"
                           >
                             <span className="text-teal-prime arabic-text">{item.desc}</span>
-                          </Link>
+                          </SmartLink>
                         ))}
                       </div>
                     ) : (
@@ -321,12 +326,13 @@ export default function Layout() {
                   { name: 'لوحة الكشافين', path: '/scout' },
                   { name: 'لوحة المدربين', path: '/coach' },
                   { name: 'لوحة المنشآت', path: '/organizations' },
+                  { name: 'أدائي فيزيك', path: PHYSIQUE_URL },
                   { name: 'تحليل الفيديو', path: '/video-analysis' },
                 ].map((item) => (
                   <li key={item.path}>
-                    <Link to={item.path} className="text-sm text-ice-muted/60 hover:text-teal-prime transition-colors arabic-text">
+                    <SmartLink to={item.path} className="text-sm text-ice-muted/60 hover:text-teal-prime transition-colors arabic-text">
                       {item.name}
-                    </Link>
+                    </SmartLink>
                   </li>
                 ))}
               </ul>
