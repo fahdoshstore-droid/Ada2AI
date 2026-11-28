@@ -120,7 +120,8 @@ export default function WelcomePage() {
   const navigate = useNavigate()
 
   const userType: UserType = profile?.user_type ?? 'player'
-  const config = roleConfigs[userType]
+  // Unknown roles (e.g. أدائي فيزيك 'athlete') fall back to the player copy rather than crashing.
+  const config = roleConfigs[userType] ?? roleConfigs.player
   const dashboardPath = roleDashboard(userType)
 
   // Auto-redirect after 8 seconds

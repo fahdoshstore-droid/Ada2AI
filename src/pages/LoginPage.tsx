@@ -34,8 +34,12 @@ export default function LoginPage() {
           .then(own => { if (!cancelled) navigate(own ? '/welcome' : '/player/onboarding', { replace: true }) })
           .catch(() => { if (!cancelled) navigate('/welcome', { replace: true }) })
         return () => { cancelled = true }
-      } else if (profile?.user_type) {
+      } else if (profile?.user_type === 'coach' || profile?.user_type === 'scout') {
         navigate('/welcome', { replace: true })
+      } else if (profile?.user_type) {
+        // Accounts from other Ada2AI products (e.g. أدائي فيزيك 'athlete') have
+        // no football dashboard: send them home rather than into football flows.
+        navigate('/', { replace: true })
       } else if (profileError) {
         // Profile fetch failed — still redirect, ProtectedRoute will show error
         // Fallback: use user_metadata if available

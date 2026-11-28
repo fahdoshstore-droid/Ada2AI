@@ -7,10 +7,9 @@ import { captureError } from '../lib/monitoring'
 
 const PROFILE_TIMEOUT_MS = 8000
 
-/** Older sign-ups were stored as 'athlete'; the app's player role is 'player'. */
-function normalizeProfile(p: Profile): Profile {
-  return (p.user_type as string) === 'athlete' ? { ...p, user_type: 'player' } : p
-}
+// Note: user_type 'athlete' belongs to أدائي فيزيك (Ada2Physique) accounts that
+// share this Supabase project. They are NOT football players — never map them
+// to 'player', or they get pushed into football onboarding and scouting data.
 
 interface AuthState {
   user: User | null
@@ -59,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ]).catch((e: unknown) => ({ data: null, error: { message: (e as Error)?.message || 'خطأ غير متوقع', code: 'UNKNOWN' } }))
 
         if (!result.error && result.data) {
-          applyProfile(normalizeProfile(result.data as Profile))
+          applyProfile(result.data as Profile)
           setProfileError(null)
           trackEvent('profileLoadTime', { durationMs: Date.now() - startTime, role: (result.data as Profile).user_type ?? 'none' })
           return
