@@ -17,11 +17,17 @@ const navLinks = [
       { name: 'لوحة الكشافين', path: '/scout', icon: UserSearch as LucideIcon, desc: 'اكتشاف المواهب' },
       { name: 'لوحة المدربين', path: '/coach', icon: Dumbbell as LucideIcon, desc: 'إدارة الفريق' },
       { name: 'لوحة المنشآت', path: '/organizations', icon: Users as LucideIcon, desc: 'إدارة اللاعبين' },
-      { name: 'أدائي فيزيك', path: PHYSIQUE_URL, icon: Activity as LucideIcon, desc: 'الإعداد البدني والتغذية' },
     ]
   },
   { name: 'الترتيب', path: '/rankings' },
   { name: 'تحليل الفيديو', path: '/video-analysis' },
+  {
+    name: 'ألعاب أخرى',
+    path: PHYSIQUE_URL,
+    dropdown: [
+      { name: 'أدائي فيزيك', path: PHYSIQUE_URL, icon: Activity as LucideIcon, desc: 'كمال الأجسام: التدريب والتغذية والمتابعة' },
+    ]
+  },
 ];
 
 export default function Layout() {
@@ -29,22 +35,22 @@ export default function Layout() {
   const navigate = useNavigate()
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   // Products menu: a short close delay lets the pointer travel from the
   // button to the panel; the last pointer type tells a mouse from a tap.
   const closeTimer = useRef<number | null>(null);
   const pointerType = useRef<string>('mouse');
-  const openMenu = () => {
+  const openMenu = (name: string) => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    setDropdownOpen(true);
+    setDropdownOpen(name);
   };
   const closeMenuSoon = () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(() => setDropdownOpen(false), 180);
+    closeTimer.current = window.setTimeout(() => setDropdownOpen(null), 180);
   };
   useEffect(() => {
     if (!dropdownOpen) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDropdownOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDropdownOpen(null); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [dropdownOpen]);
@@ -64,7 +70,7 @@ export default function Layout() {
 
   useEffect(() => {
     setMobileMenuOpen(false);
-    setDropdownOpen(false);
+    setDropdownOpen(null);
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
@@ -92,7 +98,7 @@ export default function Layout() {
                 <div 
                   key={link.name}
                   className="relative"
-                  onPointerEnter={(e) => { if (link.dropdown && e.pointerType === 'mouse') openMenu(); }}
+                  onPointerEnter={(e) => { if (link.dropdown && e.pointerType === 'mouse') openMenu(link.name); }}
                   onPointerLeave={(e) => { if (link.dropdown && e.pointerType === 'mouse') closeMenuSoon(); }}
                 >
                   {link.dropdown ? (
@@ -101,10 +107,10 @@ export default function Layout() {
                       onPointerDown={(e) => { pointerType.current = e.pointerType; }}
                       // With a mouse the menu is already open from hovering, so a
                       // click keeps it open; taps and the keyboard toggle it.
-                      onClick={() => (pointerType.current === 'mouse' ? openMenu() : setDropdownOpen((v) => !v))}
+                      onClick={() => (pointerType.current === 'mouse' ? openMenu(link.name) : setDropdownOpen((v) => (v === link.name ? null : link.name)))}
                       onKeyDown={() => { pointerType.current = 'keyboard'; }}
                       aria-haspopup="true"
-                      aria-expanded={dropdownOpen}
+                      aria-expanded={dropdownOpen === link.name}
                       className={`relative flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                         link.dropdown.some((d) => d.path === location.pathname)
                           ? 'text-teal-prime'
@@ -135,7 +141,7 @@ export default function Layout() {
                   </Link>
                   )}
                   
-                  {link.dropdown && dropdownOpen && (
+                  {link.dropdown && dropdownOpen === link.name && (
                     // pt-2 (not mt-2): the gap belongs to the hover area, so moving
                     // the mouse from the button down to the panel keeps it open.
                     <div className="absolute top-full right-0 z-50 pt-2">
@@ -241,7 +247,11 @@ export default function Layout() {
                             to={item.path}
                             className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm hover:bg-teal-prime/8 transition-colors"
                           >
-                            <span className="text-teal-prime arabic-text">{item.desc}</span>
+                            <item.icon className="h-4 w-4 flex-shrink-0 text-teal-prime" aria-hidden="true" />
+                            <span className="arabic-text">
+                              <span className="block text-ice-white">{item.name}</span>
+                              <span className="block text-xs text-ice-muted/70">{item.desc}</span>
+                            </span>
                           </SmartLink>
                         ))}
                       </div>
@@ -326,7 +336,6 @@ export default function Layout() {
                   { name: 'لوحة الكشافين', path: '/scout' },
                   { name: 'لوحة المدربين', path: '/coach' },
                   { name: 'لوحة المنشآت', path: '/organizations' },
-                  { name: 'أدائي فيزيك', path: PHYSIQUE_URL },
                   { name: 'تحليل الفيديو', path: '/video-analysis' },
                 ].map((item) => (
                   <li key={item.path}>

@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import {
   Badge, UserSearch, Dumbbell, Users, Star, Share2, Filter, LayoutGrid, Film,
-  Play, ArrowLeft, BarChart3, Activity, Salad, ClipboardCheck,
+  Play, ArrowLeft, BarChart3,
   Award, ChevronLeft
 } from 'lucide-react';
 import { EASE, GhostNumber, ImageReveal, Letterbox, SplitReveal, Stagger, StaggerItem } from '../components/cinema/Cinema';
@@ -12,9 +12,7 @@ import playerDevelopment from '../assets/cinema/player-development.jpg';
 import keeperRain from '../assets/cinema/keeper-rain.jpg';
 import aerialPitch from '../assets/cinema/aerial-pitch.jpg';
 import sportIdBoots from '../assets/cinema/sport-id-boots.jpg';
-import physiqueCoaching from '../assets/cinema/physique-coaching.jpg';
 import SmartLink from '../components/SmartLink';
-import { PHYSIQUE_URL } from '../lib/products';
 import scoutStands from '../assets/cinema/scout-stands.jpg';
 import coachTouchline from '../assets/cinema/coach-touchline.jpg';
 import stadiumBlueHour from '../assets/cinema/stadium-blue-hour.jpg';
@@ -86,22 +84,6 @@ const mainProducts = [
     color: 'from-scout-blue to-teal-prime',
     accent: 'scout-blue',
     addons: []
-  },
-  {
-    id: 'physique',
-    image: physiqueCoaching,
-    imagePosition: '62% 45%',
-    icon: Activity,
-    title: 'أدائي فيزيك',
-    desc: 'الإعداد البدني مع مدربك: برامج تدريب وخطط تغذية ومتابعة أسبوعية لقياساتك وتقدّمك',
-    path: PHYSIQUE_URL,
-    color: 'from-teal-prime to-scout-blue',
-    accent: 'teal-prime',
-    addons: [
-      { title: 'برامج التدريب', icon: Dumbbell, desc: 'من مدربك' },
-      { title: 'خطط التغذية', icon: Salad, desc: 'سعرات ومغذيات' },
-      { title: 'المتابعة الأسبوعية', icon: ClipboardCheck, desc: 'قياسات وصور' },
-    ]
   },
 ];
 
@@ -255,7 +237,7 @@ function ProductsSection() {
             <SplitReveal text="للعالم الرياضي" delay={0.2} className="block text-ice-white arabic-text" />
           </h2>
           <p className="mt-5 max-w-2xl text-lg text-ice-muted arabic-text">
-            خمس منتجات رئيسية مصممة خصيصاً لتلبية احتياجات جميع الأطراف في النظام الرياضي
+            أربع منتجات رئيسية مصممة خصيصاً لتلبية احتياجات جميع الأطراف في النظام الرياضي
           </p>
         </div>
 
